@@ -109,3 +109,35 @@ make generate-schema
 - **Emotion CSS** for customizing antd styles
 - **Custom CSS variables** for theme (colors, spacing)
 - **CSS flex layout** for layouts
+
+## 🧪 Testing
+E2E testing is provided through Playwright.  First run the app in a terminal session via:
+```
+agentgateway -f tmp-config.yaml
+```
+
+Then open another temrinal session, cd to the `ui/` directory and use the following scripts to run tests: 
+
+Run tests via command line
+```
+yarn playwright test # headless
+yarn playwright test --headed # headed with popup browser
+```
+
+Run tests via interactive UI interface
+```
+yarn playwright test --ui
+```
+
+Show HTML test run report:
+```
+yarn playwright show-report
+```
+
+Run codegen (useful for writing e2e tests)
+```
+yarn playwright codegen
+```
+
+### Testing configuration
+e2e tests can be further configured by adjusting the `playwright.config.ts` file
