@@ -29,12 +29,13 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: 24
+          cache: "yarn"
       - name: Install, Lint, and Build UI
         run: |
-          npm ci
+          yarn install --frozen-lockfile
           # TODO: re-enable linting
-          #npm run lint
-          npm run build
+          #yarn run lint
+          yarn run build
       - name: Upload UI build
         uses: actions/upload-artifact@v6
         with:
@@ -83,9 +84,9 @@ jobs:
         with:
           node-version: 24
       - name: Install dependencies
-        run: npm ci
+        run: yarn install --frozen-lockfile
       - name: Install Playwright dependencies
-        run: npx playwright install --with-deps
+        run: yarn playwright install --with-deps
       - name: Download proxy binary
         uses: actions/download-artifact@v4
         with:
@@ -110,7 +111,7 @@ jobs:
             sleep 2
           done
       - name: Run Playwright tests
-        run: npx playwright test
+        run: yarn playwright test
       - name: Upload test videos
         if: always()
         uses: actions/upload-artifact@v6
