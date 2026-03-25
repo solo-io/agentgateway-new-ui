@@ -53,8 +53,10 @@ jobs:
           toolchain: "${{ env.RUST_VERSION }}"
       - uses: Swatinem/rust-cache@v2
         with:
-          shared-key: "controller-e2e"
-          save-if: false
+          # TODO: re-enable controller-e2e cache once we merge to main
+          # shared-key: "controller-e2e"
+          shared-key: "ui-e2e"
+          save-if: true
       - name: Download UI Build
         uses: actions/download-artifact@v4
         with:
@@ -100,7 +102,7 @@ jobs:
           # start binary with health check (2 secs / 30 attempts)
           ../agentgateway -f ../e2e-test-config.yaml &
           for i in $(seq 1 30); do
-            if curl -s http://localhost:15000/ui > /dev/null 2>&1; then
+            if curl -s http://127.0.0.1:15000/ui > /dev/null 2>&1; then
               echo "Gateway is ready"
               break
             fi
