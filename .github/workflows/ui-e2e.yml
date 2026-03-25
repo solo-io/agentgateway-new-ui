@@ -116,9 +116,7 @@ jobs:
             sleep 2
           done
       - name: Run Playwright tests
-        # TODO: testing chromium only for ci/cd debugging, turn this back on for all browser support
-        # run: yarn playwright test
-        run: yarn playwright test --project=chromium
+        run: yarn playwright test
       - name: Upload test videos
         if: always()
         uses: actions/upload-artifact@v6
