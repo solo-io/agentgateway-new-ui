@@ -131,3 +131,9 @@ jobs:
           name: playwright-report
           path: ui/playwright-report/
           retention-days: ${{ env.ARTIFACT_RETENTION_DAYS }}
+      - name: Clean up artifacts
+        uses: geekyeggo/delete-artifact@v6
+        with:
+          name: |
+            agentgateway-binary
+            ui-build-output
