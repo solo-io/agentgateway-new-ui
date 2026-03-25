@@ -30,6 +30,7 @@ jobs:
         with:
           node-version: 24
           cache: "yarn"
+          cache-dependency-path: ui/yarn.lock
       - name: Install, Lint, and Build UI
         run: |
           yarn install --frozen-lockfile
@@ -86,6 +87,7 @@ jobs:
         with:
           node-version: 24
           cache: "yarn"
+          cache-dependency-path: ui/yarn.lock
       - name: Install dependencies
         run: yarn install --frozen-lockfile
       - name: Install Playwright dependencies
