@@ -1,13 +1,7 @@
 name: UI E2E Tests
 
 on:
-  push:
-    branches:
-      - "new-ui-features"
-      - "abentley/playwright-setup"
   pull_request:
-    branches:
-      - "new-ui-features"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref_name }}
