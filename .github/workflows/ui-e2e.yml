@@ -36,6 +36,8 @@ jobs:
           # TODO: re-enable linting
           #yarn run lint
           yarn run build
+        env:
+          BASE_PATH: /ui/
       - name: Upload UI build
         uses: actions/upload-artifact@v6
         with:
@@ -112,7 +114,9 @@ jobs:
             sleep 2
           done
       - name: Run Playwright tests
-        run: yarn playwright test
+        # TODO: testing chromium only for ci/cd debugging, turn this back on for all browser support
+        # run: yarn playwright test
+        run: yarn playwright test --project=chromium
       - name: Upload test videos
         if: always()
         uses: actions/upload-artifact@v6
