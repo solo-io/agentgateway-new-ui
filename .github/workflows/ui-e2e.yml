@@ -56,7 +56,7 @@ jobs:
           shared-key: "ui-e2e"
           save-if: true
       - name: Download UI Build
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: ui-build-output
           path: ui/out/
@@ -87,7 +87,7 @@ jobs:
       - name: Install Playwright dependencies
         run: yarn playwright install --with-deps
       - name: Download proxy binary
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: agentgateway-binary
           path: .
