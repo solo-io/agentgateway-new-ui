@@ -140,3 +140,40 @@ test('should verify CEL Playground page contents are visible', async ({ page }) 
     const inputDataCodeEditor = page.locator('.ant-card').filter({ hasText: 'Input Data (YAML)'});
     await expect(inputDataCodeEditor).toBeVisible();
 });
+
+test('should return true when running default CEL Expression', async ({ page }) => { 
+    // given:
+    //      CEL Expression is set on default expression
+    const celExpressionEditor = page.locator('.monaco-editor').filter({ hasText: DEFAULT_CODE_EDITOR_TEXT });
+    await expect(celExpressionEditor).toBeVisible();
+    await expect(celExpressionEditor).toHaveText(DEFAULT_CODE_EDITOR_TEXT);
+
+    // when:
+    //      clicking Evaluate button
+    const evaluateButton = page.getByRole('button', { name: 'Evaluate' });
+    await evaluateButton.click();
+
+    // then:
+    //      Result secton should display 'true'
+    const result = page.locator('.ant-card-body').filter({ hasText: 'Result' });
+    await expect(result).toContainText('true');
+});
+
+test('should return false when running default CEL Expression with modified response code', async ({ page }) => { 
+    // given:
+    //      CEL Expression is set on default expression with modified response code
+    const updatedCodeEditorText = DEFAULT_CODE_EDITOR_TEXT.replace('200', '400');
+    const celExpressionEditor = page.locator('.monaco-editor').filter({ hasText: DEFAULT_CODE_EDITOR_TEXT });
+    await celExpressionEditor.click({ clickCount: 3});
+    await page.keyboard.insertText(updatedCodeEditorText);
+
+    // when:
+    //      clicking Evaluate button
+    const evaluateButton = page.getByRole('button', { name: 'Evaluate' });
+    await evaluateButton.click();
+
+    // then: 
+    //      Result section should display 'Expression evaluated to false'
+    const result = page.locator('.ant-card-body').filter({ hasText: 'Result' });
+    await expect(result).toContainText('Expression evaluated to false');
+});
