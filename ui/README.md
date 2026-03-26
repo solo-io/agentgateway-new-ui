@@ -116,17 +116,22 @@ E2E testing is provided through Playwright.  First run the app in a terminal ses
 agentgateway -f tmp-config.yaml
 ```
 
-Then open another temrinal session, cd to the `ui/` directory and use the following scripts to run tests: 
+Then open another terminal session, cd to the `ui/` directory and use the following scripts to run tests: 
 
-Run tests via command line
+Run all tests via command line
 ```
 yarn playwright test # headless
 yarn playwright test --headed # headed with popup browser
 ```
 
-Run tests via interactive UI interface
+Run all tests via interactive UI interface
 ```
 yarn playwright test --ui
+```
+
+Run individual test by name
+```
+yarn playwright test -g "Name of the test"
 ```
 
 Show HTML test run report:

@@ -1,10 +1,10 @@
 import { expect, test } from '@playwright/test';
 
-const dashboardResourcePath = '/ui#/dashboard'
+const DASHBOARD_RESOURCE_PATH = '/ui#/dashboard'
 
 test.beforeEach(async ({ page }) => {
     // navigate to dashboard page
-    await page.goto(dashboardResourcePath);
+    await page.goto(DASHBOARD_RESOURCE_PATH);
 });
 
 test(`should display banner, header, and subtext`, async ({ page }) => { 
