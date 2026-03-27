@@ -27,7 +27,7 @@ jobs:
           cache-dependency-path: ui/yarn.lock
       - name: Install, Lint, and Build UI
         run: |
-          yarn install --frozen-lockfile
+          yarn install --immutable --immutable-cache
           # TODO: re-enable linting
           #yarn run lint
           yarn run build
@@ -83,7 +83,7 @@ jobs:
           cache: "yarn"
           cache-dependency-path: ui/yarn.lock
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: yarn install --immutable --immutable-cache
       - name: Install Playwright dependencies
         run: yarn playwright install --with-deps
       - name: Download proxy binary
