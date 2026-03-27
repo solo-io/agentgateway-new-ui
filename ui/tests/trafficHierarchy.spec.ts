@@ -1,13 +1,23 @@
 import { expect, test } from '@playwright/test';
+import * as fs from 'fs';
+import * as yaml from 'js-yaml';
 
 const TRAFFIC_HIERARCHY_RESOURCE_PATH = '/ui#/traffic-configuration';
 const TRAFFIC_CONFIGURATION = 'Traffic Configuration';
 const DEFAULT_FORM_TEXT = 'Choose a bind, listener, route, backend, or policy from the hierarchy tree on the left to view and edit its configuration.';
 const HEADER_SUBTEXT = 'View and edit the full agentgateway configuration.';
+const LISTENER_NEW_NAME = 'e2e-test';
+
+const initialE2EConfig = yaml.load(fs.readFileSync('tests/fixtures/e2e-config.yaml', 'utf8')) as any;
 
 test.beforeEach(async ({page}) => { 
     // navigate to Traffic Hierarchy page
     await page.goto(TRAFFIC_HIERARCHY_RESOURCE_PATH);
+});
+
+test.afterEach(async () => { 
+    // restore initial state of e2e-config.yaml file
+    fs.writeFileSync('tests/fixtures/e2e-config.yaml', yaml.dump(initialE2EConfig));
 });
 
 test('should verify Traffic Hierarchy page contents are visible', async ({ page }) => { 
@@ -39,4 +49,40 @@ test('should verify Traffic Hierarchy page contents are visible', async ({ page 
     const defaultFormText = page.getByText(DEFAULT_FORM_TEXT);
     await expect(defaultFormText).toBeVisible();
     await expect(defaultFormText).toHaveText(DEFAULT_FORM_TEXT);
+});
+
+test('should edit and save bind configuration', async ({ page }) => { 
+    // given:
+    //      existing bind configuraton from e2e-config.yaml file
+
+    // when:
+    //      clicking edit buttojn
+    //      updating listener name
+    //      clicking save button
+    let listenerFormOption = page.getByRole('tree').getByText('(unnamed listener)');
+    await expect(listenerFormOption).toBeVisible();
+    await listenerFormOption.click();
+
+    const trafficFormEditButton = page.getByRole('button', { name: 'Edit', exact: true });
+    await expect(trafficFormEditButton).toBeVisible();
+    await trafficFormEditButton.click();
+
+    const nameInput = page.locator('#root_name');
+    await expect(nameInput).toBeVisible();
+    await nameInput.click();
+    await page.keyboard.type(LISTENER_NEW_NAME);
+
+    const trafficFormSaveButton = page.getByRole('button', { name: 'Save'});
+    await expect(trafficFormSaveButton).toBeVisible();
+    await trafficFormSaveButton.click();
+
+    // then:
+    //      bind configuration should be updated on front end
+    //      bind configuration should be updated on in e2e-config.yaml file
+    listenerFormOption = page.getByRole('tree').getByText(LISTENER_NEW_NAME);
+    await expect(listenerFormOption).toBeVisible();
+
+    const e2eConfig = fs.readFileSync('tests/fixtures/e2e-config.yaml', 'utf8');
+    const e2eConfigYaml = yaml.load(e2eConfig) as any;
+    expect(e2eConfigYaml.binds[0].listeners[0].name).toBe(LISTENER_NEW_NAME);
 });
