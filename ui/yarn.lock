@@ -421,10 +421,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@gar/promise-retry@npm:^1.0.0":
-  version: 1.0.3
-  resolution: "@gar/promise-retry@npm:1.0.3"
-  checksum: 10c0/885b02c8b0d75b2d215da25f3b639158c4fbe8fefe0d79163304534b9a6d0710db4b7699f7cd3cc1a730792bff04cbe19f4850a62d3e105a663eaeec88f38332
+"@eslint/js@npm:^9.39.1":
+  version: 9.39.4
+  resolution: "@eslint/js@npm:9.39.4"
+  checksum: 10c0/5aa7dea2cbc5decf7f5e3b0c6f86a084ccee0f792d288ca8e839f8bc1b64e03e227068968e49b26096e6f71fd857ab6e42691d1b993826b9a3883f1bdd7a0e46
   languageName: node
   linkType: hard
 
@@ -656,6 +656,17 @@ __metadata:
   version: 0.16.12
   resolution: "@oxlint/win32-x64@npm:0.16.12"
   conditions: os=win32 & cpu=x64
+  languageName: node
+  linkType: hard
+
+"@playwright/test@npm:^1.58.2":
+  version: 1.58.2
+  resolution: "@playwright/test@npm:1.58.2"
+  dependencies:
+    playwright: "npm:1.58.2"
+  bin:
+    playwright: cli.js
+  checksum: 10c0/2164c03ad97c3653ff02e8818a71f3b2bbc344ac07924c9d8e31cd57505d6d37596015a41f51396b3ed8de6840f59143eaa9c21bf65515963da20740119811da
   languageName: node
   linkType: hard
 
@@ -4724,8 +4735,10 @@ __metadata:
   dependencies:
     "@a2a-js/sdk": "npm:^0.3.10"
     "@ant-design/icons": "npm:^5.5.2"
+    "@emotion/babel-plugin": "npm:^11.13.5"
     "@emotion/react": "npm:^11.13.5"
     "@emotion/styled": "npm:^11.13.5"
+    "@eslint/js": "npm:^9.39.1"
     "@modelcontextprotocol/sdk": "npm:^1.25.3"
     "@monaco-editor/react": "npm:^4.7.0"
     "@playwright/test": "npm:^1.58.2"
