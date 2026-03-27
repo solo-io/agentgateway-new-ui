@@ -36,7 +36,7 @@ test('should verify CEL Playground page contents are visible', async ({ page }) 
     // verify banner
     const banner = page.getByRole('banner');
     await expect(banner).toBeVisible();
-    await expect(banner).toHaveText('CEL Playground');
+    await expect(banner).toContainText('CEL Playground');
 
     // verify page header
     const header = page.getByRole('heading', { name: 'CEL Playground' });

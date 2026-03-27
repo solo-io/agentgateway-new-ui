@@ -1,6 +1,9 @@
 import { expect, test } from '@playwright/test';
 
-const TRAFFIC_HIERARCHY_RESOURCE_PATH = '/ui#/traffic';
+const TRAFFIC_HIERARCHY_RESOURCE_PATH = '/ui#/traffic-configuration';
+const TRAFFIC_CONFIGURATION = 'Traffic Configuration';
+const DEFAULT_FORM_TEXT = 'Choose a bind, listener, route, backend, or policy from the hierarchy tree on the left to view and edit its configuration.';
+const HEADER_SUBTEXT = 'View and edit the full agentgateway configuration.';
 
 test.beforeEach(async ({page}) => { 
     // navigate to Traffic Hierarchy page
@@ -11,35 +14,29 @@ test('should verify Traffic Hierarchy page contents are visible', async ({ page 
     // verify banner
     const banner = page.getByRole('banner');
     await expect(banner).toBeVisible();
-    await expect(banner).toHaveText('Traffic');
+    await expect(banner).toContainText(TRAFFIC_CONFIGURATION);
 
     // verify page heading
-    const heading = page.getByRole('heading', { name: 'Traffic Configuration (Manual Schemas)' });
+    const heading = page.locator('h1').filter({ hasText: TRAFFIC_CONFIGURATION });
     await expect(heading).toBeVisible();
-    await expect(heading).toHaveText('Traffic Configuration (Manual Schemas)');
+    await expect(heading).toHaveText(TRAFFIC_CONFIGURATION);
 
     // verify subtext
-    const subtext = page.getByText('Manage your gateway routing with manually configured TypeScript schemas');
+    const subtext = page.getByText(HEADER_SUBTEXT);
     await expect(subtext).toBeVisible();
-    await expect(subtext).toHaveText('Manage your gateway routing with manually configured TypeScript schemas');
-
-    // verify info dialog box
-    const infoDialogBox = page.locator('.ant-alert-info');
-    await expect(infoDialogBox).toBeVisible();
-    await expect(infoDialogBox).toContainText('Manual TypeScript Schemas');
-    await expect(infoDialogBox).toContainText('This page uses manually configured TypeScript form schemas (not auto-generated JSON). Forms are defined in traffic/forms/ and use config.d.ts types directly for compile-time safety.');
-
-    // close info dialog box
-    const infoDialogBoxCloseButton = infoDialogBox.locator('.ant-alert-close-icon');
-    await infoDialogBoxCloseButton.click();
-    await expect(infoDialogBox).not.toBeVisible();
+    await expect(subtext).toHaveText(HEADER_SUBTEXT);
 
     // verify traffic hierarchy form
-    const trafficHierarchyForm = page.locator('.ant-card').filter({ hasText: 'Traffic Hierarchy' });
+    const trafficHierarchyForm = page.locator('.ant-card').filter({ hasText: TRAFFIC_CONFIGURATION });
     await expect(trafficHierarchyForm).toBeVisible();
-    await expect(trafficHierarchyForm).toContainText('Traffic Hierarchy');
+    await expect(trafficHierarchyForm).toContainText(TRAFFIC_CONFIGURATION);
     
     const addButton = trafficHierarchyForm.getByRole('button', { name: 'Add' });
     await expect(addButton).toBeVisible();
     await expect(addButton).toHaveText('Add');
+
+    // verify default form text
+    const defaultFormText = page.getByText(DEFAULT_FORM_TEXT);
+    await expect(defaultFormText).toBeVisible();
+    await expect(defaultFormText).toHaveText(DEFAULT_FORM_TEXT);
 });

@@ -10,7 +10,7 @@ test.beforeEach(async ({ page }) => {
 test(`should display banner, header, and subtext`, async ({ page }) => { 
     // validate Dashboard banner
     const banner = page.getByRole('banner');
-    await expect(banner).toHaveText('Dashboard');
+    await expect(banner).toContainText('Dashboard');
 
     // validate Home + subtext header
     const header = page.getByRole('heading', { name: 'Home'});
@@ -49,9 +49,9 @@ test(`should validate status cards`, async ({ page }) => {
         {title: 'Listeners', path: '/traffic'},
         {title: 'Routes', path: '/traffic'},
         {title: 'Named Backends', path: '/traffic'},
-        {title: 'LLM Models', path: '/llm/models'},
-        {title: 'MCP Targets', path: '/mcp/servers'},
-        {title: 'Issues', path: '/traffic'},
+        {title: 'LLM Models', path: '/llm-configuration'},
+        {title: 'MCP Targets', path: '/mcp-configuration'},
+        {title: 'Issues', path: '/traffic-configuration'},
     ];
 
     for (const card of cards) { 

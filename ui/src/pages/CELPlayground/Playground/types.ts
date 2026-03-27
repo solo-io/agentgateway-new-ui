@@ -16,6 +16,7 @@ export interface Example {
 }
 
 export interface ExpressionTemplate {
+  id: string;
   name: string;
   description: string;
   expression: string;
