@@ -8,7 +8,8 @@ const DEFAULT_FORM_TEXT = 'Choose a bind, listener, route, backend, or policy fr
 const HEADER_SUBTEXT = 'View and edit the full agentgateway configuration.';
 const LISTENER_NEW_NAME = 'e2e-test';
 
-const initialE2EConfig = yaml.load(fs.readFileSync('tests/fixtures/e2e-config.yaml', 'utf8')) as any;
+const E2E_CONFIG_PATH = process.env.CI ? '../e2e-test-config.yaml' : 'tests/fixtures/e2e-config.yaml';
+const initialE2EConfig = yaml.load(fs.readFileSync(E2E_CONFIG_PATH, 'utf8')) as any;
 
 test.beforeEach(async ({page}) => { 
     // navigate to Traffic Hierarchy page
@@ -17,7 +18,7 @@ test.beforeEach(async ({page}) => {
 
 test.afterEach(async () => { 
     // restore initial state of e2e-config.yaml file
-    fs.writeFileSync('tests/fixtures/e2e-config.yaml', yaml.dump(initialE2EConfig));
+    fs.writeFileSync(E2E_CONFIG_PATH, yaml.dump(initialE2EConfig));
 });
 
 test('should verify Traffic Hierarchy page contents are visible', async ({ page }) => { 
@@ -82,7 +83,7 @@ test('should edit and save bind configuration', async ({ page }) => {
     listenerFormOption = page.getByRole('tree').getByText(LISTENER_NEW_NAME);
     await expect(listenerFormOption).toBeVisible();
 
-    const e2eConfig = fs.readFileSync('tests/fixtures/e2e-config.yaml', 'utf8');
+    const e2eConfig = fs.readFileSync(E2E_CONFIG_PATH, 'utf8');
     const e2eConfigYaml = yaml.load(e2eConfig) as any;
     expect(e2eConfigYaml.binds[0].listeners[0].name).toBe(LISTENER_NEW_NAME);
 });

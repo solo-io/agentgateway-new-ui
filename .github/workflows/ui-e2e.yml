@@ -126,6 +126,7 @@ jobs:
           path: ui/playwright-report/
           retention-days: ${{ env.ARTIFACT_RETENTION_DAYS }}
       - name: Clean up artifacts
+        if: always()
         uses: geekyeggo/delete-artifact@v6
         with:
           name: |
