@@ -10,7 +10,7 @@ concurrency:
 env:
   CI: true
   RUST_VERSION: "1.93.1"
-  ARTIFACT_RETENTION_DAYS: 90 # TODO: update to something smaller?
+  ARTIFACT_RETENTION_DAYS: 60
 
 jobs:
   ui-lint-and-build:
@@ -28,8 +28,7 @@ jobs:
       - name: Install, Lint, and Build UI
         run: |
           yarn install --immutable --immutable-cache
-          # TODO: re-enable linting
-          #yarn run lint
+          yarn run lint
           yarn run build
         env:
           BASE_PATH: /ui/
