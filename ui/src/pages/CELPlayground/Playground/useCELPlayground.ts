@@ -89,7 +89,6 @@ export const EXAMPLES: Example[] = [
 
 export const EXPRESSION_TEMPLATES: ExpressionTemplate[] = [
   {
-    id: "path-matching-card",
     name: "Path Matching",
     description: "Check if request path matches pattern",
     expression: 'request.path.startsWith("/api/v1")',
@@ -98,7 +97,6 @@ export const EXPRESSION_TEMPLATES: ExpressionTemplate[] = [
     },
   },
   {
-    id: "header-validation-card",
     name: "Header Validation",
     description: "Validate request headers",
     expression:
@@ -113,7 +111,6 @@ export const EXPRESSION_TEMPLATES: ExpressionTemplate[] = [
     },
   },
   {
-    id: "role-based-access-card",
     name: "Role-Based Access",
     description: "Check user role",
     expression: 'user.role in ["admin", "moderator"] && user.active == true',
@@ -122,7 +119,6 @@ export const EXPRESSION_TEMPLATES: ExpressionTemplate[] = [
     },
   },
   {
-    id: "rate-limiting-card",
     name: "Rate Limiting",
     description: "Rate limit by time window",
     expression: "request.count < 100 && request.window < duration('1h')",
@@ -131,7 +127,6 @@ export const EXPRESSION_TEMPLATES: ExpressionTemplate[] = [
     },
   },
   {
-    id: "jwt-claims-card",
     name: "JWT Claims",
     description: "Validate JWT claims",
     expression: 'jwt.claims.sub == "user123" && jwt.claims.exp > now()',

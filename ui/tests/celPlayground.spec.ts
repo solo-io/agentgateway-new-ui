@@ -16,12 +16,12 @@ test('should verify CEL Playground page contents are visible', async ({ page }) 
     };
 
     const verifyExpressionTemplateCards = async (
-        id: string,
+        dataTestId: string,
         title: string, 
         subtext: string, 
         expression: string,
     ) => { 
-        const card = page.locator(id);
+        const card = page.getByTestId(dataTestId);
         await expect(card).toBeVisible();
         await expect(card).toContainText(title);
         await expect(card).toContainText(subtext);
@@ -100,31 +100,31 @@ test('should verify CEL Playground page contents are visible', async ({ page }) 
 
     const expressionTemplateCards = [
         {
-            id: '#path-matching-card',
+            dataTestId: 'path-matching',
             title: 'Path Matching', 
             subtext: 'Check if request path matches pattern', 
             expression: 'request.path.startsWith("/api/v1")',
         },
         {
-            id: '#header-validation-card',
+            dataTestId: 'header-validation',
             title: 'Header Validation', 
             subtext: 'Validate request headers', 
             expression: 'has(request.headers.authorization) && request.headers["content-type"] == "application/json"',
         },
         {
-            id: '#role-based-access-card',
+            dataTestId: 'role-based-access',
             title: 'Role-Based Access', 
             subtext: 'Check user role', 
             expression: 'user.role in ["admin", "moderator"] && user.active == true',
         },
         {
-            id: '#rate-limiting-card',
+            dataTestId: 'rate-limiting',
             title: 'Rate Limiting', 
             subtext: 'Rate limit by time window', 
             expression: `request.count < 100 && request.window < duration('1h')`,
         },
         {
-            id: '#jwt-claims-card',
+            dataTestId: 'jwt-claims',
             title: 'JWT Claims', 
             subtext: 'Validate JWT claims', 
             expression: `jwt.claims.sub == "user123" && jwt.claims.exp > now()`,
@@ -132,8 +132,8 @@ test('should verify CEL Playground page contents are visible', async ({ page }) 
     ]
 
     for (const expressionTemplateCard of expressionTemplateCards) {
-        const { id, title, subtext, expression } = expressionTemplateCard;
-        await verifyExpressionTemplateCards(id, title, subtext, expression);
+        const { dataTestId, title, subtext, expression } = expressionTemplateCard;
+        await verifyExpressionTemplateCards(dataTestId, title, subtext, expression);
     }
 
     // input data section

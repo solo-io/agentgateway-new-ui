@@ -111,9 +111,9 @@ make generate-schema
 - **CSS flex layout** for layouts
 
 ## 🧪 Testing
-E2E testing is provided through Playwright.  First run the app in a terminal session via:
+E2E testing is provided through Playwright.  First run the app via the compiled binary in a terminal session via:
 ```
-agentgateway -f tmp-config.yaml
+agentgateway -f ui/tests/fixtures/e2e-config.yaml
 ```
 
 Then open another terminal session, cd to the `ui/` directory and use the following scripts to run tests: 
