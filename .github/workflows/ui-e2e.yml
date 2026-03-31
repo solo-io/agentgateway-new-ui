@@ -9,7 +9,6 @@ concurrency:
 
 env:
   CI: true
-  RUST_VERSION: "1.93.1"
   ARTIFACT_RETENTION_DAYS: 60
 
 jobs:
@@ -22,12 +21,12 @@ jobs:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
         with:
-          node-version: 24
+          node-version-file: ".nvmrc"
           cache: "yarn"
           cache-dependency-path: ui/yarn.lock
       - name: Install, Lint, and Build UI
         run: |
-          yarn install --immutable --immutable-cache
+          yarn install --immutable
           yarn run lint
           yarn run build
         env:
@@ -45,9 +44,9 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@master
+        uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
-          toolchain: "${{ env.RUST_VERSION }}"
+          rustflags: "" # empty string to use rustflags from .cargo/config.toml
       - uses: Swatinem/rust-cache@v2
         with:
           # TODO: re-enable controller-e2e cache once we merge to main
@@ -78,11 +77,11 @@ jobs:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
         with:
-          node-version: 24
+          node-version-file: ".nvmrc"
           cache: "yarn"
           cache-dependency-path: ui/yarn.lock
       - name: Install dependencies
-        run: yarn install --immutable --immutable-cache
+        run: yarn install --immutable
       - name: Install Playwright dependencies
         run: yarn playwright install --with-deps
       - name: Download proxy binary

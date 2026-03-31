@@ -62,7 +62,7 @@ test(`should validate status cards`, async ({ page }) => {
 test(`should validate section cards`, async ({ page }) => { 
     // validate Traffic section
     // header
-    const trafficSection = page.locator('#traffic-section');
+    const trafficSection = page.getByTestId('traffic');
     await expect(trafficSection).toBeVisible();
 
     // status badge
@@ -85,7 +85,7 @@ test(`should validate section cards`, async ({ page }) => {
 
     // validate LLM section
     // header
-    const llmSection = page.locator('#llm-section');
+    const llmSection = page.getByTestId('llm');
     await expect(llmSection).toBeVisible();
 
     // subtext
@@ -101,7 +101,7 @@ test(`should validate section cards`, async ({ page }) => {
 
     // validate MCP section
     // header
-    const mcpSection = page.locator('#mcp-section');
+    const mcpSection = page.getByTestId('mcp');
     await expect(mcpSection).toBeVisible();
 
     // subtext
