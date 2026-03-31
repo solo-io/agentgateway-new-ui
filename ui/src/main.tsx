@@ -1,9 +1,11 @@
+import "@patternfly/react-core/dist/styles/base.css";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { Toaster } from "react-hot-toast";
 import App from "./App.tsx";
 import { AppProvider } from "./contexts";
 import "./index.css";
+import "@patternfly/react-core/dist/styles/base.css";
 import "./styles/global.css";
 import "./styles/theme.css";
 
