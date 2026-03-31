@@ -1,1 +1,1 @@
-export { LogViewer } from "./LogViewer";
+export { SoloLogViewer } from "./SoloLogViewer";
