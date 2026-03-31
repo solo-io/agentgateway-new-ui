@@ -116,7 +116,23 @@ E2E testing is provided through Playwright.  First run the app via the compiled 
 agentgateway -f ui/tests/fixtures/e2e-config.yaml
 ```
 
-Then open another terminal session, cd to the `ui/` directory and use the following scripts to run tests: 
+Then open another terminal session, cd to the `ui/` directory and use the following scripts to run tests.
+
+By default, the tests will run against the `agentgateway` binary on port 15000.  You can also run the tests against the UI dev server by setting the 
+`BASE_URL` environment variable
+
+```
+yarn playwright test # default: run tests against agentgateway binary (port 15000)
+BASE_URL=http://localhost:3000 yarn playwright tests # run tests against UI dev server (port 3000)
+```
+
+You can also use these shortcuts to run e2e tests from the CLI:
+```
+yarn test:e2e # runs `yarn playwright test` against agentgatway binary on port 15000
+yarn test:e2e:dev # runs `yarn playwright test` against UI dev server on port 3000
+```
+
+### Playwright test scripts
 
 Run all tests via command line
 ```
