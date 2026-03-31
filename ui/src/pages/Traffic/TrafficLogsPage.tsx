@@ -1,6 +1,9 @@
 import styled from "@emotion/styled";
-import { Card, Tag } from "antd";
-import { FileText } from "lucide-react";
+import { Card } from "antd";
+import type { ColumnType } from "antd/es/table";
+import type { TrafficLogEntry } from "../../api/logTypes";
+import { LogViewer } from "../../components/LogViewer/LogViewer";
+import { mockTrafficLogs } from "../mockLogs";
 
 const Container = styled.div`
   display: flex;
@@ -33,35 +36,97 @@ const EmptyIcon = styled.div`
   margin: 0 auto 16px;
 `;
 
+// export const TrafficLogsPage = () => (
+//   <Container>
+//     <PageTitle>Traffic Logs</PageTitle>
+//     <EmptyStateCard>
+//       <EmptyIcon>
+//         <FileText size={28} />
+//       </EmptyIcon>
+//       <h3 style={{ margin: "0 0 8px", fontSize: 18, fontWeight: 600 }}>
+//         Traffic Request Logs
+//       </h3>
+//       <p
+//         style={{
+//           margin: "0 0 24px",
+//           color: "var(--color-text-secondary)",
+//           maxWidth: 400,
+//           marginLeft: "auto",
+//           marginRight: "auto",
+//         }}
+//       >
+//         HTTP and TCP request logs, response details, latency, and error traces
+//         will be displayed here.
+//       </p>
+//       <Tag
+//         bordered={false}
+//         color="processing"
+//         style={{ padding: "4px 12px", fontSize: 13 }}
+//       >
+//         Coming soon
+//       </Tag>
+//     </EmptyStateCard>
+//   </Container>
+// );
+
+const columns: ColumnType<TrafficLogEntry>[] = [
+  {
+    title: "ID",
+    dataIndex: "id",
+    key: "id",
+  },
+  {
+    title: "Timestamp",
+    dataIndex: "timestamp",
+    key: "timestamp",
+  },
+  {
+    title: "Status",
+    dataIndex: "status",
+    key: "status",
+  },
+  {
+    title: "Duration",
+    dataIndex: "duration",
+    key: "duration",
+  },
+  {
+    title: "Method",
+    dataIndex: "method",
+    key: "method",
+  },
+  { 
+    title: "Path",
+    dataIndex: "path",
+    key: "path",
+  },
+  {
+    title: "Status Code",
+    dataIndex: "statusCode",
+    key: "statusCode",
+  },
+  {
+    title: "Upstream",
+    dataIndex: "upstream",
+    key: "upstream",
+  },
+  {
+    title: "Request Size",
+    dataIndex: "requestSize",
+    key: "requestSize",
+  },
+  {
+    title: "Response Size",
+    dataIndex: "responseSize",
+    key: "responseSize",
+  },
+];
+
 export const TrafficLogsPage = () => (
   <Container>
-    <PageTitle>Traffic Logs</PageTitle>
-    <EmptyStateCard>
-      <EmptyIcon>
-        <FileText size={28} />
-      </EmptyIcon>
-      <h3 style={{ margin: "0 0 8px", fontSize: 18, fontWeight: 600 }}>
-        Traffic Request Logs
-      </h3>
-      <p
-        style={{
-          margin: "0 0 24px",
-          color: "var(--color-text-secondary)",
-          maxWidth: 400,
-          marginLeft: "auto",
-          marginRight: "auto",
-        }}
-      >
-        HTTP and TCP request logs, response details, latency, and error traces
-        will be displayed here.
-      </p>
-      <Tag
-        bordered={false}
-        color="processing"
-        style={{ padding: "4px 12px", fontSize: 13 }}
-      >
-        Coming soon
-      </Tag>
-    </EmptyStateCard>
+    <LogViewer 
+      columns={columns} 
+      data={mockTrafficLogs}
+    />
   </Container>
 );
