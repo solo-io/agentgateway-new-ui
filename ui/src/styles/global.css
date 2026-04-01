@@ -156,10 +156,11 @@ pre code {
   background: var(--color-text-tertiary);
 }
 
-/* Selection */
-::selection {
-  background: var(--color-primary);
-  color: var(--color-text-inverse);
+/* LogViewer scrollbar overrides */
+.pf-v6-c-log-viewer__scroll-container,
+.pf-v6-c-log-viewer__scroll-container > div {
+  scrollbar-color: var(--color-bg-layout);
+  scrollbar-width: thin;
 }
 
 /* Focus outline — keyboard only */
