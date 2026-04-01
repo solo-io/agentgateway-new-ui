@@ -83,7 +83,7 @@ export const SoloLogViewer = ({ data }: SoloLogViewerProps) => {
       }}
       icon={isPaused ? <StyledResumeIcon /> : <PauseIcon />}
     >
-      {isPaused ? `Resume Log` : `Pause Log`}
+      {isPaused ? `Resume Logs` : `Pause Logs`}
     </StyledButton>
   );
 
@@ -93,7 +93,7 @@ export const SoloLogViewer = ({ data }: SoloLogViewerProps) => {
       isBlock
     >
       <StyledResumeIcon />
-      Resume{linesBehind === 0 ? null : ` (${linesBehind} lines behind)`}
+      Resume Logs{linesBehind === 0 ? null : ` (${linesBehind} lines behind)`}
     </StyledFooterButton>
   )
 
