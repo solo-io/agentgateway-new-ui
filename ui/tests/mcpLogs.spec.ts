@@ -9,6 +9,6 @@ test.beforeEach(async ({ page }) => {
     await page.goto(MCP_LOGS_RESOURCE_PATH);
 });
 
-test('should verify Traffic Log page contents are visible', async ({ page }) => { 
+test('should verify MCP Log page contents are visible', async ({ page }) => { 
     await verifyLogPageContents(page, MCP_LOGS_TITLE);
 });

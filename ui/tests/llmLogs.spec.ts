@@ -9,6 +9,6 @@ test.beforeEach(async ({ page }) => {
     await page.goto(LLM_LOGS_RESOURCE_PATH);
 });
 
-test('should verify Traffic Log page contents are visible', async ({ page }) => { 
+test('should verify LLM Log page contents are visible', async ({ page }) => { 
     await verifyLogPageContents(page, LLM_LOGS_TITLE);
 });
