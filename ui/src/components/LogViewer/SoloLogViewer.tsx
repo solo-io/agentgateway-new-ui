@@ -107,8 +107,9 @@ export const SoloLogViewer = ({ data }: SoloLogViewerProps) => {
     }
   };
 
-  const ControlButton = () => (
+  const ControlLogsButton = () => (
     <StyledButton
+      data-testid="log-viewer-control-button"
       onClick={() => { 
         setIsPaused(!isPaused);
       }}
@@ -120,6 +121,7 @@ export const SoloLogViewer = ({ data }: SoloLogViewerProps) => {
 
   const FooterButton = () => (
     <StyledFooterButton
+      data-testid="log-viewer-footer-button"
       onClick={() => setIsPaused(false)}
       isBlock
     >
@@ -134,6 +136,7 @@ export const SoloLogViewer = ({ data }: SoloLogViewerProps) => {
     <Container>
       <LogViewer
         data={data}
+        data-testid="log-viewer"
         hasLineNumbers={true}
         theme={theme}
         isTextWrapped={isTextWrapped}
@@ -146,15 +149,17 @@ export const SoloLogViewer = ({ data }: SoloLogViewerProps) => {
             <ToolbarContent>
                 <ToolbarItem>
                   <LogViewerSearch
+                    data-testid="log-viewer-search"
                     placeholder="Search logs"
                     minSearchChars={3}
                   />
                 </ToolbarItem>
                 <ToolbarItem>
-                  <ControlButton />
+                  <ControlLogsButton />
                 </ToolbarItem>
                 <ToolbarItem alignSelf="center">
                   <Checkbox
+                    data-testid="wrap-text-checkbox"
                     label="Wrap text"
                     aria-label="wrap text checkbox"
                     isChecked={isTextWrapped}
