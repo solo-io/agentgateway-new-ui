@@ -12,11 +12,19 @@ const Container = styled.div`
   gap: var(--spacing-lg);
   height: 100%;
   overflow: hidden;
-  
+
+  .pf-v6-c-log-viewer {
+    --pf-v6-c-log-viewer__main--BackgroundColor: var(--color-bg-layout);
+    --pf-v6-c-log-viewer--m-dark__main--BackgroundColor: var(--color-bg-layout);
+    --pf-v6-c-log-viewer--m-dark__main--BorderWidth: 1px;
+    --pf-v6-c-log-viewer__main--BorderColor: var(--color-border-base);
+  }
+
   .pf-v6-c-check__label {
     color: var(--color-text-base);
   }
 `
+
 
 const StyledButton = styled(Button)`
   && {
@@ -24,6 +32,10 @@ const StyledButton = styled(Button)`
     color: var(--color-text-secondary);
     border: 1px solid var(--color-border-base);
     border-radius: var(--border-radius-sm);
+  }
+
+  svg { 
+    color: var(--color-text-secondary);
   }
 `;
 

@@ -7,6 +7,8 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   gap: var(--spacing-lg);
+  height: 100%;
+  overflow: hidden;
 `;
 
 export const TrafficLogsPage = () => {
