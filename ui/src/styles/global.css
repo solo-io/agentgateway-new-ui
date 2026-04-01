@@ -138,22 +138,9 @@ pre code {
 }
 
 /* Scrollbar styling */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--color-bg-container);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--color-border-base);
-  border-radius: var(--border-radius-sm);
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--color-text-tertiary);
+* { 
+  scrollbar-color: var(--color-bg-layout);
+  scrollbar-width: thin;
 }
 
 /* LogViewer scrollbar overrides */

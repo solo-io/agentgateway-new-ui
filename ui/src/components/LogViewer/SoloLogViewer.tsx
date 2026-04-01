@@ -14,7 +14,7 @@ const Container = styled.div`
   overflow: hidden;
 
   .pf-v6-c-log-viewer {
-    --pf-v6-c-log-viewer__main--BackgroundColor: var(--color-bg-layout);
+    --pf-v6-c-log-viewer__main--BackgroundColor: var(--color-bg-base);
     --pf-v6-c-log-viewer--m-dark__main--BackgroundColor: var(--color-bg-layout);
     --pf-v6-c-log-viewer--m-dark__main--BorderWidth: 1px;
     --pf-v6-c-log-viewer__main--BorderColor: var(--color-border-base);
