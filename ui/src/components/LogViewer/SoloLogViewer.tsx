@@ -87,7 +87,7 @@ export const SoloLogViewer = ({ data }: SoloLogViewerProps) => {
     } else { 
       setLinesBehind(0);
     }
-  }, [isPaused, data]);
+  }, [isPaused, data, currentItemCount]);
 
 
   const onScroll = ({
