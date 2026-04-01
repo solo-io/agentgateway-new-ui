@@ -1,8 +1,7 @@
 import styled from "@emotion/styled";
 import { Button, Checkbox, Toolbar, ToolbarContent, ToolbarItem } from "@patternfly/react-core";
-import OutlinedPlayCircleIcon from '@patternfly/react-icons/dist/esm/icons/outlined-play-circle-icon';
-import PauseIcon from '@patternfly/react-icons/dist/esm/icons/pause-icon';
 import { LogViewer, LogViewerSearch } from "@patternfly/react-log-viewer";
+import { Pause, Play } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTheme } from "../../contexts/ThemeContext";
 
@@ -17,20 +16,34 @@ const Container = styled.div`
 `
 
 const StyledButton = styled(Button)`
-  && { 
-    background-color: var(--color-sidebar);
+  && {
+    background-color: var(--color-bg-elevated);
+    color: var(--color-text-secondary);
+    border: 1px solid var(--color-border-base);
+    border-radius: var(--border-radius-sm);
   }
 `;
 
 const StyledFooterButton = styled(Button)`
-  && { 
-    background-color: var(--color-sidebar);
+  && {
+    background-color: var(--color-bg-elevated);
+    color: var(--color-text-secondary);
+    border: 1px solid var(--color-border-base);
+    border-radius: var(--border-radius-sm);
     margin-top: var(--spacing-md);
   }
 `;
 
-const StyledResumeIcon = styled(OutlinedPlayCircleIcon)`
-  margin-right: var(--spacing-sm);
+const StyledPlayIcon = styled(Play)`
+  width: 16px;
+  height: 16px;
+  vertical-align: middle;
+`;
+
+const StyledPauseIcon = styled(Pause)`
+  width: 16px;
+  height: 16px;
+  vertical-align: middle;
 `;
 
 interface SoloLogViewerProps {
@@ -81,7 +94,7 @@ export const SoloLogViewer = ({ data }: SoloLogViewerProps) => {
       onClick={() => { 
         setIsPaused(!isPaused);
       }}
-      icon={isPaused ? <StyledResumeIcon /> : <PauseIcon />}
+      icon={isPaused ? <StyledPlayIcon /> : <StyledPauseIcon />}
     >
       {isPaused ? `Resume Logs` : `Pause Logs`}
     </StyledButton>
@@ -92,8 +105,10 @@ export const SoloLogViewer = ({ data }: SoloLogViewerProps) => {
       onClick={() => setIsPaused(false)}
       isBlock
     >
-      <StyledResumeIcon />
-      Resume Logs{linesBehind === 0 ? null : ` (${linesBehind} lines behind)`}
+      <StyledPlayIcon />
+      <span style={{ marginLeft: 'var(--spacing-sm)' }}>
+        Resume Logs{linesBehind === 0 ? null : ` (${linesBehind} lines behind)`}
+      </span>
     </StyledFooterButton>
   )
 
