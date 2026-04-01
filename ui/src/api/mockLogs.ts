@@ -1,6 +1,6 @@
-/*
-    Traffic logs
-*/
+/**
+ * Traffic logs
+ */
 export const MOCK_TRAFFIC_LOGS = [
     JSON.stringify({ timestamp: "2026-03-31T10:00:01.123Z", level: "INFO",  method: "GET",  path: "/api/v1/health",          status: 200, duration_ms: 12,    source_ip: "10.0.1.15",    user_agent: "kube-probe/1.28" }),
     JSON.stringify({ timestamp: "2026-03-31T10:00:01.456Z", level: "INFO",  method: "POST", path: "/api/v1/chat/completions", status: 200, duration_ms: 1823,  source_ip: "192.168.1.42",  user_agent: "python-requests/2.31.0" }),
@@ -44,9 +44,9 @@ export const MOCK_TRAFFIC_LOGS = [
     JSON.stringify({ timestamp: "2026-03-31T10:00:28.000Z", level: "INFO",  method: "POST", path: "/api/v1/chat/completions", status: 200, duration_ms: 1789,  source_ip: "172.16.0.100",  user_agent: "axios/1.6.2" }),
   ];
   
-/*
-    LLM logs
-*/
+/**
+ * LLM logs
+ */
 export const MOCK_LLM_LOGS = [
     JSON.stringify({ timestamp: "2026-03-31T10:00:01.200Z", level: "INFO",  event: "llm_request",   model: "gpt-4o",              provider: "openai",    prompt_tokens: 1250,  completion_tokens: null, total_tokens: null,  latency_ms: null,  status: "pending",  request_id: "req-a1b2c3", guardrail: null }),
     JSON.stringify({ timestamp: "2026-03-31T10:00:02.845Z", level: "INFO",  event: "llm_response",  model: "gpt-4o",              provider: "openai",    prompt_tokens: 1250,  completion_tokens: 384,  total_tokens: 1634,  latency_ms: 1645,  status: "success",  request_id: "req-a1b2c3", guardrail: null }),
@@ -91,9 +91,9 @@ export const MOCK_LLM_LOGS = [
     JSON.stringify({ timestamp: "2026-03-31T10:00:40.290Z", level: "INFO",  event: "llm_response",  model: "claude-haiku-3-20240307",   provider: "anthropic", prompt_tokens: 280,   completion_tokens: 65,   total_tokens: 345,   latency_ms: 280,   status: "success",  request_id: "req-z8a9b1", guardrail: null }),
 ];
 
-/*
-    MCP logs
-*/
+/**
+ * MCP logs
+ */
 export const MOCK_MCP_LOGS = [
     JSON.stringify({ timestamp: "2026-03-31T10:00:01.100Z", level: "INFO",  event: "tool_request",  tool: "file_read",          server: "filesystem-server",   args: { path: "/data/config.yaml" },                         latency_ms: null, status: "pending", request_id: "mcp-a1b2c3", error: null }),
     JSON.stringify({ timestamp: "2026-03-31T10:00:01.245Z", level: "INFO",  event: "tool_response", tool: "file_read",          server: "filesystem-server",   result_size_bytes: 2048,                                     latency_ms: 145,  status: "success", request_id: "mcp-a1b2c3", error: null }),

@@ -5,6 +5,9 @@ import { Pause, Play } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTheme } from "../../contexts/ThemeContext";
 
+/**
+ * Styling
+ */
 const Container = styled.div`
   gap: var(--spacing-lg);
   height: 100%;
@@ -46,6 +49,9 @@ const StyledPauseIcon = styled(Pause)`
   vertical-align: middle;
 `;
 
+/**
+ * Component
+ */
 interface SoloLogViewerProps {
   data: string[];
 }
