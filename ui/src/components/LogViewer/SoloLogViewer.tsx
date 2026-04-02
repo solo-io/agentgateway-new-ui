@@ -1,10 +1,10 @@
 import styled from "@emotion/styled";
 import { Button, Checkbox, Toolbar, ToolbarContent, ToolbarItem } from "@patternfly/react-core";
 import { LogViewer, LogViewerSearch } from "@patternfly/react-log-viewer";
-import { ChevronDown, Pause, Play } from "lucide-react";
+import { Tooltip } from "antd";
+import { ChevronDown } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTheme } from "../../contexts/ThemeContext";
-import { Tooltip } from "antd";
 
 /**
  * Styling
@@ -38,20 +38,6 @@ const Container = styled.div`
   }
 `
 
-
-const StyledButton = styled(Button)`
-  && {
-    background-color: var(--color-bg-elevated);
-    color: var(--color-text-secondary);
-    border: 1px solid var(--color-border-base);
-    border-radius: var(--border-radius-sm);
-  }
-
-  svg { 
-    color: var(--color-text-secondary);
-  }
-`;
-
 const StyledFooterButton = styled(Button)`
   && {
     background-color: var(--color-sidebar-hover);
@@ -74,18 +60,6 @@ const StyledFooterButton = styled(Button)`
     bottom: 5%;
     position: fixed;
   }
-`;
-
-const StyledPlayIcon = styled(Play)`
-  width: 16px;
-  height: 16px;
-  vertical-align: middle;
-`;
-
-const StyledPauseIcon = styled(Pause)`
-  width: 16px;
-  height: 16px;
-  vertical-align: middle;
 `;
 
 /**
@@ -134,18 +108,6 @@ export const SoloLogViewer = ({ data }: SoloLogViewerProps) => {
     }
   };
 
-  const ControlLogsButton = () => (
-    <StyledButton
-      data-testid="log-viewer-control-button"
-      onClick={() => { 
-        setIsPaused(!isPaused);
-      }}
-      icon={isPaused ? <StyledPlayIcon /> : <StyledPauseIcon />}
-    >
-      {isPaused ? `Resume Logs` : `Pause Logs`}
-    </StyledButton>
-  );
-
   const FooterButton = () => (
     <Tooltip title={`Scroll to bottom`}>
       <StyledFooterButton
@@ -179,9 +141,6 @@ export const SoloLogViewer = ({ data }: SoloLogViewerProps) => {
                     placeholder="Search logs"
                     minSearchChars={3}
                   />
-                </ToolbarItem>
-                <ToolbarItem>
-                  <ControlLogsButton />
                 </ToolbarItem>
                 <ToolbarItem alignSelf="center">
                   <Checkbox
