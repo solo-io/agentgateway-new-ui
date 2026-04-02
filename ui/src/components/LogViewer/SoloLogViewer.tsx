@@ -40,9 +40,9 @@ const Container = styled.div`
 
 const StyledFooterButton = styled(Button)`
   && {
-    background-color: var(--color-sidebar-hover);
-    color: var(--color-text-inverse);
-    border: none;
+    background-color: var(--color-bg-base);
+    color: var(--color-text-base);
+    border: 1px solid var(--color-border-base);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     
     border-radius: 50%;
@@ -57,7 +57,7 @@ const StyledFooterButton = styled(Button)`
     justify-content: center;
     align-self: center; 
     align-items: center;
-    bottom: 5%;
+    bottom: 10%;
     position: fixed;
   }
 `;

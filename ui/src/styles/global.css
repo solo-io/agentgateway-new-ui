@@ -141,7 +141,7 @@ pre code {
 * {
   scrollbar-color: var(--color-scrollbar) var(--color-bg-layout);
   scrollbar-width: thin;
-} */
+}
 
 *::-webkit-scrollbar {
   width: 8px;
