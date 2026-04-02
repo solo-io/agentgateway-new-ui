@@ -4,6 +4,7 @@ import { LogViewer, LogViewerSearch } from "@patternfly/react-log-viewer";
 import { ChevronDown, Pause, Play } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTheme } from "../../contexts/ThemeContext";
+import { Tooltip } from "antd";
 
 /**
  * Styling
@@ -113,7 +114,7 @@ export const SoloLogViewer = ({ data }: SoloLogViewerProps) => {
     } else { 
       setLinesBehind(0);
     }
-  }, [isPaused, data, currentItemCount]);
+  }, [isPaused, data]);
 
 
   const onScroll = ({
@@ -125,7 +126,7 @@ export const SoloLogViewer = ({ data }: SoloLogViewerProps) => {
     scrollUpdateWasRequested: boolean;
   }) => {
     if (!scrollUpdateWasRequested) {
-      if (scrollOffsetToBottom > 0) {
+      if (scrollOffsetToBottom > 30) {
         setIsPaused(true);
       } else {
         setIsPaused(false);
@@ -146,13 +147,15 @@ export const SoloLogViewer = ({ data }: SoloLogViewerProps) => {
   );
 
   const FooterButton = () => (
-    <StyledFooterButton
-      data-testid="log-viewer-footer-button"
-      onClick={() => setIsPaused(false)}
-      isBlock
-    >
-      <ChevronDown />
-    </StyledFooterButton>
+    <Tooltip title={`Scroll to bottom`}>
+      <StyledFooterButton
+        data-testid="log-viewer-footer-button"
+        onClick={() => setIsPaused(false)}
+        isBlock
+      >
+        <ChevronDown />
+      </StyledFooterButton>
+    </Tooltip>
   )
 
   return (
