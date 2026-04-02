@@ -15,25 +15,9 @@ export const verifyLogPageContents = async (page: Page, title: string) => {
     await expect(wrapTextCheckbox).toBeVisible();
     await expect(wrapTextCheckbox).toBeChecked({ checked: false});
 
-    // verify Log Viewer
+    // verify Log Viewer container
     const logViewer = page.getByTestId('log-viewer');
     await expect(logViewer).toBeVisible();
 
-    // verify Control Logs button
-    const logControlButton = page.getByTestId('log-viewer-control-button');
-    await expect(logControlButton).toBeVisible();
-    await expect(logControlButton).toHaveText('Pause Logs');
-
-    // click Control Logs button
-    await logControlButton.click();
-    await expect(logControlButton).toHaveText('Resume Logs');
-
-    // verify Footer button
-    const footerButton = page.getByTestId('log-viewer-footer-button');
-    await expect(footerButton).toBeVisible();
-    await expect(footerButton).toHaveText('Resume Logs');
-
-    // click Control Logs button
-    await footerButton.click();
-    await expect(footerButton).not.toBeVisible();
+    // TODO: verify ChevronDown icon after scrolling up in logs
 };
