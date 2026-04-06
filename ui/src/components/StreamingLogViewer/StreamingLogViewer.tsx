@@ -38,7 +38,7 @@ const Container = styled.div`
   }
 `
 
-const StyledFooterButton = styled(Button)`
+const StyledScrollToBottomButton = styled(Button)`
   && {
     background-color: var(--color-bg-base);
     color: var(--color-text-base);
@@ -103,15 +103,15 @@ export const StreamingLogViewer = ({ data }: StreamingLogViewerProps) => {
     }
   };
 
-  const FooterButton = () => (
+  const ScrollToBottomButton = () => (
     <Tooltip title={`Scroll to bottom`}>
-      <StyledFooterButton
+      <StyledScrollToBottomButton
         data-testid="log-viewer-footer-button"
         onClick={() => setIsPaused(false)}
         isBlock
       >
         <ChevronDown />
-      </StyledFooterButton>
+      </StyledScrollToBottomButton>
     </Tooltip>
   )
 
@@ -126,7 +126,7 @@ export const StreamingLogViewer = ({ data }: StreamingLogViewerProps) => {
         scrollToRow={isPaused ? undefined : currentItemCount}
         innerRef={logViewerRef}
         onScroll={onScroll}
-        footer={isPaused && <FooterButton />}
+        footer={isPaused && <ScrollToBottomButton />}
         toolbar={
           <Toolbar>
             <ToolbarContent>
