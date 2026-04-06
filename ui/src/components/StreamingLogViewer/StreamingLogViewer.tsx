@@ -65,16 +65,15 @@ const StyledFooterButton = styled(Button)`
 /**
  * Component
  */
-interface SoloLogViewerProps {
+interface StreamingLogViewerProps {
   data: string[];
 }
 
-export const SoloLogViewer = ({ data }: SoloLogViewerProps) => {
+export const StreamingLogViewer = ({ data }: StreamingLogViewerProps) => {
   const { theme } = useTheme();
   const [isTextWrapped, setIsTextWrapped] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [currentItemCount, setCurrentItemCount] = useState(0);
-  const [linesBehind, setLinesBehind] = useState(0);
   const logViewerRef = useRef<any>(null);
 
   useEffect(() => {
@@ -83,10 +82,6 @@ export const SoloLogViewer = ({ data }: SoloLogViewerProps) => {
       if (logViewerRef.current) { 
         logViewerRef.current.scrollToBottom();
       }
-    } else if (data.length !== currentItemCount) { 
-      setLinesBehind(data.length - currentItemCount);
-    } else { 
-      setLinesBehind(0);
     }
   }, [isPaused, data]);
 
