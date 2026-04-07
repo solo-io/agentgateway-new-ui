@@ -1,26 +1,25 @@
 import styled from "@emotion/styled";
 import { Card } from "antd";
 import { CircleSlash, Send, TriangleAlert } from "lucide-react";
+import { HorizontalBarChart } from "../../components/Charts/HorizontalBarChart";
 
+/**
+ * Styling
+ */
 const Container = styled.div`
   display: flex;
   flex-direction: column;
   gap: var(--spacing-lg);
 `;
 
-const PageTitle = styled.h1`
-  margin: 0;
-  font-size: 24px;
-  font-weight: 600;
-`;
-
-const MetricsRow = styled.div`
+const StatisticsRow = styled.div`
   display: flex;
   flex-direction: row;
   gap: var(--spacing-lg);
+  width: 100%;
 `;
-
 const StatisticCard = styled(Card)`
+  flex: 1;
   border-color: var(--color-border-secondary);
   
   .ant-card-body {
@@ -35,7 +34,6 @@ const StatisticContent = styled.div`
   display: flex;
   flex-direction: column;
   text-align: left;
-  margin-left: auto;
 `;
 
 const StatisticCardTitle = styled.h3`
@@ -65,6 +63,27 @@ const StyledIcon = styled.div`
   color: var(--color-text-base);
 `;
 
+const mockTokenUsageByModelData = [
+  {
+    label: "gpt-4",
+    value: 100,
+    color: '#9554d8',
+    inputTokens: 100,
+    outputTokens: 200,
+    totalTokens: 300,
+    requestCount: 50,
+  },
+  {
+    label: 'gpt-3.5-turbo',
+    value: 150,
+    color: '#5434C7',
+    inputTokens: 150,
+    outputTokens: 250,
+    totalTokens: 400,
+    requestCount: 75,
+  }
+];
+
 /**
  * Metrics:
  * - Token usage
@@ -74,11 +93,17 @@ const StyledIcon = styled.div`
  * - Per-model analytics
  */
 
+/**
+ * Component
+ */
 export const LLMMetricsPage = () => (
   <Container>
-    <PageTitle>LLM Metrics</PageTitle>
 
-    <MetricsRow>
+    <div>
+      Filter and time range (TODO)
+    </div>
+
+    <StatisticsRow>
       <StatisticCard>
         <StyledIcon>
           <TriangleAlert size={28} />
@@ -106,11 +131,15 @@ export const LLMMetricsPage = () => (
           <StatisticCardValue>406</StatisticCardValue>
         </StatisticContent>
       </StatisticCard>
-    </MetricsRow>
+    </StatisticsRow>
 
     <div>
-      Token Usage By Model (TODO)
+      <HorizontalBarChart 
+        data={mockTokenUsageByModelData}
+        title="Token Usage By Model"
+      />
     </div>
+
     <div>
       Request Throughput (TODO)
     </div>
@@ -124,29 +153,5 @@ export const LLMMetricsPage = () => (
       Per-Model Analytics (TODO)
     </div>
 
-
-    {/* <EmptyStateCard>
-      <EmptyIcon>
-        <BarChart3 size={28} />
-      </EmptyIcon>
-      <h3 style={{ margin: "0 0 8px", fontSize: 18, fontWeight: 600 }}>
-        LLM Performance Metrics
-      </h3>
-      <p
-        style={{
-          margin: "0 0 24px",
-          color: "var(--color-text-secondary)",
-          maxWidth: 400,
-          marginLeft: "auto",
-          marginRight: "auto",
-        }}
-      >
-        Token usage, request throughput, latency percentiles, error rates, and
-        per-model analytics will be displayed here.
-      </p>
-      <Tag bordered={false} color="processing" style={{ padding: "4px 12px", fontSize: 13 }}>
-        Coming soon
-      </Tag>
-    </EmptyStateCard> */}
   </Container>
 );
