@@ -1,6 +1,7 @@
 import styled from "@emotion/styled";
 import { Card } from "antd";
 import { CircleSlash, Send, TriangleAlert } from "lucide-react";
+import { BarChart } from "../../components/Charts/BarChart";
 import { HorizontalBarChart } from "../../components/Charts/HorizontalBarChart";
 import { LineChart } from "../../components/Charts/LineChart";
 
@@ -13,7 +14,7 @@ const Container = styled.div`
   gap: var(--spacing-lg);
 `;
 
-const StatisticsRow = styled.div`
+const Row = styled.div`
   display: flex;
   flex-direction: row;
   gap: var(--spacing-lg);
@@ -97,6 +98,15 @@ const mockRequestThroughputDataset = [
   },
 ];
 
+const legacyData = { 
+  labels: ["p50", "p75", "p90", "p95", "p99"],
+  datasets: [{
+        label: "Latency (ms)",
+        data: [12, 18, 35, 52, 120],
+        backgroundColor: "#9554d8",
+  }],
+}
+
 /**
  * Metrics:
  * - Token usage
@@ -116,14 +126,14 @@ export const LLMMetricsPage = () => (
       Filter and time range (TODO)
     </div>
 
-    <StatisticsRow>
+    <Row>
       <StatisticCard>
         <StyledIcon>
           <TriangleAlert size={28} />
         </StyledIcon>
         <StatisticContent>
           <StatisticCardTitle>Global Error Rate</StatisticCardTitle>
-          <StatisticCardValue>10%</StatisticCardValue>
+          <StatisticCardValue>0%</StatisticCardValue>
         </StatisticContent>
       </StatisticCard>
       <StatisticCard>
@@ -144,7 +154,7 @@ export const LLMMetricsPage = () => (
           <StatisticCardValue>406</StatisticCardValue>
         </StatisticContent>
       </StatisticCard>
-    </StatisticsRow>
+    </Row>
 
     <div>
       <HorizontalBarChart 
@@ -153,19 +163,26 @@ export const LLMMetricsPage = () => (
       />
     </div>
 
-    <div>
-      <LineChart 
-        title={"Request Throughput"}
-        labels={mockRequestThroughputLabels}
-        datasets={mockRequestThroughputDataset}
-      />
-    </div>
-    <div>
-      Latency Percentiles (TODO)
-    </div>
-    <div>
-      Error Rates (TODO)
-    </div>
+    <Row>
+      <div>
+        <LineChart 
+          title={"Request Throughput"}
+          labels={mockRequestThroughputLabels}
+          datasets={mockRequestThroughputDataset}
+        />
+      </div>
+      <div>
+        <BarChart 
+          title={"Latency Percentiles"}
+          labels={legacyData.labels}
+          datasets={legacyData.datasets}
+        />
+      </div>
+      <div>
+        Error Rates (TODO)
+      </div>
+    </Row>
+
     <div>
       Per-Model Analytics (TODO)
     </div>
