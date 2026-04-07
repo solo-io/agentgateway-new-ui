@@ -101,11 +101,19 @@ const mockRequestThroughputDataset = [
 const legacyData = { 
   labels: ["p50", "p75", "p90", "p95", "p99"],
   datasets: [{
-        label: "Latency (ms)",
-        data: [12, 18, 35, 52, 120],
-        backgroundColor: "#9554d8",
+    label: "Latency (ms)",
+    data: [12, 18, 35, 52, 120],
+    backgroundColor: "#9554d8",
   }],
-}
+};
+
+const errorRateData = {
+  labels: ["12:00", "12:05", "12:10", "12:15", "12:20"],
+  datasets: [
+      { label: "gpt-4", data: [0.02, 0.05, 0.03, 0.08, 0.04], borderColor: "#9554d8" },
+      { label: "gpt-3.5-turbo", data: [0.01, 0.01, 0.02, 0.01, 0.03], borderColor: "#5434C7" },
+  ]
+};
 
 /**
  * Metrics:
@@ -156,6 +164,7 @@ export const LLMMetricsPage = () => (
       </StatisticCard>
     </Row>
 
+    
     <div>
       <HorizontalBarChart 
         data={mockTokenUsageByModelData}
@@ -164,23 +173,25 @@ export const LLMMetricsPage = () => (
     </div>
 
     <Row>
-      <div>
-        <LineChart 
-          title={"Request Throughput"}
-          labels={mockRequestThroughputLabels}
-          datasets={mockRequestThroughputDataset}
-        />
-      </div>
-      <div>
-        <BarChart 
-          title={"Latency Percentiles"}
-          labels={legacyData.labels}
-          datasets={legacyData.datasets}
-        />
-      </div>
-      <div>
-        Error Rates (TODO)
-      </div>
+      <LineChart 
+        title={"Request Throughput"}
+        labels={mockRequestThroughputLabels}
+        datasets={mockRequestThroughputDataset}
+      />
+      <LineChart 
+        title={"Error Rates"}
+        labels={errorRateData.labels}
+        datasets={errorRateData.datasets}
+      />
+    </Row>
+
+    <Row>
+      <BarChart 
+        title={"Latency Percentiles"}
+        labels={legacyData.labels}
+        datasets={legacyData.datasets}
+        height="250px"
+      />
     </Row>
 
     <div>
