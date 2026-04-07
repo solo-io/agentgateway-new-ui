@@ -2,6 +2,7 @@ import styled from "@emotion/styled";
 import { Card } from "antd";
 import { CircleSlash, Send, TriangleAlert } from "lucide-react";
 import { HorizontalBarChart } from "../../components/Charts/HorizontalBarChart";
+import { LineChart } from "../../components/Charts/LineChart";
 
 /**
  * Styling
@@ -63,6 +64,9 @@ const StyledIcon = styled.div`
   color: var(--color-text-base);
 `;
 
+/**
+ * Mock data (TODO: reorganize this)
+ */
 const mockTokenUsageByModelData = [
   {
     label: "gpt-4",
@@ -81,7 +85,16 @@ const mockTokenUsageByModelData = [
     outputTokens: 250,
     totalTokens: 400,
     requestCount: 75,
-  }
+  },
+];
+
+const mockRequestThroughputLabels = ['2026-03-31', '2026-04-01', '2026-04-02', '2026-04-03', '2026-04-04', '2026-04-05', '2026-04-06']; 
+const mockRequestThroughputDataset = [
+  {
+    label: 'Request Throughput',
+    data: [0, 0, 150, 250, 0, 350, 400],
+    borderColor: '#9554d8',
+  },
 ];
 
 /**
@@ -141,7 +154,11 @@ export const LLMMetricsPage = () => (
     </div>
 
     <div>
-      Request Throughput (TODO)
+      <LineChart 
+        title={"Request Throughput"}
+        labels={mockRequestThroughputLabels}
+        datasets={mockRequestThroughputDataset}
+      />
     </div>
     <div>
       Latency Percentiles (TODO)
