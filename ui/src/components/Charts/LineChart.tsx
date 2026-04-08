@@ -6,12 +6,19 @@ Chart.register(LineController, CategoryScale, LinearScale, LineElement, PointEle
 
 const Container = styled.div`
     display: flex;
+    flex: 1;
+    min-width: 300px;
     flex-direction: column;
     gap: var(--spacing-lg);
     padding: var(--spacing-lg);
     background-color: var(--color-bg-container);
     border: 1px solid var(--color-border-secondary);
     border-radius: var(--border-radius-md);
+`;
+
+const ChartCanvas = styled.div<{ height?: string }>`
+    position: relative;
+    height: ${props => props.height || "250px"};
 `;
 
 const ChartTitle = styled.div`
@@ -34,9 +41,10 @@ interface LineChartProps {
     title: string;
     labels: string[];
     datasets: LineChartDataset[];
+    height?: string;
 }
 
-export const LineChart = ({ title, labels, datasets }: LineChartProps) => { 
+export const LineChart = ({ title, labels, datasets, height }: LineChartProps) => { 
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const chartRef = useRef<Chart | null>(null);
 
@@ -60,6 +68,7 @@ export const LineChart = ({ title, labels, datasets }: LineChartProps) => {
             },
             options: { 
                 responsive: true,
+                maintainAspectRatio: false,
                 scales: { 
                     y: { beginAtZero: true },
                 },
@@ -86,7 +95,11 @@ export const LineChart = ({ title, labels, datasets }: LineChartProps) => {
     return (
         <Container>
             <ChartTitle>{title}</ChartTitle>
-            <canvas ref={canvasRef} />
+            <ChartCanvas
+                height={height}
+            >
+                <canvas ref={canvasRef} />
+            </ChartCanvas>
         </Container>
     );
 }

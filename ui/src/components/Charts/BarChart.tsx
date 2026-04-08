@@ -1,17 +1,24 @@
 import styled from "@emotion/styled";
-import { BarController, BarElement, Chart } from "chart.js";
+import { BarController, BarElement, CategoryScale, Chart, LinearScale } from "chart.js";
 import { useEffect, useRef } from 'react';
 
-Chart.register(BarController, BarElement);
+Chart.register(BarController, BarElement, CategoryScale, LinearScale);
 
 const Container = styled.div`
     display: flex;
+    flex: 1;
+    min-width: 300px;
     flex-direction: column;
     gap: var(--spacing-lg);
     padding: var(--spacing-lg);
     background-color: var(--color-bg-container);
     border: 1px solid var(--color-border-secondary);
     border-radius: var(--border-radius-md);
+`;
+
+const ChartCanvas = styled.div<{ height?: string }>`
+    position: relative;
+    height: ${props => props.height || "350px"};
 `;
 
 const ChartTitle = styled.div`
@@ -32,9 +39,10 @@ interface BarChartProps {
     title: string;
     labels: string[];
     datasets: BarChartDataset[];
+    height?: string;
 }
 
-export const BarChart = ({ title, labels, datasets }: BarChartProps) => { 
+export const BarChart = ({ title, labels, datasets, height }: BarChartProps) => { 
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const chartRef = useRef<Chart | null>(null);
 
@@ -57,6 +65,7 @@ export const BarChart = ({ title, labels, datasets }: BarChartProps) => {
             },
             options: {
                 responsive: true,
+                maintainAspectRatio: false,
                 scales: { 
                     y: { beginAtZero: true },
                 }
@@ -67,7 +76,11 @@ export const BarChart = ({ title, labels, datasets }: BarChartProps) => {
     return (
         <Container>
             <ChartTitle>{title}</ChartTitle>
-            <canvas ref={canvasRef} />
+            <ChartCanvas
+                height={height}
+            >
+                <canvas ref={canvasRef} />
+            </ChartCanvas>
         </Container>
     );
 }

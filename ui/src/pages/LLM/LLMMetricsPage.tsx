@@ -17,6 +17,7 @@ const Container = styled.div`
 const Row = styled.div`
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
   gap: var(--spacing-lg);
   width: 100%;
 `;
@@ -190,7 +191,6 @@ export const LLMMetricsPage = () => (
         title={"Latency Percentiles"}
         labels={legacyData.labels}
         datasets={legacyData.datasets}
-        height="250px"
       />
     </Row>
 
