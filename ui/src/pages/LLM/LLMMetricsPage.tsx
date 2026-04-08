@@ -4,6 +4,7 @@ import { CircleSlash, Send, TriangleAlert } from "lucide-react";
 import { BarChart } from "../../components/Charts/BarChart";
 import { HorizontalBarChart } from "../../components/Charts/HorizontalBarChart";
 import { LineChart } from "../../components/Charts/LineChart";
+import { TimePickerSection } from "../../components/TimePickerSection/TimePickerSection";
 
 /**
  * Styling
@@ -150,9 +151,7 @@ const errorRateData = {
 export const LLMMetricsPage = () => (
   <Container>
 
-    <div>
-      Filter and time range (TODO)
-    </div>
+    <TimePickerSection />
 
     <Row>
       <StatisticCard>
