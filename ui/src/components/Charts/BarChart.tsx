@@ -1,8 +1,8 @@
 import styled from "@emotion/styled";
-import { BarController, BarElement, CategoryScale, Chart, LinearScale } from "chart.js";
+import { BarController, BarElement, CategoryScale, Chart, Legend, LinearScale } from "chart.js";
 import { useEffect, useRef } from 'react';
 
-Chart.register(BarController, BarElement, CategoryScale, LinearScale);
+Chart.register(BarController, BarElement, CategoryScale, LinearScale, Legend);
 
 const Container = styled.div`
     display: flex;
@@ -68,6 +68,11 @@ export const BarChart = ({ title, labels, datasets, height }: BarChartProps) => 
                 maintainAspectRatio: false,
                 scales: { 
                     y: { beginAtZero: true },
+                },
+                plugins: { 
+                    legend: { 
+                        position: 'top',
+                    }
                 }
             },
         })

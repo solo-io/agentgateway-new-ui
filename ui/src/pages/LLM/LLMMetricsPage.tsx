@@ -21,6 +21,12 @@ const Row = styled.div`
   gap: var(--spacing-lg);
   width: 100%;
 `;
+
+const Title = styled.h2`
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+`
 const StatisticCard = styled(Card)`
   flex: 1;
   border-color: var(--color-border-secondary);
@@ -108,6 +114,19 @@ const legacyData = {
   }],
 };
 
+const mockPerModelLatencyLabels = ['gpt-4', 'gpt-3.5-turbo'];
+const mockPerModelLatencyDatasets = [
+  { label: 'p50', data: [18, 12], backgroundColor: '#9554d8' },
+  { label: 'p90', data: [45, 28], backgroundColor: '#5434C7' },
+  { label: 'p99', data: [130, 75], backgroundColor: '#3a238a' },
+];
+
+const mockPerModelThroughputLabels = ['2026-03-31', '2026-04-01', '2026-04-02', '2026-04-03', '2026-04-04', '2026-04-05', '2026-04-06'];
+const mockPerModelThroughputDatasets = [
+  { label: 'gpt-4', data: [0, 0, 80, 120, 0, 200, 210], borderColor: '#9554d8' },
+  { label: 'gpt-3.5-turbo', data: [0, 0, 70, 130, 0, 150, 190], borderColor: '#5434C7' },
+];
+
 const errorRateData = {
   labels: ["12:00", "12:05", "12:10", "12:15", "12:20"],
   datasets: [
@@ -194,9 +213,19 @@ export const LLMMetricsPage = () => (
       />
     </Row>
 
-    <div>
-      Per-Model Analytics (TODO)
-    </div>
+    <Title>Per-Model Analytics</Title>
+    <Row>
+      <BarChart
+        title="Avg Latency by Model (ms)"
+        labels={mockPerModelLatencyLabels}
+        datasets={mockPerModelLatencyDatasets}
+      />
+      <LineChart
+        title="Request Volume by Model"
+        labels={mockPerModelThroughputLabels}
+        datasets={mockPerModelThroughputDatasets}
+      />
+    </Row>
 
   </Container>
 );

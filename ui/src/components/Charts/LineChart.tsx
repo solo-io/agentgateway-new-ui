@@ -1,8 +1,8 @@
 import styled from "@emotion/styled";
-import { CategoryScale, Chart, LinearScale, LineController, LineElement, PointElement, Tooltip } from 'chart.js';
+import { CategoryScale, Chart, Legend, LinearScale, LineController, LineElement, PointElement, Tooltip } from 'chart.js';
 import { useEffect, useRef } from 'react';
 
-Chart.register(LineController, CategoryScale, LinearScale, LineElement, PointElement, Tooltip);
+Chart.register(LineController, CategoryScale, LinearScale, LineElement, PointElement, Tooltip, Legend );
 
 const Container = styled.div`
     display: flex;
@@ -82,6 +82,9 @@ export const LineChart = ({ title, labels, datasets, height }: LineChartProps) =
                                 return `${ctx.dataset.label}: ${ctx.parsed.y}`;
                             }
                         }
+                    },
+                    legend: { 
+                        position: 'top',
                     }
                 }
             },
