@@ -67,7 +67,7 @@ export const mockTokenUsageByModelData = [
     },
   ];
   
-  export const legacyData = { 
+  export const mockLLMLatencyData = { 
     labels: ["p50", "p75", "p90", "p95", "p99"],
     datasets: [{
       label: "Latency (ms)",
@@ -105,5 +105,29 @@ export const mockToolCallCountsData = [
   { label: "get_weather", value: 280, color: '#5434C7', tooltipData: [{ title: "Call Count", rows: [{ value: 280}]}] },
   { label: "execute_command", value: 195, color: '#3a238a', tooltipData: [{ title: "Call Count", rows: [{ value: 195}]}]  },
   { label: "get_stock_price", value: 142, color: '#7c3aed', tooltipData: [{ title: "Call Count", rows: [{ value: 142}]}] },
+];
+
+export const mockMCPLatencyDistributionLabels = ['fetch', 'get_weather', 'execute_command', 'get_stock_price'];
+export const mockMCPLatencyDistributionDatasets = [
+  { label: 'p50', data: [12, 18, 45, 8], backgroundColor: '#9554d8' },
+  { label: 'p75', data: [20, 28, 75, 14], backgroundColor: '#5434C7' },
+  { label: 'p90', data: [28, 42, 120, 22], backgroundColor: '#3a238a' },
+  { label: 'p95', data: [45, 65, 200, 35], backgroundColor: '#7c3aed' },
+  { label: 'p99', data: [85, 150, 380, 65], backgroundColor: '#6d28d9' },
+];
+
+export const mockPerTargetLatencyLabels = ['fetch', 'get_weather', 'execute_command', 'get_stock_price'];
+export const mockPerTargetLatencyDatasets = [
+  { label: 'p50', data: [12, 18, 45, 8], backgroundColor: '#9554d8' },
+  { label: 'p90', data: [28, 42, 120, 22], backgroundColor: '#5434C7' },
+  { label: 'p99', data: [85, 150, 380, 65], backgroundColor: '#3a238a' },
+];
+
+export const mockPerTargetCallsLabels = ['2026-04-03', '2026-04-04', '2026-04-05', '2026-04-06', '2026-04-07', '2026-04-08', '2026-04-09'];
+export const mockPerTargetCallsDatasets = [
+  { label: 'fetch', data: [45, 52, 38, 61, 55, 70, 85], borderColor: '#9554d8' },
+  { label: 'get_weather', data: [28, 31, 29, 35, 42, 38, 45], borderColor: '#5434C7' },
+  { label: 'execute_command', data: [15, 18, 22, 25, 28, 32, 40], borderColor: '#3a238a' },
+  { label: 'get_stock_price', data: [12, 14, 16, 18, 20, 24, 30], borderColor: '#7c3aed' },
 ];
   

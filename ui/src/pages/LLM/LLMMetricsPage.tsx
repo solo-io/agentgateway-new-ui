@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { CircleSlash, Send, TriangleAlert } from "lucide-react";
-import { errorRateData, legacyData, mockPerModelLatencyDatasets, mockPerModelLatencyLabels, mockPerModelThroughputDatasets, mockPerModelThroughputLabels, mockRequestThroughputDataset, mockRequestThroughputLabels, mockTokenUsageByModelData } from "../../api/mockMetrics";
+import { errorRateData, mockLLMLatencyData, mockPerModelLatencyDatasets, mockPerModelLatencyLabels, mockPerModelThroughputDatasets, mockPerModelThroughputLabels, mockRequestThroughputDataset, mockRequestThroughputLabels, mockTokenUsageByModelData } from "../../api/mockMetrics";
 import { BarChart } from "../../components/Charts/BarChart";
 import { HorizontalBarChart } from "../../components/Charts/HorizontalBarChart";
 import { LineChart } from "../../components/Charts/LineChart";
@@ -68,8 +68,8 @@ export const LLMMetricsPage = () => (
     <Row>
       <BarChart 
         title={"Latency Percentiles"}
-        labels={legacyData.labels}
-        datasets={legacyData.datasets}
+        labels={mockLLMLatencyData.labels}
+        datasets={mockLLMLatencyData.datasets}
       />
     </Row>
     <Title>Per-Model Analytics</Title>
