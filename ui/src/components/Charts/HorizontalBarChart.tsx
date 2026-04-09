@@ -143,10 +143,10 @@ interface HorizontalBarChartData {
   label: string;
   value: number;
   color: string;
-  inputTokens?: number;
-  outputTokens?: number;
-  totalTokens?: number;
-  requestCount?: number;
+  tooltipData?: Array<{
+    title: string;
+    rows: Array<{ label?: string; value: string | number }>;
+  }>;
 }
 
 interface HorizontalBarChartProps {
@@ -199,38 +199,25 @@ export const HorizontalBarChart = ({
                 height={height}
                 borderRadius={borderRadius}
               >
-                <Tooltip className="tooltip">
-                  <TooltipRow>
-                    <TooltipLabel>Model</TooltipLabel>
-                    <TooltipValue>{item.label}</TooltipValue>
-                  </TooltipRow>
-                  <TooltipDivider />
-                  <TooltipRow>
-                    <TooltipLabel>Tokens Used</TooltipLabel>
-                  </TooltipRow>
-                  <TooltipRow>
-                    <span style={{ fontSize: "11px" }}>
-                      Input: {item.inputTokens?.toLocaleString() || "N/A"}
-                    </span>
-                  </TooltipRow>
-                  <TooltipRow>
-                    <span style={{ fontSize: "11px" }}>
-                      Output: {item.outputTokens?.toLocaleString() || "N/A"}
-                    </span>
-                  </TooltipRow>
-                  <TooltipRow>
-                    <span style={{ fontSize: "11px" }}>
-                      Total: {item.totalTokens?.toLocaleString() || "N/A"}
-                    </span>
-                  </TooltipRow>
-                  <TooltipDivider />
-                  <TooltipRow>
-                    <TooltipLabel>Request Count</TooltipLabel>
-                    <TooltipValue>
-                      {item.requestCount?.toLocaleString() || "N/A"} requests
-                    </TooltipValue>
-                  </TooltipRow>
-                </Tooltip>
+                {item.tooltipData && (
+                  <Tooltip className="tooltip">
+                    {item.tooltipData.map((section, idx) => (
+                      <div key={idx}>
+                        <TooltipRow>
+                          <TooltipLabel>{section.title}</TooltipLabel>
+                        </TooltipRow>
+                        {section.rows.map((row, ridx) => (
+                          <TooltipRow key={ridx}>
+                            <span style={{ fontSize: "11px" }}>
+                              {row.label ? `${row.label}: ${row.value}` : row.value}
+                            </span>
+                          </TooltipRow>
+                        ))}
+                        {idx < (item.tooltipData?.length || 0) - 1 && <TooltipDivider />}
+                      </div>
+                    ))}
+                  </Tooltip>
+                )}
               </Segment>
               <Label>
                 {item.label}: {item.value}

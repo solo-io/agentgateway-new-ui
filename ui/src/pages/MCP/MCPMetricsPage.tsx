@@ -1,6 +1,8 @@
 import styled from "@emotion/styled";
-import { Card, Tag } from "antd";
-import { BarChart3 } from "lucide-react";
+import { Card } from "antd";
+import { mockToolCallCountsData } from "../../api/mockMetrics";
+import { HorizontalBarChart } from "../../components/Charts/HorizontalBarChart";
+import { TimePickerSection } from "../../components/TimePickerSection/TimePickerSection";
 
 const Container = styled.div`
   display: flex;
@@ -33,35 +35,18 @@ const EmptyIcon = styled.div`
   margin: 0 auto 16px;
 `;
 
+/**
+ * Tool call counts
+ * Latency distributions
+ * Error rates
+ * Per-target analytics
+ */
 export const MCPMetricsPage = () => (
   <Container>
-    <PageTitle>MCP Metrics</PageTitle>
-    <EmptyStateCard>
-      <EmptyIcon>
-        <BarChart3 size={28} />
-      </EmptyIcon>
-      <h3 style={{ margin: "0 0 8px", fontSize: 18, fontWeight: 600 }}>
-        MCP Performance Metrics
-      </h3>
-      <p
-        style={{
-          margin: "0 0 24px",
-          color: "var(--color-text-secondary)",
-          maxWidth: 400,
-          marginLeft: "auto",
-          marginRight: "auto",
-        }}
-      >
-        Tool call counts, latency distributions, error rates, and per-target
-        analytics will be available here.
-      </p>
-      <Tag
-        bordered={false}
-        color="processing"
-        style={{ padding: "4px 12px", fontSize: 13 }}
-      >
-        Coming soon
-      </Tag>
-    </EmptyStateCard>
+    <TimePickerSection />
+    <HorizontalBarChart 
+      data={mockToolCallCountsData}
+      title="Tool Call Counts"
+    />
   </Container>
 );
