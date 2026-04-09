@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { CircleSlash, Send, TriangleAlert } from "lucide-react";
-import { errorRateData, mockLLMLatencyData, mockPerModelLatencyDatasets, mockPerModelLatencyLabels, mockPerModelThroughputDatasets, mockPerModelThroughputLabels, mockRequestThroughputDataset, mockRequestThroughputLabels, mockTokenUsageByModelData } from "../../api/mockMetrics";
+import { mockLLMErrorRateData, mockLLMLatencyData, mockPerModelLatencyDatasets, mockPerModelLatencyLabels, mockPerModelThroughputDatasets, mockPerModelThroughputLabels, mockRequestThroughputDataset, mockRequestThroughputLabels, mockTokenUsageByModelData } from "../../api/mockMetrics";
 import { BarChart } from "../../components/Charts/BarChart";
 import { HorizontalBarChart } from "../../components/Charts/HorizontalBarChart";
 import { LineChart } from "../../components/Charts/LineChart";
@@ -61,8 +61,8 @@ export const LLMMetricsPage = () => (
       />
       <LineChart 
         title={"Error Rates"}
-        labels={errorRateData.labels}
-        datasets={errorRateData.datasets}
+        labels={mockLLMErrorRateData.labels}
+        datasets={mockLLMErrorRateData.datasets}
       />
     </Row>
     <Row>

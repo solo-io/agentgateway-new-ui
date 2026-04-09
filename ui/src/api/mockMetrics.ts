@@ -89,7 +89,7 @@ export const mockTokenUsageByModelData = [
     { label: 'gpt-3.5-turbo', data: [0, 0, 70, 130, 0, 150, 190], borderColor: '#5434C7' },
   ];
   
-  export const errorRateData = {
+  export const mockLLMErrorRateData = {
     labels: ["12:00", "12:05", "12:10", "12:15", "12:20"],
     datasets: [
         { label: "gpt-4", data: [0.02, 0.05, 0.03, 0.08, 0.04], borderColor: "#9554d8" },
@@ -106,7 +106,15 @@ export const mockToolCallCountsData = [
   { label: "execute_command", value: 195, color: '#3a238a', tooltipData: [{ title: "Call Count", rows: [{ value: 195}]}]  },
   { label: "get_stock_price", value: 142, color: '#7c3aed', tooltipData: [{ title: "Call Count", rows: [{ value: 142}]}] },
 ];
-
+export const mockMCPErrorRateData = {
+  labels: ['2026-04-03', '2026-04-04', '2026-04-05', '2026-04-06', '2026-04-07', '2026-04-08', '2026-04-09'],
+  datasets: [
+    { label: 'fetch', data: [0.02, 0.01, 0.03, 0.01, 0.02, 0.01, 0.01], borderColor: '#9554d8' },
+    { label: 'get_weather', data: [0.05, 0.04, 0.06, 0.03, 0.04, 0.05, 0.02], borderColor: '#5434C7' },
+    { label: 'execute_command', data: [0.10, 0.12, 0.08, 0.15, 0.09, 0.11, 0.07], borderColor: '#3a238a' },
+    { label: 'get_stock_price', data: [0.01, 0.02, 0.01, 0.03, 0.02, 0.01, 0.02], borderColor: '#7c3aed' },
+  ]
+};
 export const mockMCPLatencyDistributionLabels = ['fetch', 'get_weather', 'execute_command', 'get_stock_price'];
 export const mockMCPLatencyDistributionDatasets = [
   { label: 'p50', data: [12, 18, 45, 8], backgroundColor: '#9554d8' },

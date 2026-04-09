@@ -1,4 +1,4 @@
-import { errorRateData, mockMCPLatencyDistributionDatasets, mockMCPLatencyDistributionLabels, mockPerTargetCallsDatasets, mockPerTargetCallsLabels, mockPerTargetLatencyDatasets, mockPerTargetLatencyLabels, mockToolCallCountsData } from "../../api/mockMetrics";
+import { mockMCPErrorRateData, mockMCPLatencyDistributionDatasets, mockMCPLatencyDistributionLabels, mockPerTargetCallsDatasets, mockPerTargetCallsLabels, mockPerTargetLatencyDatasets, mockPerTargetLatencyLabels, mockToolCallCountsData } from "../../api/mockMetrics";
 import { BarChart } from "../../components/Charts/BarChart";
 import { HorizontalBarChart } from "../../components/Charts/HorizontalBarChart";
 import { LineChart } from "../../components/Charts/LineChart";
@@ -27,8 +27,8 @@ export const MCPMetricsPage = () => (
       />
       <LineChart 
         title={"Error Rates"}
-        labels={errorRateData.labels}
-        datasets={errorRateData.datasets}
+        labels={mockMCPErrorRateData.labels}
+        datasets={mockMCPErrorRateData.datasets}
       />
     </Row>
     <Row>
