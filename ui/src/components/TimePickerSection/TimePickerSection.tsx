@@ -16,12 +16,37 @@ const Container = styled.div`
 const Controls = styled.div`
   display: flex;
   align-items: center;
-  gap: var(--spacing-md);
+  gap: var(--spacing-sm);
 `;
 
 const CustomButtonWrapper = styled.div`
   position: relative;
 `;
+
+const StyledButton = styled(Button)`
+  &.ant-btn-default { 
+    background: var(--color-bg-base) !important;
+    border-radius: 20px !important;
+  }
+
+  [data-theme="dark"] &.ant-btn-default {
+    background: #1a1a1a !important;
+  }
+`
+
+const StyledSegmented = styled(Segmented<string>)`
+  &.ant-segmented {
+    border-radius: 20px;
+    padding: 2px;
+    color: var(--color-text-base) !important;
+  }
+  .ant-segmented-item {
+    border-radius: 18px;
+  }
+  .ant-segmented-thumb {
+    border-radius: 18px !important;
+  }
+`
 
 export const TimePickerSection = () => {
   const [activeTab, setActiveTab] = useState<string>('30d');
@@ -38,19 +63,19 @@ export const TimePickerSection = () => {
   return (
     <Container>
       <Controls>
-        <Segmented
+        <StyledSegmented
           options={timeOptions}
           value={isCustomActive ? 'custom' : activeTab}
           onChange={handleTabChange}
         />
         <CustomButtonWrapper>
-          <Button
+          <StyledButton
             icon={<Clock size={14} />}
             type={isCustomActive ? 'primary' : 'default'}
             onClick={() => setCustomOpen(prev => !prev)}
           >
             Custom
-          </Button>
+          </StyledButton>
           <CustomTimePickerDropdown
             isOpen={customOpen}
             savedStart={customStart}
@@ -66,7 +91,7 @@ export const TimePickerSection = () => {
         </CustomButtonWrapper>
       </Controls>
       <Tooltip title="Refresh Data" placement="left">
-        <Button icon={<RefreshCw size={14} />} shape="circle" />
+        <StyledButton icon={<RefreshCw size={14} />} shape="circle" />
       </Tooltip>
     </Container>
   );
