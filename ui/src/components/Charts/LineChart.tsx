@@ -18,6 +18,7 @@ const Container = styled.div`
 
 const ChartCanvas = styled.div<{ height?: string }>`
     position: relative;
+    flex: 1;
     height: ${props => props.height || "250px"};
 `;
 
