@@ -1,4 +1,3 @@
-import styled from "@emotion/styled";
 import { CircleSlash, Send, TriangleAlert } from "lucide-react";
 import { mockLLMErrorRateData, mockLLMLatencyData, mockPerModelLatencyDatasets, mockPerModelLatencyLabels, mockPerModelThroughputDatasets, mockPerModelThroughputLabels, mockRequestThroughputDataset, mockRequestThroughputLabels, mockTokenUsageByModelData } from "../../api/mockMetrics";
 import { BarChart } from "../../components/Charts/BarChart";
@@ -6,9 +5,9 @@ import { HorizontalBarChart } from "../../components/Charts/HorizontalBarChart";
 import { LineChart } from "../../components/Charts/LineChart";
 import { Container } from "../../components/Layout/Container";
 import { Row } from "../../components/Layout/Row";
+import { Title } from "../../components/Layout/Title";
 import { StatisticCard, StatisticCardIcon, StatisticCardTitle, StatisticCardValue, StatisticContent } from "../../components/StatisticCard/StatisticCard";
 import { TimePickerSection } from "../../components/TimePickerSection/TimePickerSection";
-import { Title } from "../../components/Layout/Title";
 
 export const LLMMetricsPage = () => (
   <Container>
@@ -50,19 +49,19 @@ export const LLMMetricsPage = () => (
     </div>
     <Row>
       <LineChart 
-        title={"Request Throughput"}
+        title="Request Throughput"
         labels={mockRequestThroughputLabels}
         datasets={mockRequestThroughputDataset}
       />
       <LineChart 
-        title={"Error Rates"}
+        title="Error Rates"
         labels={mockLLMErrorRateData.labels}
         datasets={mockLLMErrorRateData.datasets}
       />
     </Row>
     <Row>
       <BarChart 
-        title={"Latency Percentiles"}
+        title="Latency Percentiles"
         labels={mockLLMLatencyData.labels}
         datasets={mockLLMLatencyData.datasets}
       />

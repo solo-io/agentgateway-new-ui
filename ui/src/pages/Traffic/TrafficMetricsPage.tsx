@@ -22,12 +22,12 @@ export const TrafficMetricsPage = () => (
     />
     <Row>
       <BarChart 
-        title={"Latency Distribution"}
+        title="Latency Distribution"
         labels={mockTrafficLatencyDistributionLabels}
         datasets={mockTrafficLatencyDistributionDatasets}
       />
       <LineChart
-        title={"Error Rate"}
+        title="Error Rate"
         labels={mockTrafficErrorRateLabels}
         datasets={mockTrafficErrorRateDatasets}
       />
@@ -35,12 +35,12 @@ export const TrafficMetricsPage = () => (
     <Title>Per-Route Analytics</Title>
     <Row>
       <BarChart
-        title={"Avg Latency by Route (ms)"}
+        title="Avg Latency by Route (ms)"
         labels={mockTrafficPerRouteLatencyLabels}
         datasets={mockTrafficPerRouteLatencyDatasets}
       />
       <LineChart 
-        title={"Request Volume by Route"}
+        title="Request Volume by Route"
         labels={mockTrafficPerRouteVolumeLabels}
         datasets={mockTrafficPerRouteVolumeDatasets}
       />

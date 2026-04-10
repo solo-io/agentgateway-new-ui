@@ -135,7 +135,7 @@ const TooltipDivider = styled.div`
 const Label = styled.div`
   font-size: 12px;
   color: var(--color-text-secondary);
-  text-align: flex-start;
+  text-align: start;
   word-break: break-word;
 `;
 
