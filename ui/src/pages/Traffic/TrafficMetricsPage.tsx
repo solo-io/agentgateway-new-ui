@@ -1,17 +1,11 @@
-import styled from "@emotion/styled";
 import { mockRequestCountByRouteData, mockTrafficErrorRateDatasets, mockTrafficErrorRateLabels, mockTrafficLatencyDistributionDatasets, mockTrafficLatencyDistributionLabels, mockTrafficPerRouteLatencyDatasets, mockTrafficPerRouteLatencyLabels, mockTrafficPerRouteVolumeDatasets, mockTrafficPerRouteVolumeLabels } from "../../api/mockMetrics";
 import { BarChart } from "../../components/Charts/BarChart";
 import { HorizontalBarChart } from "../../components/Charts/HorizontalBarChart";
 import { LineChart } from "../../components/Charts/LineChart";
 import { Container } from "../../components/Layout/Container";
 import { Row } from "../../components/Layout/Row";
+import { Title } from "../../components/Layout/Title";
 import { TimePickerSection } from "../../components/TimePickerSection/TimePickerSection";
-
-const Title = styled.h2`
-  margin: 0;
-  font-size: 16px;
-  font-weight: 600;
-`
 
 /**
  * Request counts

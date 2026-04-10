@@ -6,12 +6,7 @@ import { LineChart } from "../../components/Charts/LineChart";
 import { Container } from "../../components/Layout/Container";
 import { Row } from "../../components/Layout/Row";
 import { TimePickerSection } from "../../components/TimePickerSection/TimePickerSection";
-
-const Title = styled.h2`
-  margin: 0;
-  font-size: 16px;
-  font-weight: 600;
-`
+import { Title } from "../../components/Layout/Title";
 
 export const MCPMetricsPage = () => (
   <Container>

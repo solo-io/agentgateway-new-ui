@@ -8,12 +8,7 @@ import { Container } from "../../components/Layout/Container";
 import { Row } from "../../components/Layout/Row";
 import { StatisticCard, StatisticCardIcon, StatisticCardTitle, StatisticCardValue, StatisticContent } from "../../components/StatisticCard/StatisticCard";
 import { TimePickerSection } from "../../components/TimePickerSection/TimePickerSection";
-
-const Title = styled.h2`
-  margin: 0;
-  font-size: 16px;
-  font-weight: 600;
-`
+import { Title } from "../../components/Layout/Title";
 
 export const LLMMetricsPage = () => (
   <Container>
