@@ -1,3 +1,4 @@
+import styled from "@emotion/styled";
 import { mockMCPErrorRateData, mockMCPLatencyDistributionDatasets, mockMCPLatencyDistributionLabels, mockPerTargetCallsDatasets, mockPerTargetCallsLabels, mockPerTargetLatencyDatasets, mockPerTargetLatencyLabels, mockToolCallCountsData } from "../../api/mockMetrics";
 import { BarChart } from "../../components/Charts/BarChart";
 import { HorizontalBarChart } from "../../components/Charts/HorizontalBarChart";
@@ -6,12 +7,12 @@ import { Container } from "../../components/Layout/Container";
 import { Row } from "../../components/Layout/Row";
 import { TimePickerSection } from "../../components/TimePickerSection/TimePickerSection";
 
-/**
- * Tool call counts
- * Latency distributions
- * Error rates
- * Per-target analytics
- */
+const Title = styled.h2`
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+`
+
 export const MCPMetricsPage = () => (
   <Container>
     <TimePickerSection />
@@ -31,6 +32,7 @@ export const MCPMetricsPage = () => (
         datasets={mockMCPErrorRateData.datasets}
       />
     </Row>
+    <Title>Per-Target Analytics</Title>
     <Row>
       <BarChart
         title="Avg Latency by Target (ms)"

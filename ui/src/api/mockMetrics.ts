@@ -139,3 +139,56 @@ export const mockPerTargetCallsDatasets = [
   { label: 'get_stock_price', data: [12, 14, 16, 18, 20, 24, 30], borderColor: '#7c3aed' },
 ];
   
+/**
+ * Traffic metrics
+ */
+export const mockRequestCountByRouteData = [
+  { label: "/api/users", value: 1250, color: '#9554d8', tooltipData: [
+    { title: "Route", rows: [{ value: "/api/users" }] },
+    { title: "Request Count", rows: [{ value: 1250 }] },
+  ]},
+  { label: "/api/products", value: 890, color: '#5434C7', tooltipData: [
+    { title: "Route", rows: [{ value: "/api/products" }] },
+    { title: "Request Count", rows: [{ value: 890 }] },
+  ]},
+  { label: "/api/orders", value: 620, color: '#3a238a', tooltipData: [
+    { title: "Route", rows: [{ value: "/api/orders" }] },
+    { title: "Request Count", rows: [{ value: 620 }] },
+  ]},
+  { label: "/api/auth", value: 450, color: '#7c3aed', tooltipData: [
+    { title: "Route", rows: [{ value: "/api/auth" }] },
+    { title: "Request Count", rows: [{ value: 450 }] },
+  ]},
+];
+
+export const mockTrafficLatencyDistributionLabels = ['/api/users', '/api/products', '/api/orders', '/api/auth'];
+export const mockTrafficLatencyDistributionDatasets = [
+  { label: 'p50', data: [12, 18, 45, 8], backgroundColor: '#9554d8' },
+  { label: 'p75', data: [20, 28, 75, 14], backgroundColor: '#5434C7' },
+  { label: 'p90', data: [28, 42, 120, 22], backgroundColor: '#3a238a' },
+  { label: 'p95', data: [45, 65, 200, 35], backgroundColor: '#7c3aed' },
+  { label: 'p99', data: [85, 150, 380, 65], backgroundColor: '#6d28d9' },
+];
+
+export const mockTrafficErrorRateLabels = ['2026-04-03', '2026-04-04', '2026-04-05', '2026-04-06'];
+export const mockTrafficErrorRateDatasets = [
+  { label: '/api/users', data: [0.02, 0.01, 0.03, 0.01], borderColor: '#9554d8' },
+  { label: '/api/products', data: [0.05, 0.04, 0.06, 0.03], borderColor: '#5434C7' },
+  { label: '/api/orders', data: [0.10, 0.12, 0.08, 0.15], borderColor: '#3a238a' },
+  { label: '/api/auth', data: [0.01, 0.02, 0.01, 0.03], borderColor: '#7c3aed' },
+];
+
+export const mockTrafficPerRouteLatencyLabels = ['/api/users', '/api/products', '/api/orders', '/api/auth'];
+export const mockTrafficPerRouteLatencyDatasets = [
+  { label: 'p50', data: [15, 22, 18, 12], backgroundColor: '#9554d8' },
+  { label: 'p90', data: [45, 65, 52, 35], backgroundColor: '#5434C7' },
+  { label: 'p99', data: [120, 180, 150, 95], backgroundColor: '#3a238a' },
+];
+
+export const mockTrafficPerRouteVolumeLabels = ['2026-04-03', '2026-04-04', '2026-04-05', '2026-04-06', '2026-04-07', '2026-04-08', '2026-04-09'];
+export const mockTrafficPerRouteVolumeDatasets = [
+  { label: '/api/users', data: [980, 1050, 1120, 1200, 1150, 1280, 1250], borderColor: '#9554d8' },
+  { label: '/api/products', data: [750, 780, 820, 850, 880, 890, 890], borderColor: '#5434C7' },
+  { label: '/api/orders', data: [520, 540, 580, 600, 620, 615, 620], borderColor: '#3a238a' },
+  { label: '/api/auth', data: [380, 400, 420, 440, 450, 450, 450], borderColor: '#7c3aed' },
+];
