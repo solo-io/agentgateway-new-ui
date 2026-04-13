@@ -36,6 +36,7 @@ import type {
 } from "./hooks/useTrafficHierarchy";
 import { getPolicyLabel } from "./policyTypes";
 import type { UrlParams } from "./types";
+import { getDefaultBackendValue } from "./forms/backendForm";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -1660,7 +1661,16 @@ export function NodeDetailView({ hierarchy, urlParams }: NodeDetailViewProps) {
             formData={formData}
             validator={validator}
             disabled={!isEditing || saving}
-            onChange={({ formData: fd }) => setFormData(fd)}
+            onChange={({ formData: fd }) => {
+              const prev = formData?.backendType;
+              const next = fd.backendType;
+              if (next && next !== prev) { 
+                // reset to defaults for new type to avoid empty object in form
+                setFormData(getDefaultBackendValue(next));
+              } else { 
+                setFormData(fd);
+              }
+            }}
             onSubmit={handleSubmit}
             onError={handleError}
             templates={formTemplates}

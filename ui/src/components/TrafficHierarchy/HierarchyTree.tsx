@@ -36,6 +36,7 @@ import * as api from "../../api/crud";
 import type { LocalRouteBackend } from "../../config";
 import { getResourceColor } from "../../utils/colorPalette";
 import { ProtocolTag } from "../ProtocolTag";
+import { getDefaultBackendValue, transformBeforeSubmit } from "./forms/backendForm";
 import type {
   BackendNode,
   BindNode,
@@ -952,6 +953,7 @@ function buildRouteTitle(
     li: number,
     ri: number,
     isTcp: boolean,
+    backendType: string,
   ) => void,
   onAddRoutePolicy: (
     port: number,
@@ -997,10 +999,20 @@ function buildRouteTitle(
       key: "addBackend",
       label: "Add Backend",
       icon: <PlusOutlined />,
-      onClick: ({ domEvent }) => {
-        domEvent.stopPropagation();
-        onAddRouteBackend(bindPort, listenerIndex, rn.categoryIndex, rn.isTcp);
-      },
+      children: ([
+        { key: "service", label: "Service" },
+        { key: "host", label: "Host" },
+        { key: "dynamic", label: "Dynamic" },
+        { key: "mcp", label: "MCP" },
+        { key: "ai", label: "AI" },
+      ].map(({ key, label }) => ({
+        key,
+        label,
+        onClick: ({ domEvent}: { domEvent: React.MouseEvent }) => {
+          domEvent.stopPropagation();
+          onAddRouteBackend(bindPort, listenerIndex, rn.categoryIndex, rn.isTcp, key);
+        },
+      })) as MenuProps["items"]),
     },
     {
       key: "addPolicy",
@@ -1521,6 +1533,7 @@ function buildTreeData(
     li: number,
     ri: number,
     isTcp: boolean,
+    backendType: string,
   ) => void,
   onAddRoutePolicy: (
     port: number,
@@ -2051,7 +2064,7 @@ export function HierarchyTree({ hierarchy, filter, title, onRegisterAddHandlers 
 
   // Handler for adding a new backend to a route
   const handleAddRouteBackend = useCallback(
-    async (port: number, li: number, ri: number, isTcp: boolean) => {
+    async (port: number, li: number, ri: number, isTcp: boolean, backendType: string) => {
       try {
         // Get the current route
         const bind = hierarchy.binds.find((b) => b.bind.port === port);
@@ -2070,19 +2083,7 @@ export function HierarchyTree({ hierarchy, filter, title, onRegisterAddHandlers 
           throw new Error(`Route at index ${ri} not found`);
         }
 
-        // Create new backend WITHOUT backendType - that's a UI-only field
-        // The backend needs the actual backend type field (service, host, etc.)
-        // Note: service.name must be a string in format "namespace/hostname"
-        const newBackend = {
-          service: {
-            name: {
-              namespace: "default",
-              hostname: "service",
-            },
-            port: 8080,
-          },
-          weight: 1,
-        };
+        const newBackend = transformBeforeSubmit(getDefaultBackendValue(backendType));
 
         // Construct a clean route object with only the necessary fields
         // This avoids sending any extra hierarchy metadata to the API
