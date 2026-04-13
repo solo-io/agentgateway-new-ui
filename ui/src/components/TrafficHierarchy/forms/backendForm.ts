@@ -211,6 +211,7 @@ export const schema: RJSFSchema = {
                   title: "Provider Type",
                   enum: ["openAI", "gemini", "vertex", "anthropic", "bedrock", "azureOpenAI"],
                   description: "AI provider to use",
+                  default: "openAI",
                 },
                 hostOverride: {
                   type: "string",
@@ -275,6 +276,12 @@ export const uiSchema: UiSchema = {
     "ui:placeholder": "backend.example.com:8080 or 192.168.1.100:8080",
     "ui:help": "Hostname or IP address with optional port",
   },
+  mcp: { 
+    prefixMode: { 
+      "ui-widget": "select",
+      "ui:placeholder": "none",
+    }
+  },
   tls: {
     mode: {
       "ui:widget": "select",
@@ -306,17 +313,17 @@ export function getDefaultBackendValue(backendType: string): Record<string, unkn
         weight: 1,
       };
     case "host":
-      return { backendType: "host", host: "", weight: 1 };
+      return { backendType: "host", host: "example.com:8080", weight: 1 };
     case "dynamic":
       return { backendType: "dynamic", dynamic: {}, weight: 1 };
     case "mcp":
       return {
         backendType: "mcp",
-        mcp: { statefulMode: "stateless" },
+        mcp: { targets: [], statefulMode: "stateless" },
         weight: 1,
       };
     case "ai":
-      return { backendType: "ai", ai: { provider: "openAI" }, weight: 1 };
+      return { backendType: "ai", ai: { name: "default", provider: { openAI: {} } }, weight: 1 };
     default:
       return { backendType: "service", ...defaultValues };
   }
