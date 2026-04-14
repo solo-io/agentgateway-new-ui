@@ -1908,6 +1908,20 @@ export function NodeDetailView({ hierarchy, urlParams }: NodeDetailViewProps) {
       : `Policy configuration for backend ${selected.backend.backendIndex + 1} on route "${(selected.route.route.name as string | undefined) ?? "unnamed"}"`;
     const breadcrumbItems = generateBreadcrumbItems(selected, navigate, basePath);
 
+    const policyType = selected.policyType;
+    const formConfig = 
+      policyType === "cors"
+      ? forms.corsPolicy
+      : policyType === "requestHeaderModifier"
+        ? forms.requestHeaderModifierPolicy
+        : policyType === "responseHeaderModifier"
+          ? forms.responseHeaderModifierPolicy
+          : policyType === "authorization"
+            ? forms.authorizationPolicy
+            : policyType === "transformations"
+              ? forms.transformationsPolicy
+              : forms.routePolicy;
+
     return (
       <Container>
         <Header>
@@ -1959,8 +1973,8 @@ export function NodeDetailView({ hierarchy, urlParams }: NodeDetailViewProps) {
             <Form
               id={formId}
               key={isEditing ? "editing" : "viewing"}
-              schema={forms.routePolicy.schema}
-              uiSchema={forms.routePolicy.uiSchema}
+              schema={formConfig.schema}
+              uiSchema={formConfig.uiSchema}
               formData={formData}
               validator={validator}
               disabled={!isEditing || saving}

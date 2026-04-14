@@ -380,6 +380,17 @@ function urlToSelectedKey(pathname: string, basePath: string): string | null {
   const topLevelMatch = rel.match(/^\/(llm|mcp|frontendPolicies)/);
   if (topLevelMatch) return topLevelMatch[1];
 
+  // Check for listener policy routes
+  const listenerPolicyPattern = /^\/bind\/(\d+)\/listener\/(\d+)\/policy\/([^/?]+)/;
+  const listenerPolicyMatch = rel.match(listenerPolicyPattern);
+  if (listenerPolicyMatch) return `listener-policy-${listenerPolicyMatch[1]}-${listenerPolicyMatch[2]}-${listenerPolicyMatch[3]}`;
+
+  // Check for backend policy routes
+  const backendPolicyPattern =
+  /^\/bind\/(\d+)\/listener\/(\d+)\/(tcp)?route\/(\d+)\/backend\/(\d+)\/policy\/([^/?]+)/;
+  const backendPolicyMatch = rel.match(backendPolicyPattern);
+  if (backendPolicyMatch) return `backend-policy-${backendPolicyMatch[1]}-${backendPolicyMatch[2]}-${backendPolicyMatch[4]}-${backendPolicyMatch[5]}-${backendPolicyMatch[6]}`;
+
   // Check for bind routes
   const m = rel.match(
     /^\/bind\/(\d+)(?:\/listener\/(\d+)(?:\/(tcp)?route\/(\d+)(?:\/backend\/(\d+)|\/policy\/([^/?]+))?)?)?/,
@@ -1564,6 +1575,21 @@ function buildTreeData(
     policyType: string,
     parentPath: string,
   ) => void,
+  onDeleteListenerPolicy: (
+    port: number,
+    li: number,
+    policyType: string,
+    parentPath: string,
+  ) => void,
+  onDeleteBackendPolicy: (
+    port: number,
+    li: number,
+    ri: number,
+    bi: number,
+    isTcp: boolean,
+    policyType: string,
+    parentPath: string,
+  ) => void,
   confirmDelete: ConfirmDeleteFn,
   onAddListener: (port: number) => void,
   onAddRoute: (port: number, li: number, isTcp: boolean) => void,
@@ -1792,80 +1818,155 @@ function buildTreeData(
             basePath,
           ),
           selectable: true,
-          children: listener.routes
-            .slice()
-            .sort((a, b) => {
-              const nameA = (a.route.name as string | undefined) || "";
-              const nameB = (b.route.name as string | undefined) || "";
-              return nameA.localeCompare(nameB);
-            })
-            .map((route) => {
-              const children: DataNode[] = [];
-
-              // Add backends (sorted by name)
-              const sortedBackends = route.backends.slice().sort((a, b) => {
-                const nameA = (a.backend as any)?.name || "";
-                const nameB = (b.backend as any)?.name || "";
+          children: (() => {
+            // route children
+            const routeChildren = listener.routes
+              .slice()
+              .sort((a, b) => { 
+                const nameA = (a.route.name as string | undefined) || "";
+                const nameB = (b.route.name as string | undefined) || "";
                 return nameA.localeCompare(nameB);
-              });
+              })
+              .map((route) => { 
+                const children: DataNode[] = [];
 
-              sortedBackends.forEach((backend) => {
-                children.push({
-                  key: `backend-${bind.bind.port}-${li}-${route.categoryIndex}-${backend.backendIndex}`,
-                  title: buildBackendTitle(
-                    backend,
+                // add backends (sorted by name)
+                const sortedBackends = route.backends.slice().sort((a, b) => {
+                  const nameA = (a.backend as any)?.name || "";
+                  const nameB = (b.backend as any)?.name || "";
+                  return nameA.localeCompare(nameB);
+                });
+
+                sortedBackends.forEach((backend) => {
+                  children.push({
+                    key: `backend-${bind.bind.port}-${li}-${route.categoryIndex}-${backend.backendIndex}`,
+                    title: buildBackendTitle(
+                      backend,
+                      navigate,
+                      onDeleteBackend,
+                      bind.bind.port,
+                      li,
+                      route.categoryIndex,
+                      confirmDelete,
+                      onAddBackendPolicy,
+                      basePath,
+                    ),
+                    selectable: true,
+                  });
+                });
+
+                // add route policies (sorted by policy type)
+                const sortedPolicies = route.policies
+                  .slice()
+                  .sort((a, b) => a.policyType.localeCompare(b.policyType));
+                sortedPolicies.forEach((policy) => { 
+                  children.push({
+                    key: `policy-${bind.bind.port}-${li}-${route.categoryIndex}-${policy.policyType}`,
+                    title: buildPolicyTitle(
+                      policy,
+                      navigate,
+                      onDeleteRoutePolicy,
+                      bind.bind.port,
+                      li,
+                      route.categoryIndex,
+                      confirmDelete,
+                      basePath,
+                    ),
+                    selectable: true,
+                  })
+                });
+
+                return { 
+                  key: `route-${bind.bind.port}-${li}-${route.isTcp ? "tcp" : "http"}-${route.categoryIndex}`,
+                  title: buildRouteTitle(
+                    route,
                     navigate,
-                    onDeleteBackend,
+                    onDeleteRoute,
                     bind.bind.port,
                     li,
-                    route.categoryIndex,
                     confirmDelete,
-                    onAddBackendPolicy,
+                    onAddRouteBackend,
+                    onAddRoutePolicy,
                     basePath,
                   ),
                   selectable: true,
-                });
+                  children: children.length > 0 ? children : undefined,
+                };
               });
 
-              // Add policies (sorted by policy type)
-              const sortedPolicies = route.policies
+              // listener policy children
+              const listenerPolicyChildren: DataNode[] = (listener.policies ?? [])
                 .slice()
-                .sort((a, b) => a.policyType.localeCompare(b.policyType));
+                .sort((a, b) => a.policyType.localeCompare(b.policyType))
+                .map((policy) => {
+                  const policyPath =
+  `${basePath}/bind/${bind.bind.port}/listener/${li}/policy/${policy.policyType}`;
+                  const listenerPath = `${basePath}/bind/${bind.bind.port}/listener/${li}`;
+                  const displayName = getPolicyLabel(policy.policyType);
 
-              sortedPolicies.forEach((policy) => {
-                children.push({
-                  key: `policy-${bind.bind.port}-${li}-${route.categoryIndex}-${policy.policyType}`,
-                  title: buildPolicyTitle(
-                    policy,
-                    navigate,
-                    onDeleteRoutePolicy,
-                    bind.bind.port,
-                    li,
-                    route.categoryIndex,
-                    confirmDelete,
-                    basePath,
-                  ),
-                  selectable: true,
+                  const menuItems: MenuProps["items"] = [
+                    {
+                      key: "edit",
+                      label: "Edit",
+                      icon: <Pencil size={13} />,
+                      onClick: ({ domEvent }) => {
+                        domEvent.stopPropagation();
+                        navigate(policyPath + "?edit=true");
+                      },
+                    },
+                    { type: "divider" },
+                    {
+                      key: "delete",
+                      label: "Delete",
+                      icon: <DeleteOutlined />,
+                      danger: true,
+                      onClick: ({ domEvent }) => {
+                        domEvent.stopPropagation();
+                        confirmDelete(
+                          `Delete ${displayName} policy?`,
+                          "This cannot be undone.",
+                          () => onDeleteListenerPolicy(bind.bind.port, li, policy.policyType, listenerPath),
+                        );
+                      },
+                    },
+                  ];
+
+                  return {
+                    key: `listener-policy-${bind.bind.port}-${li}-${policy.policyType}`,
+                    title: (
+                      <NodeRow
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(policyPath);
+                        }}
+                      >
+                        <ResourceIcon
+                          icon={<Settings />}
+                          color={getResourceColor("policy")}
+                          size="small"
+                        />
+                        <NodeLabel>{displayName}</NodeLabel>
+                        <Dropdown
+                          menu={{ items: menuItems }}
+                          trigger={["click"]}
+                          placement="bottomRight"
+                          overlayClassName="hierarchy-menu"
+                        >
+                          <MoreButton
+                            type="text"
+                            size="small"
+                            icon={<MoreVertical size={14} />}
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        </Dropdown>
+                      </NodeRow>
+                    ),
+                    selectable: true,
+                  };
                 });
-              });
 
-              return {
-                key: `route-${bind.bind.port}-${li}-${route.isTcp ? "tcp" : "http"}-${route.categoryIndex}`,
-                title: buildRouteTitle(
-                  route,
-                  navigate,
-                  onDeleteRoute,
-                  bind.bind.port,
-                  li,
-                  confirmDelete,
-                  onAddRouteBackend,
-                  onAddRoutePolicy,
-                  basePath,
-                ),
-                selectable: true,
-                children,
-              };
-            }),
+              return [...routeChildren, ...listenerPolicyChildren];
+            })(),
         })),
     })) : []);
 
@@ -2339,6 +2440,46 @@ export function HierarchyTree({ hierarchy, filter, title, onRegisterAddHandlers 
     [basePath, hierarchy.binds, mutate, navigate],
   );
 
+  // handler for deleting a specific policy from a listener
+  const handleDeleteListenerPolicy = useCallback(
+    async (port: number, listenerIndex: number, policyType: string, _parentPath: string) => {
+      try {
+        await api.deleteListenerPolicy(port, listenerIndex, policyType);
+        toast.success(`${getPolicyLabel(policyType)} policy deleted`);
+        mutate();
+        navigate(`${basePath}/bind/${port}/listener/${listenerIndex}`);
+      } catch (e: unknown) {
+        toast.error(getErrorMessage(e, "Failed to delete policy"));
+      }
+    },
+    [basePath, mutate, navigate],
+  );
+
+  // handler for deleting a specific policy from a backend
+  const handleDeleteBackendPolicy = useCallback(
+    async (
+      port: number,
+      listenerIndex: number,
+      routeIndex: number,
+      backendIndex: number,
+      isTcp: boolean,
+      policyType: string,
+      _parentPath: string,
+    ) => {
+      try {
+        await api.deleteBackendPolicy(port, listenerIndex, routeIndex, backendIndex, isTcp, policyType);
+        toast.success(`${getPolicyLabel(policyType)} policy deleted`);
+        mutate();
+        const routeSeg = isTcp ? "tcproute" : "route";
+
+  navigate(`${basePath}/bind/${port}/listener/${listenerIndex}/${routeSeg}/${routeIndex}/backend/${backendIndex}`);
+      } catch (e: unknown) {
+        toast.error(getErrorMessage(e, "Failed to delete policy"));
+      }
+    },
+    [basePath, mutate, navigate],
+  );
+
   // Handler for adding a specific policy type to a listener
   const handleAddListenerPolicy = useCallback(
     async (port: number, listenerIndex: number, policyType: string) => {
@@ -2654,6 +2795,8 @@ export function HierarchyTree({ hierarchy, filter, title, onRegisterAddHandlers 
       handleDeleteRoute,
       handleDeleteBackend,
       handleDeleteRoutePolicy,
+      handleDeleteListenerPolicy,
+      handleDeleteBackendPolicy,
       confirmDelete,
       handleAddListener,
       handleAddRoute,
@@ -2688,6 +2831,8 @@ export function HierarchyTree({ hierarchy, filter, title, onRegisterAddHandlers 
     handleDeleteRoute,
     handleDeleteBackend,
     handleDeleteRoutePolicy,
+    handleDeleteListenerPolicy,
+    handleDeleteBackendPolicy,
     confirmDelete,
     handleAddListener,
     handleAddRoute,
