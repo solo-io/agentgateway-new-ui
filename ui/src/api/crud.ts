@@ -595,7 +595,9 @@ export async function deleteListenerPolicy(
     throw new Error(`Listener "${listenerIndex}" not found`);
   }
 
-  listener.policies = { ...listener.policies, [policyType]: null };
+  if (listener.policies) {
+    delete (listener.policies as any)[policyType];
+  }
 
   await updateConfig(config);
 }
@@ -635,7 +637,9 @@ export async function deleteBackendPolicy(
   }
   const backend = backends[backendIndex];
 
-  backend.policies = { ...backend.policies, [policyType]: null };
+   if (backend.policies) {
+    delete (backend.policies as any)[policyType];
+  }
   await updateConfig(config);
 }
 
