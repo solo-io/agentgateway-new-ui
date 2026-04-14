@@ -1838,6 +1838,85 @@ function buildTreeData(
                 });
 
                 sortedBackends.forEach((backend) => {
+                  const backendPolicyChildren: DataNode[] = (backend.policies ?? [])
+                    .slice()
+                    .sort((a, b) => a.policyType.localeCompare(b.policyType))
+                    .map((policy) => {
+                      const routeSeg = backend.isTcpRoute ? "tcproute" : "route";
+                      const policyPath = `${basePath}/bind/${bind.bind.port}/listener/${li}/${routeSeg}/${route.categoryIndex}/backend/${backend.backendIndex}/policy/${policy.policyType}`;
+                      const backendPath = `${basePath}/bind/${bind.bind.port}/listener/${li}/${routeSeg}/${route.categoryIndex}/backend/${backend.backendIndex}`;
+                      const displayName = getPolicyLabel(policy.policyType);
+              
+                      const menuItems: MenuProps["items"] = [
+                        {
+                          key: "edit",
+                          label: "Edit",
+                          icon: <Pencil size={13} />,
+                          onClick: ({ domEvent }) => {
+                            domEvent.stopPropagation();
+                            navigate(policyPath + "?edit=true");
+                          },
+                        },
+                        { type: "divider" },
+                        {
+                          key: "delete",
+                          label: "Delete",
+                          icon: <DeleteOutlined />,
+                          danger: true,
+                          onClick: ({ domEvent }) => {
+                            domEvent.stopPropagation();
+                            confirmDelete(
+                              `Delete ${displayName} policy?`,
+                              "This cannot be undone.",
+                              () => onDeleteBackendPolicy(
+                                bind.bind.port,
+                                li,
+                                route.categoryIndex,
+                                backend.backendIndex,
+                                backend.isTcpRoute,
+                                policy.policyType,
+                                backendPath,
+                              ),
+                            );
+                          },
+                        },
+                      ];
+              
+                      return {
+                        key:
+                `backend-policy-${bind.bind.port}-${li}-${route.categoryIndex}-${backend.backendIndex}-${policy.policyType}`,
+                        title: (
+                          <NodeRow
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(policyPath);
+                            }}
+                          >
+                            <ResourceIcon
+                              icon={<Settings />}
+                              color={getResourceColor("policy")}
+                              size="small"
+                            />
+                            <NodeLabel>{displayName}</NodeLabel>
+                            <Dropdown
+                              menu={{ items: menuItems }}
+                              trigger={["click"]}
+                              placement="bottomRight"
+                              overlayClassName="hierarchy-menu"
+                            >
+                              <MoreButton
+                                type="text"
+                                size="small"
+                                icon={<MoreVertical size={14} />}
+                                onClick={(e) => e.stopPropagation()}
+                              />
+                            </Dropdown>
+                          </NodeRow>
+                        ),
+                        selectable: true,
+                      };
+                    });
+              
                   children.push({
                     key: `backend-${bind.bind.port}-${li}-${route.categoryIndex}-${backend.backendIndex}`,
                     title: buildBackendTitle(
@@ -1852,6 +1931,7 @@ function buildTreeData(
                       basePath,
                     ),
                     selectable: true,
+                    children: backendPolicyChildren.length > 0 ? backendPolicyChildren : undefined,
                   });
                 });
 

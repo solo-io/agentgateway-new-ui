@@ -216,15 +216,10 @@ export function TrafficConfigurationPage() {
   const navigate = useNavigate();
   const [addHandlers, setAddHandlers] = useState<AddRootHandlers | null>(null);
 
-  // const urlParams = useMemo(
-  //   () => parseTrafficPath(location.pathname),
-  //   [location.pathname],
-  // );
-
-  const urlParams = useMemo(() => {
-    console.log("[useMemo] location.pathname:", location.pathname);
-    return parseTrafficPath(location.pathname);
-  }, [location.pathname]);
+  const urlParams = useMemo(
+    () => parseTrafficPath(location.pathname),
+    [location.pathname],
+  );
 
   if (hierarchy.error) {
     return (
