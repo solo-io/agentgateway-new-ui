@@ -518,12 +518,22 @@ function buildListenerTitle(
   listenerIndex: number,
   confirmDelete: ConfirmDeleteFn,
   onAddRoute: (port: number, li: number, isTcp: boolean) => void,
+  onAddListenerPolicy: (port: number, listenerIndex: number, policyType: string) => void,
   basePath: string,
 ): ReactNode {
   const protocol = ln.listener.protocol ?? "HTTP";
   const listenerPath = `${basePath}/bind/${bindPort}/listener/${listenerIndex}`;
   const bindPath = `${basePath}/bind/${bindPort}`;
   const isTcp = protocol === "TCP" || protocol === "TLS";
+
+  const listenerPolicyMenuItems = getPolicyTypesForScope("listener").map((pt) => ({
+    key: `add-policy-${pt.key}`,
+    label: pt.label,
+    onClick: ({domEvent}: { domEvent: React.MouseEvent }) => { 
+      domEvent.stopPropagation();
+      onAddListenerPolicy(bindPort, listenerIndex, pt.key);
+    },
+  }));
 
   const menuItems: MenuProps["items"] = [
     {
@@ -543,6 +553,12 @@ function buildListenerTitle(
         domEvent.stopPropagation();
         onAddRoute(bindPort, listenerIndex, isTcp);
       },
+    },
+    {
+      key: "addPolicy",
+      label: "Add Policy",
+      icon: <PlusOutlined />,
+      children: listenerPolicyMenuItems as MenuProps["items"],
     },
     { type: "divider" },
     {
@@ -796,12 +812,29 @@ function buildBackendTitle(
   listenerIndex: number,
   routeIndex: number,
   confirmDelete: ConfirmDeleteFn,
+  onAddBackendPolicy: (
+    port: number, 
+    listenerIndex: number, 
+    routeIndex: number, 
+    backendIndex: number, 
+    isTcp: boolean, 
+    policyType: string,
+  ) => void,
   basePath: string,
 ): ReactNode {
   const { label } = describeBackend(bn.backend);
   const routeSeg = bn.isTcpRoute ? "tcproute" : "route";
   const backendPath = `${basePath}/bind/${bindPort}/listener/${listenerIndex}/${routeSeg}/${routeIndex}/backend/${bn.backendIndex}`;
   const routePath = `${basePath}/bind/${bindPort}/listener/${listenerIndex}/${routeSeg}/${routeIndex}`;
+
+  const backendPolicyMenuItems = getPolicyTypesForScope("backend").map((pt) => ({
+    key: `add-policy-${pt.key}`,
+    label: pt.label,
+    onClick: ({domEvent}: { domEvent: React.MouseEvent }) => { 
+      domEvent.stopPropagation();
+      onAddBackendPolicy(bindPort, listenerIndex, routeIndex, bn.backendIndex, bn.isTcpRoute, pt.key);
+    },
+  }));
 
   const menuItems: MenuProps["items"] = [
     {
@@ -812,6 +845,12 @@ function buildBackendTitle(
         domEvent.stopPropagation();
         navigate(backendPath + "?edit=true");
       },
+    },
+    {
+      key: "addPolicy",
+      label: "Add Policy",
+      icon: <PlusOutlined />,
+      children: backendPolicyMenuItems as MenuProps["items"],
     },
     { type: "divider" },
     {
@@ -1528,6 +1567,15 @@ function buildTreeData(
   confirmDelete: ConfirmDeleteFn,
   onAddListener: (port: number) => void,
   onAddRoute: (port: number, li: number, isTcp: boolean) => void,
+  onAddListenerPolicy: (port: number, listenerIndex: number, policyType: string) => void,
+  onAddBackendPolicy: (
+    port: number, 
+    listenerIndex: number, 
+    routeIndex: number, 
+    backendIndex: number, 
+    isTcp: boolean, 
+    policyType: string,
+  ) => void,
   onAddRouteBackend: (
     port: number,
     li: number,
@@ -1740,6 +1788,7 @@ function buildTreeData(
             li,
             confirmDelete,
             onAddRoute,
+            onAddListenerPolicy,
             basePath,
           ),
           selectable: true,
@@ -1771,6 +1820,7 @@ function buildTreeData(
                     li,
                     route.categoryIndex,
                     confirmDelete,
+                    onAddBackendPolicy,
                     basePath,
                   ),
                   selectable: true,
@@ -2289,6 +2339,45 @@ export function HierarchyTree({ hierarchy, filter, title, onRegisterAddHandlers 
     [basePath, hierarchy.binds, mutate, navigate],
   );
 
+  // Handler for adding a specific policy type to a listener
+  const handleAddListenerPolicy = useCallback(
+    async (port: number, listenerIndex: number, policyType: string) => {
+      try { 
+        await api.updateListenerPolicy(port, listenerIndex, policyType, getDefaultPolicyValue(policyType));
+        await mutate();
+        ensureExpanded(`bind-${port}`, `listener-${port}-${listenerIndex}`);
+        console.log("[handleAddListenerPolicy] navigating to:",
+          `${basePath}/bind/${port}/listener/${listenerIndex}/policy/${policyType}?edit=true&creating=true`);
+        navigate(`${basePath}/bind/${port}/listener/${listenerIndex}/policy/${policyType}?edit=true&creating=true`);
+      } catch (e) { 
+        toast.error(getErrorMessage(e, "Failed to add policy"));
+      }
+    },
+    [basePath, mutate, navigate, ensureExpanded]
+  );
+
+  // Handler for adding a specific policy type to a backend
+  const handleAddBackendPolicy = useCallback(
+    async (
+      port: number, 
+      listenerIndex: number, 
+      routeIndex: number, 
+      backendIndex: number, 
+      isTcp: boolean, 
+      policyType: string,
+    ) => {
+      try { 
+        await api.updateBackendPolicy(port, listenerIndex, routeIndex, backendIndex, isTcp, policyType, getDefaultPolicyValue(policyType));
+        await mutate();
+        ensureExpanded(`bind-${port}`, `listener-${port}-${listenerIndex}`);
+        navigate(`${basePath}/bind/${port}/listener/${listenerIndex}/${isTcp ? "tcproute" : "route"}/${routeIndex}/backend/${backendIndex}/policy/${policyType}?edit=true&creating=true`);
+      } catch (e) { 
+        toast.error(getErrorMessage(e, "Failed to add policy"));
+      }
+    },
+    [basePath, mutate, navigate, ensureExpanded]
+  );
+
   // Handlers for editing top-level items
   const handleEditLLM = useCallback(() => {
     navigate(`${basePath}/llm?edit=true`);
@@ -2568,6 +2657,8 @@ export function HierarchyTree({ hierarchy, filter, title, onRegisterAddHandlers 
       confirmDelete,
       handleAddListener,
       handleAddRoute,
+      handleAddListenerPolicy,
+      handleAddBackendPolicy,
       handleAddRouteBackend,
       handleAddRoutePolicy,
       handleEditLLM,
@@ -2602,6 +2693,8 @@ export function HierarchyTree({ hierarchy, filter, title, onRegisterAddHandlers 
     handleAddRoute,
     handleAddRouteBackend,
     handleAddRoutePolicy,
+    handleAddListenerPolicy,
+    handleAddBackendPolicy,
     handleEditLLM,
     handleDeleteLLM,
     handleAddModel,
