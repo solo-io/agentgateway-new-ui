@@ -271,8 +271,6 @@ function findSelectedNode(
   | { type: "frontendPolicies"; data: unknown }
   | null {
 
-  console.log("[findSelectedNode] urlParams: ", urlParams);
-
   // Handle model routes first
   if (urlParams.modelIndex !== undefined) {
     if (!hierarchy.llm) return null;
@@ -341,11 +339,9 @@ function findSelectedNode(
 
   const { port, li, ri, bi, isTcpRoute, policyType } = urlParams;
 
-  console.log("[findSelectedNode] urlParams: ", urlParams);
   if (port === undefined) return null;
   const bindNode = hierarchy.binds.find((b) => b.bind.port === port);
 
-  console.log("[findSelectedNode] urlParams: ", urlParams);
   if (!bindNode) return null;
 
   if (li === undefined) {
@@ -353,14 +349,11 @@ function findSelectedNode(
   }
 
   const listenerNode = bindNode.listeners[li];
-  console.log("[findSelectedNode] urlParams: ", urlParams);
   if (!listenerNode) return null;
 
   if (urlParams.listenerPolicyType) {
     const policyKey = urlParams.listenerPolicyType;
     const policies = listenerNode.listener.policies ?? {};
-    console.log("[findSelectedNode] listenerPolicyType check - policies:", listenerNode.listener.policies,
-      "policyKey:", policyKey);
     if (!(policyKey in policies)) return null;
     return {
       type: "listenerPolicy",
@@ -377,7 +370,6 @@ function findSelectedNode(
   const routeNode = listenerNode.routes.find(
     (rn) => rn.isTcp === isTcpRoute && rn.categoryIndex === ri,
   );
-  console.log("[findSelectedNode] urlParams: ", urlParams);
   if (!routeNode) return null;
 
   if (bi === undefined && !policyType) {
@@ -420,7 +412,6 @@ function findSelectedNode(
   }
 
   const backendNode = routeNode.backends[bi!];
-  console.log("[findSelectedNode] urlParams: ", urlParams);
   if (!backendNode) return null;
 
   return {

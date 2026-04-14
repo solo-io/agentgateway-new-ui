@@ -2567,8 +2567,6 @@ export function HierarchyTree({ hierarchy, filter, title, onRegisterAddHandlers 
         await api.updateListenerPolicy(port, listenerIndex, policyType, getDefaultPolicyValue(policyType));
         await mutate();
         ensureExpanded(`bind-${port}`, `listener-${port}-${listenerIndex}`);
-        console.log("[handleAddListenerPolicy] navigating to:",
-          `${basePath}/bind/${port}/listener/${listenerIndex}/policy/${policyType}?edit=true&creating=true`);
         navigate(`${basePath}/bind/${port}/listener/${listenerIndex}/policy/${policyType}?edit=true&creating=true`);
       } catch (e) { 
         toast.error(getErrorMessage(e, "Failed to add policy"));
