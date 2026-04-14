@@ -1956,11 +1956,19 @@ export function NodeDetailView({ hierarchy, urlParams }: NodeDetailViewProps) {
                   </Button>
                 </Popconfirm>
                 <Button
+                  type="primary"
+                  htmlType="submit"
+                  form={formId}
+                  loading={saving}
+                >
+                  Save
+                </Button>
+                <Button
                   icon={<X size={14} />}
                   onClick={() => navigate(location.pathname)}
                   disabled={saving}
                 >
-                  Save
+                  Cancel
                 </Button>
               </Space>
             )}
