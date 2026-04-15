@@ -19,7 +19,7 @@ import {
 } from "../FormTemplates";
 import { ProtocolTag } from "../ProtocolTag";
 import { StyledAlert } from "../StyledAlert";
-import { forms } from "./forms";
+import { forms, getFormForPolicy } from "./forms";
 import { getDefaultBackendValue } from "./forms/backendForm";
 import { useNodePolling } from "./hooks/useNodePolling";
 import type {
@@ -1789,6 +1789,8 @@ export function NodeDetailView({ hierarchy, urlParams }: NodeDetailViewProps) {
       .trim();
 
     const breadcrumbItems = generateBreadcrumbItems(selected, navigate, basePath);
+    const formConfig = getFormForPolicy(selected.node.policyType);
+
     return (
       <Container>
         <Header>
@@ -1855,24 +1857,8 @@ export function NodeDetailView({ hierarchy, urlParams }: NodeDetailViewProps) {
           <Form
             id="policy-form"
             key={isEditing ? "editing" : "viewing"}
-            schema={
-              selected.node.policyType === "cors"
-                ? forms.corsPolicy.schema
-                : selected.node.policyType === "requestHeaderModifier"
-                  ? forms.requestHeaderModifierPolicy.schema
-                  : selected.node.policyType === "responseHeaderModifier"
-                    ? forms.responseHeaderModifierPolicy.schema
-                    : forms.routePolicy.schema
-            }
-            uiSchema={
-              selected.node.policyType === "cors"
-                ? forms.corsPolicy.uiSchema
-                : selected.node.policyType === "requestHeaderModifier"
-                  ? forms.requestHeaderModifierPolicy.uiSchema
-                  : selected.node.policyType === "responseHeaderModifier"
-                    ? forms.responseHeaderModifierPolicy.uiSchema
-                    : forms.routePolicy.uiSchema
-            }
+            schema={formConfig.schema}
+            uiSchema={formConfig.uiSchema}
             formData={formData}
             validator={validator}
             disabled={!isEditing || saving}
@@ -1900,18 +1886,7 @@ export function NodeDetailView({ hierarchy, urlParams }: NodeDetailViewProps) {
     const breadcrumbItems = generateBreadcrumbItems(selected, navigate, basePath);
 
     const policyType = selected.policyType;
-    const formConfig = 
-      policyType === "cors"
-      ? forms.corsPolicy
-      : policyType === "requestHeaderModifier"
-        ? forms.requestHeaderModifierPolicy
-        : policyType === "responseHeaderModifier"
-          ? forms.responseHeaderModifierPolicy
-          : policyType === "authorization"
-            ? forms.authorizationPolicy
-            : policyType === "transformations"
-              ? forms.transformationsPolicy
-              : forms.routePolicy;
+    const formConfig = getFormForPolicy(policyType);
 
     return (
       <Container>
@@ -1999,12 +1974,7 @@ export function NodeDetailView({ hierarchy, urlParams }: NodeDetailViewProps) {
     
     // Select appropriate form based on policy type
     const policyType = selected.node.policyType;
-    const formSchema =
-      policyType === "authorization" || policyType === "mcpAuthorization"
-        ? forms.authorizationPolicy
-        : policyType === "transformations"
-          ? forms.transformationsPolicy
-          : (selected.type === "llmPolicy" ? forms.llmPolicy : forms.mcpPolicy);
+    const formConfig = getFormForPolicy(policyType, selected.type === "llmPolicy" ? "llmPolicy" : "mcpPolicy");
     
     const breadcrumbItems = generateBreadcrumbItems(selected, navigate, basePath);
 
@@ -2073,8 +2043,8 @@ export function NodeDetailView({ hierarchy, urlParams }: NodeDetailViewProps) {
           <Form
             id={formId}
             key={isEditing ? "editing" : "viewing"}
-            schema={formSchema.schema}
-            uiSchema={formSchema.uiSchema}
+            schema={formConfig.schema}
+            uiSchema={formConfig.uiSchema}
             formData={formData}
             validator={validator}
             disabled={!isEditing || saving}
@@ -2099,12 +2069,7 @@ export function NodeDetailView({ hierarchy, urlParams }: NodeDetailViewProps) {
     
     // Select appropriate form based on policy type
     const policyType = selected.node.policyType;
-    const formSchema =
-      policyType === "authorization" || policyType === "mcpAuthorization"
-        ? forms.authorizationPolicy
-        : policyType === "transformations"
-          ? forms.transformationsPolicy
-          : forms.llmPolicy; // Use generic policy form as fallback
+    const formConfig = getFormForPolicy(policyType, "llmPolicy");
     
     const breadcrumbItems = generateBreadcrumbItems(selected, navigate, basePath);
     const targetName = selected.target.target.name ?? `Target ${selected.target.targetIndex}`;
@@ -2174,8 +2139,8 @@ export function NodeDetailView({ hierarchy, urlParams }: NodeDetailViewProps) {
           <Form
             id={formId}
             key={isEditing ? "editing" : "viewing"}
-            schema={formSchema.schema}
-            uiSchema={formSchema.uiSchema}
+            schema={formConfig.schema}
+            uiSchema={formConfig.uiSchema}
             formData={formData}
             validator={validator}
             disabled={!isEditing || saving}
@@ -2198,6 +2163,7 @@ export function NodeDetailView({ hierarchy, urlParams }: NodeDetailViewProps) {
     const { node } = selected;
     const modelName = node.model.name || `Model ${node.modelIndex + 1}`;
     const breadcrumbItems = generateBreadcrumbItems(selected, navigate, basePath);
+    const formConfig = getFormForPolicy("model");
 
     return (
       <Container>
