@@ -127,7 +127,7 @@ function parseLLMPath(pathname: string): UrlParams | null {
   if (policyMatch) {
     return { topLevelType: "llm", llmPolicyType: policyMatch[1] };
   }
-  if (pathname.startsWith("/llm")) {
+  if (relativePathname.startsWith("/llm")) {
     return { topLevelType: "llm" };
   }
   return null;
@@ -138,7 +138,7 @@ export function LLMConfigurationPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const [addHandlers, setAddHandlers] = useState<AddRootHandlers | null>(null);
-
+  
   const urlParams = useMemo(
     () => parseLLMPath(location.pathname),
     [location.pathname],

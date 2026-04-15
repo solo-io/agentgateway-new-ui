@@ -135,7 +135,7 @@ function parseMCPPath(pathname: string): UrlParams | null {
   if (policyMatch) {
     return { topLevelType: "mcp", mcpPolicyType: policyMatch[1] };
   }
-  if (pathname.startsWith("/mcp")) {
+  if (relativePathname.startsWith("/mcp")) {
     return { topLevelType: "mcp" };
   }
   return null;
