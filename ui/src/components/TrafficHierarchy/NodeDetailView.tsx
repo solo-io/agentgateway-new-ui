@@ -623,15 +623,9 @@ export function NodeDetailView({ hierarchy, urlParams }: NodeDetailViewProps) {
   const { mutate } = useConfig();
 
   const basePath = useMemo(() => {
-    const knownSegments = ["bind", "llm", "mcp", "frontendPolicies", "editor"];
-    const pathname = location.pathname;
-    for (const seg of knownSegments) {
-      const idx = pathname.indexOf(`/${seg}`);
-      if (idx !== -1) return idx === 0 ? `/${seg}` : pathname.substring(0, idx);
-    }
-    return pathname.replace(/\/$/, "") || "/";
+    return `/${location.pathname.split('/').at(1) ?? ''}`;
   }, [location.pathname]);
-
+  
   // Edit mode is URL-driven
   const searchParams = new URLSearchParams(location.search);
   const isEditing = searchParams.get("edit") === "true";

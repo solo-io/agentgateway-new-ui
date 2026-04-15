@@ -118,11 +118,12 @@ const Description = styled.p`
 `;
 
 function parseLLMPath(pathname: string): UrlParams | null {
-  const modelMatch = pathname.match(/^\/llm\/model\/(\d+)/);
+  const relativePathname = pathname.replace(/^\/llm-configuration/, "");
+  const modelMatch = relativePathname.match(/^\/llm\/model\/(\d+)/);
   if (modelMatch) {
     return { topLevelType: "llm", modelIndex: parseInt(modelMatch[1], 10) };
   }
-  const policyMatch = pathname.match(/^\/llm\/policy\/(.+)/);
+  const policyMatch = relativePathname.match(/^\/llm\/policy\/(.+)/);
   if (policyMatch) {
     return { topLevelType: "llm", llmPolicyType: policyMatch[1] };
   }

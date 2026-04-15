@@ -118,7 +118,8 @@ const Description = styled.p`
 `;
 
 function parseMCPPath(pathname: string): UrlParams | null {
-  const targetPolicyMatch = pathname.match(/^\/mcp\/target\/(\d+)\/policy\/(.+)/);
+  const relativePathname = pathname.replace(/^\/mcp-configuration/, "");
+  const targetPolicyMatch = relativePathname.match(/^\/mcp\/target\/(\d+)\/policy\/(.+)/);
   if (targetPolicyMatch) {
     return {
       topLevelType: "mcp",
@@ -126,11 +127,11 @@ function parseMCPPath(pathname: string): UrlParams | null {
       mcpTargetPolicyType: targetPolicyMatch[2],
     };
   }
-  const targetMatch = pathname.match(/^\/mcp\/target\/(\d+)/);
+  const targetMatch = relativePathname.match(/^\/mcp\/target\/(\d+)/);
   if (targetMatch) {
     return { topLevelType: "mcp", mcpTargetIndex: parseInt(targetMatch[1], 10) };
   }
-  const policyMatch = pathname.match(/^\/mcp\/policy\/(.+)/);
+  const policyMatch = relativePathname.match(/^\/mcp\/policy\/(.+)/);
   if (policyMatch) {
     return { topLevelType: "mcp", mcpPolicyType: policyMatch[1] };
   }
