@@ -35,7 +35,7 @@ import type {
   RouteNode,
   useTrafficHierarchy,
 } from "./hooks/useTrafficHierarchy";
-import { getPolicyLabel } from "./policyTypes";
+import { getDefaultPolicyValue, getPolicyLabel } from "./policyTypes";
 import type { UrlParams } from "./types";
 
 // ---------------------------------------------------------------------------
@@ -801,7 +801,7 @@ export function NodeDetailView({ hierarchy, urlParams }: NodeDetailViewProps) {
           route.policies && typeof route.policies === "object"
             ? route.policies
             : {};
-        const newPolicyConfig = {};
+        const newPolicyConfig = getDefaultPolicyValue(policyType);
 
         const updatedRoute = {
           ...route,
@@ -863,7 +863,10 @@ export function NodeDetailView({ hierarchy, urlParams }: NodeDetailViewProps) {
           : backendData;
         setFormData(transformedData as Record<string, unknown>);
       } else if (sel.type === "policy") {
-        setFormData(sel.node.policy as Record<string, unknown>);
+        const raw = sel.node.policy as Record<string, unknown>;
+        const formConfig = getFormForPolicy(sel.node.policyType) as any;
+        const transformed = formConfig?.transformForForm ? formConfig.transformForForm(raw) : raw;
+        setFormData(transformed as Record<string, unknown>);
       } else if (sel.type === "listenerPolicy") { 
         const raw = sel.listener.listener.policies as Record<string, unknown> ?? {};
         setFormData((raw[sel.policyType] ?? {}) as Record<string, unknown>);
@@ -912,7 +915,10 @@ export function NodeDetailView({ hierarchy, urlParams }: NodeDetailViewProps) {
           : backendData;
         setFormData(transformedData as Record<string, unknown>);
       } else if (selected.type === "policy") {
-        setFormData(selected.node.policy as Record<string, unknown>);
+        const raw = selected.node.policy as Record<string, unknown>;
+        const formConfig = getFormForPolicy(selected.node.policyType) as any;
+        const transformed = formConfig?.transformForForm ? formConfig.transformForForm(raw) : raw;
+        setFormData(transformed as Record<string, unknown>);
       } else if (selected.type === "listenerPolicy") { 
         const raw = selected.listener.listener.policies as Record<string, unknown> ?? {};
         setFormData((raw[selected.policyType] ?? {}) as Record<string, unknown>);
@@ -1024,6 +1030,26 @@ export function NodeDetailView({ hierarchy, urlParams }: NodeDetailViewProps) {
         return;
       }
 
+      // Handle MCP config policy updates
+      if (selected.type === "mcpPolicy") { 
+        const form = getFormForPolicy(selected.node.policyType, "mcpPolicy") as any;
+        const dataToSave = form?.transformBeforeSubmit ? form.transformBeforeSubmit(fd) : fd;
+        if (!hierarchy.mcp) throw new Error("MCP config not found");
+        const currentPolicies = hierarchy.mcp.policies.reduce((acc, p) => { 
+          acc[p.policyType] = p.policy;
+          return acc;
+        }, {} as Record<string, unknown>);
+        await api.createOrUpdateMCP({
+          ...hierarchy.mcp.config,
+          targets: hierarchy.mcp.targets.map((t) => t.target),
+          policies: { ...currentPolicies, [selected.node.policyType]: dataToSave },
+        } as any);
+        toast.success(`${getPolicyLabel(selected.node.policyType)} policy updated`);
+        await mutate();
+        navigate(`${basePath}/mcp/policy/${selected.node.policyType}`);
+        return;
+      }
+
       const { port, li, ri, bi, isTcpRoute } = urlParams;
 
       // Guard: these types require a port
@@ -1032,17 +1058,20 @@ export function NodeDetailView({ hierarchy, urlParams }: NodeDetailViewProps) {
       }
 
       // Apply form-specific transformation if available
-      // Skip for types that don't have a corresponding form entry
+      const policyType = (
+        selected.type === "listenerPolicy" || selected.type === "backendPolicy"
+          ? selected.policyType
+          : (selected as any).node?.policyType
+      ) as string | undefined;
       const form = (
-        selected.type !== "llmPolicy" && 
-        selected.type !== "mcpPolicy" &&
-        selected.type !== "listenerPolicy" &&
-        selected.type !== "backendPolicy"
+        selected.type === "listenerPolicy" ||
+        selected.type === "backendPolicy" ||
+        selected.type === "policy"
       )
-        ? (forms[selected.type] as any)
-        : undefined;
+        ? (getFormForPolicy(policyType ?? "", "routePolicy") as any)
+        : (forms[selected.type] as any);
       let dataToSave = fd;
-      if (form?.transformBeforeSubmit) {
+      if (form?.transformBeforeSubmit) { 
         dataToSave = form.transformBeforeSubmit(fd) as Record<string, unknown>;
       }
 
@@ -1128,18 +1157,6 @@ export function NodeDetailView({ hierarchy, urlParams }: NodeDetailViewProps) {
         }, {} as Record<string, unknown>);
         await api.createOrUpdateLLM({
           ...currentConfig,
-          policies: { ...currentPolicies, [selected.node.policyType]: dataToSave },
-        } as any);
-      } else if (selected.type === "mcpPolicy") {
-        // Update the specific policy in the MCP config
-        if (!hierarchy.mcp) throw new Error("MCP config not found");
-        const currentPolicies = hierarchy.mcp.policies.reduce((acc, p) => {
-          acc[p.policyType] = p.policy;
-          return acc;
-        }, {} as Record<string, unknown>);
-        await api.createOrUpdateMCP({
-          ...hierarchy.mcp.config,
-          targets: hierarchy.mcp.targets.map((t) => t.target),
           policies: { ...currentPolicies, [selected.node.policyType]: dataToSave },
         } as any);
       }
@@ -2222,8 +2239,8 @@ export function NodeDetailView({ hierarchy, urlParams }: NodeDetailViewProps) {
           <Form
             id="model-form"
             key={isEditing ? "editing" : "viewing"}
-            schema={forms.model.schema}
-            uiSchema={forms.model.uiSchema}
+            schema={formConfig.schema}
+            uiSchema={formConfig.uiSchema}
             formData={formData}
             validator={validator}
             disabled={!isEditing || saving}
