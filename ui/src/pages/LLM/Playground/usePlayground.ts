@@ -43,6 +43,7 @@ export function usePlayground() {
         content: m.content,
       }));
 
+      console.log(`sending request to ${selectedModel.baseUrl}/v1/chat/completions`);
       const res = await fetch(`${selectedModel.baseUrl}/v1/chat/completions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

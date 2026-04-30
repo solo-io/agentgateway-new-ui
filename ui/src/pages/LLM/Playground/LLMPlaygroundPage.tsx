@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { Spin } from "antd";
+import { Alert, Spin } from "antd";
 import { ChatPanel } from "./ChatPanel";
 import { SettingsPanel } from "./SettingsPanel";
 import { usePlayground } from "./usePlayground";
@@ -71,6 +71,12 @@ export function LLMPlaygroundPage() {
         <PageSubtitle>
           Send chat completions requests to your configured LLM models
         </PageSubtitle>
+        <Alert 
+          message="This is a test alert" 
+          type="warning" 
+          closable={true}
+          showIcon={true}
+        />
       </div>
 
       <PlaygroundLayout>
