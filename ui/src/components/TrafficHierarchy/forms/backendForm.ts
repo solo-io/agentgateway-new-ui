@@ -322,6 +322,11 @@ export const schema: RJSFSchema = {
                   title: "Provider Name",
                   description: "Name of the AI provider",
                 },
+                model: { 
+                  type: "string",
+                  title: "Model Name",
+                  description: "Name of the model",
+                },
                 provider: {
                   type: "string",
                   title: "Provider Type",
@@ -553,9 +558,11 @@ export function transformForForm(data: unknown): unknown {
     if (aiObj?.provider && typeof aiObj.provider === "object") {
       const providerObj = aiObj.provider as Record<string, unknown>;
       const providerKey = Object.keys(providerObj)[0];
+      const providerConfig = providerObj[providerKey] as Record<string, unknown> | undefined; 
       result.ai = {
         ...aiObj,
         provider: providerKey || "openAI",
+        ...(providerConfig?.model ? { model: providerConfig.model } : {}),
       };
     }
   }
@@ -640,6 +647,7 @@ export function transformBeforeSubmit(data: unknown): unknown {
     };
   } else if (backendType === "ai" && ai !== undefined && ai !== null) {
     const aiObj = ai as Record<string, unknown>;
+    const { provider: rawProvider, model, ...otherAiFields } = aiObj;
     const validProviders = new Set([
       "openAI",
       "gemini",
@@ -648,10 +656,13 @@ export function transformBeforeSubmit(data: unknown): unknown {
       "bedrock",
       "azureOpenAI",
     ]);
-    const rawProvider = aiObj.provider;
     let normalizedProvider: Record<string, unknown>;
     if (typeof rawProvider === "string" && validProviders.has(rawProvider)) {
-      normalizedProvider = { [rawProvider]: {} };
+      const providerConfig: Record<string, unknown> = {};
+      if (model) { 
+        providerConfig.model = model;
+      }
+      normalizedProvider = { [rawProvider]: providerConfig };
     } else if (
       rawProvider &&
       typeof rawProvider === "object" &&
@@ -665,8 +676,9 @@ export function transformBeforeSubmit(data: unknown): unknown {
     } else {
       normalizedProvider = { openAI: {} };
     }
+    console.log(`transformBeforeSubmit: normalizedProvider`, normalizedProvider);
     result.ai = {
-      ...aiObj,
+      ...otherAiFields,
       provider: normalizedProvider,
     };
   }
