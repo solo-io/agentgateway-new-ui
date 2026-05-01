@@ -676,7 +676,6 @@ export function transformBeforeSubmit(data: unknown): unknown {
     } else {
       normalizedProvider = { openAI: {} };
     }
-    console.log(`transformBeforeSubmit: normalizedProvider`, normalizedProvider);
     result.ai = {
       ...otherAiFields,
       provider: normalizedProvider,

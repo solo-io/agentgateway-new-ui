@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { Card, Spin } from "antd";
+import { Alert, Card, Spin } from "antd";
 import { Settings } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useConfig } from "../../../api/hooks";
@@ -76,9 +76,11 @@ export function MCPPlaygroundPage() {
   // Extract routes from configuration that have MCP backends
   useEffect(() => {
     if (!config || !config.binds) return;
-
     const extractedRoutes: RouteInfo[] = [];
 
+    console.log("config.mcp", config.mcp);
+
+    // extract routes from port binds
     config.binds.forEach((bind: LocalBind) => {
       bind.listeners.forEach((listener: LocalListener) => {
         if (listener.routes) {
@@ -117,6 +119,41 @@ export function MCPPlaygroundPage() {
         }
       });
     });
+
+    // extract route from top-level mcp configuration if defined
+    // const mcpConfig = config.mcp;
+    // if (!mcpConfig) return;
+    // console.log(`mcpConfig`, mcpConfig);
+    // mcpConfig.targets.forEach((target: LocalMcpTarget, idx: number) => { 
+    //   console.log(`mcpConfig, checking target`, target, idx);
+    //   // TODO: sse connection type
+
+    //   // mcp connection type
+    //   const mcpConnectionType = target.mcp as any;
+    //   if (mcpConnectionType) { 
+    //     const protocol = "http"; // only http supported in top level mcp config
+    //     const host = mcpConnectionType.host;
+    //     const port = mcpConnectionType.port;
+    //     const path = mcpConnectionType.path;
+    //     const endpoint = `http://${host}:${port}${path}`;
+    //     extractedRoutes.push({
+    //       bindPort: mcpConfig.port ? mcpConfig.port : 3000,
+    //       listener: {},
+    //       route: {},
+    //       endpoint,
+    //       protocol,
+    //       routeIndex: idx,
+    //       routePath: mcpConnectionType.path,
+    //     })
+    //   }
+
+    //   // TODO: stdio connection type
+
+    //   // TODO: openapi connection type
+    // });
+
+    console.log(`extractedRoutes`, extractedRoutes);
+
 
     setRoutes(extractedRoutes);
   }, [config]);
@@ -162,7 +199,12 @@ export function MCPPlaygroundPage() {
     <Container>
       <PageTitle>MCP Playground</PageTitle>
       <PageSubtitle>Test MCP server tool calls interactively</PageSubtitle>
-
+      <Alert
+        message="MCP Playground doesn't support root-level configuration. Configure your MCP server with CORS at the route level using Port Bind instead." 
+        type="warning" 
+        closable={true}
+        showIcon={true}
+      />
       {/* Connection Section */}
       <SectionCard
         title={

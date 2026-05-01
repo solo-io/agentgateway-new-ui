@@ -72,7 +72,7 @@ export function LLMPlaygroundPage() {
           Send chat completions requests to your configured LLM models
         </PageSubtitle>
         <Alert 
-          message="LLM Playground doesn't support root-level configuration. Configure CORS at the route level using Port Bind instead." 
+          message="LLM Playground doesn't support root-level configuration. Configure your model with CORS at the route level using Port Bind instead." 
           type="warning" 
           closable={true}
           showIcon={true}
