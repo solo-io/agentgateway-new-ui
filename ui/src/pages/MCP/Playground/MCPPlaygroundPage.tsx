@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { Card, Spin } from "antd";
+import { Alert, Card, Spin } from "antd";
 import { Settings } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useConfig } from "../../../api/hooks";
@@ -73,12 +73,11 @@ export function MCPPlaygroundPage() {
     handleMcpParamChange,
   } = useConnection(selectedRoute, routes);
 
-  // Extract routes from configuration that have MCP backends
   useEffect(() => {
     if (!config || !config.binds) return;
-
     const extractedRoutes: RouteInfo[] = [];
 
+    // extract routes from port binds
     config.binds.forEach((bind: LocalBind) => {
       bind.listeners.forEach((listener: LocalListener) => {
         if (listener.routes) {
@@ -117,7 +116,6 @@ export function MCPPlaygroundPage() {
         }
       });
     });
-
     setRoutes(extractedRoutes);
   }, [config]);
 
@@ -162,7 +160,12 @@ export function MCPPlaygroundPage() {
     <Container>
       <PageTitle>MCP Playground</PageTitle>
       <PageSubtitle>Test MCP server tool calls interactively</PageSubtitle>
-
+      <Alert
+        message="MCP Playground doesn't support root-level configuration. Configure your MCP server with CORS at the route level using Port Bind instead." 
+        type="warning" 
+        closable={true}
+        showIcon={true}
+      />
       {/* Connection Section */}
       <SectionCard
         title={
