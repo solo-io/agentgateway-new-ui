@@ -78,8 +78,6 @@ export function MCPPlaygroundPage() {
     if (!config || !config.binds) return;
     const extractedRoutes: RouteInfo[] = [];
 
-    console.log("config.mcp", config.mcp);
-
     // extract routes from port binds
     config.binds.forEach((bind: LocalBind) => {
       bind.listeners.forEach((listener: LocalListener) => {
@@ -119,42 +117,7 @@ export function MCPPlaygroundPage() {
         }
       });
     });
-
-    // extract route from top-level mcp configuration if defined
-    // const mcpConfig = config.mcp;
-    // if (!mcpConfig) return;
-    // console.log(`mcpConfig`, mcpConfig);
-    // mcpConfig.targets.forEach((target: LocalMcpTarget, idx: number) => { 
-    //   console.log(`mcpConfig, checking target`, target, idx);
-    //   // TODO: sse connection type
-
-    //   // mcp connection type
-    //   const mcpConnectionType = target.mcp as any;
-    //   if (mcpConnectionType) { 
-    //     const protocol = "http"; // only http supported in top level mcp config
-    //     const host = mcpConnectionType.host;
-    //     const port = mcpConnectionType.port;
-    //     const path = mcpConnectionType.path;
-    //     const endpoint = `http://${host}:${port}${path}`;
-    //     extractedRoutes.push({
-    //       bindPort: mcpConfig.port ? mcpConfig.port : 3000,
-    //       listener: {},
-    //       route: {},
-    //       endpoint,
-    //       protocol,
-    //       routeIndex: idx,
-    //       routePath: mcpConnectionType.path,
-    //     })
-    //   }
-
-    //   // TODO: stdio connection type
-
-    //   // TODO: openapi connection type
-    // });
-
-    console.log(`extractedRoutes`, extractedRoutes);
-
-
+    
     setRoutes(extractedRoutes);
   }, [config]);
 
