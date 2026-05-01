@@ -188,7 +188,6 @@ export const schema: RJSFSchema = {
                         oneOf: [
                           {
                             type: "object",
-                            additionalProperties: false,
                             properties: { 
                               name: { 
                                 type: "string",
@@ -211,7 +210,6 @@ export const schema: RJSFSchema = {
                           },
                           {
                             type: "object",
-                            additionalProperties: false,
                             properties: {
                               name: {
                                 type: "string",
@@ -234,7 +232,6 @@ export const schema: RJSFSchema = {
                           },
                           {
                             type: "object",
-                            additionalProperties: false,
                             properties: {
                               name: {
                                 type: "string",
@@ -265,7 +262,6 @@ export const schema: RJSFSchema = {
                           },
                           {
                             type: "object",
-                            additionalProperties: false,
                             properties: {
                               name: {
                                 type: "string",
