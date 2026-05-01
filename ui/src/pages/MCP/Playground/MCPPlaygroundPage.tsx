@@ -73,7 +73,6 @@ export function MCPPlaygroundPage() {
     handleMcpParamChange,
   } = useConnection(selectedRoute, routes);
 
-  // Extract routes from configuration that have MCP backends
   useEffect(() => {
     if (!config || !config.binds) return;
     const extractedRoutes: RouteInfo[] = [];
@@ -117,7 +116,6 @@ export function MCPPlaygroundPage() {
         }
       });
     });
-    
     setRoutes(extractedRoutes);
   }, [config]);
 
