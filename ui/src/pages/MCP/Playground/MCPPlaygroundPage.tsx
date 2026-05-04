@@ -66,34 +66,34 @@ export function MCPPlaygroundPage() {
   const exampleConfig = `
     binds:
       - port: 8081
-      tunnelProtocol: direct
-      listeners:
-        - protocol: HTTP
-          name: listener
-          hostname: localhost
-          routes:
-            - hostnames: []
-              matches:
-                - path:
-                    pathPrefix: /
-              backends:
-                - mcp:
-                    targets:
-                      - name: mcpserver
-                        mcp:
-                          host: http://localhost:3001/mcp
-                    statefulMode: stateless
-                  weight: 1
-              name: route
-              policies:
-                cors:
-                  allowHeaders:
-                    - '*'
-                  allowMethods: []
-                  allowOrigins:
-                    - '*'
-                  exposeHeaders:
-                    - Mcp-Session-Id
+        tunnelProtocol: direct
+        listeners:
+          - protocol: HTTP
+            name: listener
+            hostname: localhost
+            routes:
+              - hostnames: []
+                matches:
+                  - path:
+                      pathPrefix: /
+                backends:
+                  - mcp:
+                      targets:
+                        - name: mcpserver
+                          mcp:
+                            host: http://localhost:3001/mcp
+                      statefulMode: stateless
+                    weight: 1
+                name: route
+                policies:
+                  cors:
+                    allowHeaders:
+                      - '*'
+                    allowMethods: []
+                    allowOrigins:
+                      - '*'
+                    exposeHeaders:
+                      - Mcp-Session-Id
   `;
 
   const {
