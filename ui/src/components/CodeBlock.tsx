@@ -1,7 +1,6 @@
 import { Button } from "antd";
 import { Check, Copy } from "lucide-react";
 import { useState } from "react";
-
 export function CodeBlock({ code }: { code: string }) {
     const [copied, setCopied] = useState(false);
 

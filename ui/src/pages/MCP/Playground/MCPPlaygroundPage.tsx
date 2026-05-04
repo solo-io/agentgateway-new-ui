@@ -1,8 +1,9 @@
 import styled from "@emotion/styled";
-import { Alert, Card, Spin } from "antd";
-import { Settings } from "lucide-react";
+import { Alert, Button, Card, Spin } from "antd";
+import { ChevronDown, ChevronRight, Settings } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useConfig } from "../../../api/hooks";
+import { CodeBlock } from "../../../components/CodeBlock";
 import type { LocalBind, LocalListener, LocalRoute } from "../../../config";
 import { RouteSelector } from "./RouteSelector";
 import { ToolTester } from "./ToolTester";
@@ -60,6 +61,40 @@ export function MCPPlaygroundPage() {
   const [routes, setRoutes] = useState<RouteInfo[]>([]);
   const [selectedRoute, setSelectedRoute] = useState<RouteInfo | null>(null);
   const [resultExpanded, setResultExpanded] = useState<boolean>(true);
+  const [showExample, setShowExample] = useState<boolean>(false);
+
+  const exampleConfig = `
+    binds:
+      - port: 8081
+      tunnelProtocol: direct
+      listeners:
+        - protocol: HTTP
+          name: listener
+          hostname: localhost
+          routes:
+            - hostnames: []
+              matches:
+                - path:
+                    pathPrefix: /
+              backends:
+                - mcp:
+                    targets:
+                      - name: mcpserver
+                        mcp:
+                          host: http://localhost:3001/mcp
+                    statefulMode: stateless
+                  weight: 1
+              name: route
+              policies:
+                cors:
+                  allowHeaders:
+                    - '*'
+                  allowMethods: []
+                  allowOrigins:
+                    - '*'
+                  exposeHeaders:
+                    - Mcp-Session-Id
+  `;
 
   const {
     connectionState,
@@ -161,19 +196,40 @@ export function MCPPlaygroundPage() {
       <PageTitle>MCP Playground</PageTitle>
       <PageSubtitle>Test MCP server tool calls interactively</PageSubtitle>
       <Alert
-        message={
-          <>
-            MCP Playground doesn't support root-level configuration. Configure your MCP server with CORS at the route level using Port Bind instead.{" "}
-            <a href="https://agentgateway.dev/docs/standalone/latest/mcp/connect/stdio/#configure-the-agentgateway">
-              Learn more
-            </a>
-            
-          </>
-        } 
-        type="warning" 
-        closable={true}
-        showIcon={true}
-      />
+          type="warning"
+          showIcon
+          closable
+          style={{ alignItems: "flex-start" }}
+          message={
+            <>
+               MCP Playground doesn't support root-level configuration. Configure your MCP server with CORS at the route level using Port Bind instead.
+            </>
+          }
+          description={
+            <>
+              <a 
+                href="https://agentgateway.dev/docs/standalone/latest/mcp/connect/stdio/#configure-the-agentgateway" 
+                target="_blank"
+              >
+                Learn more
+              </a>
+              <div style={{ marginTop: 8 }}>
+                <Button
+                  onClick={() => setShowExample(v => !v)}
+                >
+                  {showExample ? <ChevronDown size={14} /> : <ChevronRight size={14} />} Example Config
+                </Button>
+                {showExample && (
+                  <div style={{ marginTop: 8 }}>
+                    <CodeBlock 
+                      code={exampleConfig} 
+                    />
+                  </div>
+                )}
+              </div>
+            </>
+          }
+        />
       {/* Connection Section */}
       <SectionCard
         title={

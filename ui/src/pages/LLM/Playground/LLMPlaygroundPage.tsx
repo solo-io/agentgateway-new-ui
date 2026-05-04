@@ -139,7 +139,9 @@ export function LLMPlaygroundPage() {
                 </Button>
                 {showExample && (
                   <div style={{ marginTop: 8 }}>
-                    <CodeBlock code={exampleConfig} />
+                    <CodeBlock 
+                      code={exampleConfig} 
+                    />
                   </div>
                 )}
               </div>
