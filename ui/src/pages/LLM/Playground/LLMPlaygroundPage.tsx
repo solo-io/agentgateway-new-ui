@@ -1,5 +1,8 @@
 import styled from "@emotion/styled";
-import { Alert, Spin } from "antd";
+import { Alert, Button, Spin } from "antd";
+import { ChevronDown, ChevronRight } from "lucide-react";
+import { useState } from "react";
+import { CodeBlock } from "../../../components/CodeBlock";
 import { ChatPanel } from "./ChatPanel";
 import { SettingsPanel } from "./SettingsPanel";
 import { usePlayground } from "./usePlayground";
@@ -33,6 +36,43 @@ const PlaygroundLayout = styled.div`
   }
 `;
 
+const exampleConfig = `
+  binds:
+    - port: 8080
+      tunnelProtocol: direct
+      listeners:
+        - protocol: HTTP
+          name: listener
+          hostname: '*'
+          routes:
+            - hostnames: []
+              matches:
+                - path:
+                    pathPrefix: /
+              backends:
+                - ai:
+                    name: ollama
+                    hostOverride: localhost:11434
+                    tokenize: false
+                    provider:
+                      openAI:
+                        model: smallthinker
+                  weight: 1
+              name: route
+              policies:
+                cors:
+                  allowCredentials: false
+                  allowHeaders:
+                    - '*'
+                  allowMethods:
+                    - GET
+                    - POST
+                    - OPTIONS
+                  allowOrigins:
+                    - '*'
+                  exposeHeaders: []
+`;
+
 export function LLMPlaygroundPage() {
   const {
     isLoading,
@@ -53,6 +93,8 @@ export function LLMPlaygroundPage() {
     setPrompt,
   } = usePlayground();
 
+  const [showExample, setShowExample] = useState(false);
+
   if (isLoading) {
     return (
       <Container>
@@ -71,11 +113,38 @@ export function LLMPlaygroundPage() {
         <PageSubtitle>
           Send chat completions requests to your configured LLM models
         </PageSubtitle>
-        <Alert 
-          message="LLM Playground doesn't support root-level configuration. Configure your model with CORS at the route level using Port Bind instead." 
-          type="warning" 
-          closable={true}
-          showIcon={true}
+        <Alert
+          type="warning"
+          showIcon
+          closable
+          style={{ alignItems: "flex-start" }}
+          message={
+            <>
+              LLM Playground doesn't support root-level configuration. Configure your model with CORS at the route level using Port Bind instead.{" "}
+            </>
+          }
+          description={
+            <>
+              <a 
+                href="https://agentgateway.dev/docs/standalone/latest/llm/configuration-modes/#traditional-http-routing-configuration" 
+                target="_blank"
+              >
+                Learn more
+              </a>
+              <div style={{ marginTop: 8 }}>
+                <Button
+                  onClick={() => setShowExample(v => !v)}
+                >
+                  {showExample ? <ChevronDown size={14} /> : <ChevronRight size={14} />} Example Config
+                </Button>
+                {showExample && (
+                  <div style={{ marginTop: 8 }}>
+                    <CodeBlock code={exampleConfig} />
+                  </div>
+                )}
+              </div>
+            </>
+          }
         />
       </div>
 

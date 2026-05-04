@@ -161,7 +161,15 @@ export function MCPPlaygroundPage() {
       <PageTitle>MCP Playground</PageTitle>
       <PageSubtitle>Test MCP server tool calls interactively</PageSubtitle>
       <Alert
-        message="MCP Playground doesn't support root-level configuration. Configure your MCP server with CORS at the route level using Port Bind instead." 
+        message={
+          <>
+            MCP Playground doesn't support root-level configuration. Configure your MCP server with CORS at the route level using Port Bind instead.{" "}
+            <a href="https://agentgateway.dev/docs/standalone/latest/mcp/connect/stdio/#configure-the-agentgateway">
+              Learn more
+            </a>
+            
+          </>
+        } 
         type="warning" 
         closable={true}
         showIcon={true}
