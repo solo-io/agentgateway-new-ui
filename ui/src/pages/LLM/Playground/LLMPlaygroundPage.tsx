@@ -1,7 +1,9 @@
+import { CodeOutlined } from "@ant-design/icons";
 import styled from "@emotion/styled";
 import { Alert, Button, Spin } from "antd";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { CodeBlock } from "../../../components/CodeBlock";
 import { ChatPanel } from "./ChatPanel";
 import { SettingsPanel } from "./SettingsPanel";
@@ -86,14 +88,18 @@ export function LLMPlaygroundPage() {
     sending,
     error,
     chatEndRef,
+    hasTopLevelLlm,
     handleSend,
     handleClear,
     handleSelectLabel,
     setModelOverride,
     setPrompt,
   } = usePlayground();
+  const navigate = useNavigate();
 
   const [showExample, setShowExample] = useState(false);
+
+  const showAlert = !isLoading && (hasTopLevelLlm || models.length === 0);
 
   if (isLoading) {
     return (
@@ -106,6 +112,7 @@ export function LLMPlaygroundPage() {
     );
   }
 
+
   return (
     <Container>
       <div>
@@ -113,41 +120,51 @@ export function LLMPlaygroundPage() {
         <PageSubtitle>
           Send chat completions requests to your configured LLM models
         </PageSubtitle>
-        <Alert
-          type="warning"
-          showIcon
-          closable
-          style={{ alignItems: "flex-start" }}
-          message={
-            <>
-              LLM Playground doesn't support root-level configuration. Configure your model with CORS at the route level using Port Bind instead.{" "}
-            </>
-          }
-          description={
-            <>
-              <a 
-                href="https://agentgateway.dev/docs/standalone/latest/llm/configuration-modes/#traditional-http-routing-configuration" 
-                target="_blank"
-              >
-                Learn more
-              </a>
-              <div style={{ marginTop: 8 }}>
-                <Button
-                  onClick={() => setShowExample(v => !v)}
+        {showAlert && (
+          <Alert
+            type="warning"
+            showIcon
+            closable
+            style={{ alignItems: "flex-start" }}
+            message={
+              <>
+                LLM Playground doesn't support root-level configuration. Configure your model with CORS at the route level using Port Bind instead.{" "}
+              </>
+            }
+            description={
+              <>
+                <a 
+                  href="https://agentgateway.dev/docs/standalone/latest/llm/configuration-modes/#traditional-http-routing-configuration" 
+                  target="_blank"
                 >
-                  {showExample ? <ChevronDown size={14} /> : <ChevronRight size={14} />} Example Config
-                </Button>
-                {showExample && (
-                  <div style={{ marginTop: 8 }}>
-                    <CodeBlock 
-                      code={exampleConfig} 
-                    />
+                  Learn more
+                </a>
+                <div style={{ marginTop: 8 }}>
+                  <div style={{ display: "flex", gap: 8}}>
+                    <Button
+                      onClick={() => setShowExample(v => !v)}
+                    >
+                      {showExample ? <ChevronDown size={14} /> : <ChevronRight size={14} />} Example Config
+                    </Button>
+                    <Button
+                      icon={<CodeOutlined />}
+                      onClick={() => navigate("/traffic-configuration/editor")}
+                    >
+                      Editor
+                    </Button>
                   </div>
-                )}
-              </div>
-            </>
-          }
-        />
+                  {showExample && (
+                    <div style={{ marginTop: 8 }}>
+                      <CodeBlock 
+                        code={exampleConfig} 
+                      />
+                    </div>
+                  )}
+                </div>
+              </>
+            }
+          />
+        )}
       </div>
 
       <PlaygroundLayout>
