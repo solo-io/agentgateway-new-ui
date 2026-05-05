@@ -5,7 +5,7 @@
 import { mutate } from "swr";
 import { get, post } from "./client";
 import { cleanupConfig } from "./helpers";
-import type { LocalConfig } from "./types";
+import type { ConfigDump, LocalConfig } from "./types";
 
 /**
  * Fetches the full configuration from the agentgateway server
@@ -28,8 +28,8 @@ export async function updateConfig(config: LocalConfig): Promise<void> {
 /**
  * Fetches config dump (for XDS mode inspection)
  */
-export async function fetchConfigDump(): Promise<any> {
-  return get<any>("/config_dump");
+export async function fetchConfigDump(): Promise<ConfigDump> {
+  return get<ConfigDump>("/config_dump");
 }
 
 /**
