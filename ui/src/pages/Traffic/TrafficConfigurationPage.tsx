@@ -4,6 +4,7 @@ import { Button, Spin } from "antd";
 import { Network } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useXdsMode } from "../../api";
 import { StyledAlert } from "../../components/StyledAlert";
 import type { AddRootHandlers, UrlParams } from "../../components/TrafficHierarchy";
 import {
@@ -11,6 +12,7 @@ import {
   NodeDetailView,
   useTrafficHierarchy,
 } from "../../components/TrafficHierarchy";
+import { XdsAwareButton } from "../../components/XdsAwareButton";
 
 // ---------------------------------------------------------------------------
 // Styled components
@@ -211,6 +213,8 @@ function parseTrafficPath(pathname: string): UrlParams | null {
 // ---------------------------------------------------------------------------
 
 export function TrafficConfigurationPage() {
+  const { xdsMode } = useXdsMode();
+
   const hierarchy = useTrafficHierarchy();
   const location = useLocation();
   const navigate = useNavigate();
@@ -310,14 +314,14 @@ export function TrafficConfigurationPage() {
                       listeners, routes, and backends.
                     </p>
                     <div style={{ marginTop: 16 }}>
-                      <Button
+                      <XdsAwareButton
                         type="primary"
                         icon={<Network size={16} />}
                         onClick={() => addHandlers?.addBind()}
                         disabled={!addHandlers}
                       >
                         Add Bind
-                      </Button>
+                      </XdsAwareButton>
                     </div>
                   </>
                 )}

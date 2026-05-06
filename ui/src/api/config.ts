@@ -20,6 +20,13 @@ export async function fetchConfig(): Promise<LocalConfig> {
  * using useConfig() automatically refetch the latest data.
  */
 export async function updateConfig(config: LocalConfig): Promise<void> {
+  // defensive check to prevent updating configuration in xDS mode
+  const configDump = await fetchConfigDump();
+  const xdsMode = !!configDump?.config?.xds?.address;
+  if (xdsMode) { 
+    throw new Error("Cannot update configuration in xDS mode");
+  }
+
   const cleanedConfig = cleanupConfig(config);
   await post<void>("/config", cleanedConfig);
   await mutate("/config");

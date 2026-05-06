@@ -1,13 +1,14 @@
 import styled from "@emotion/styled";
 import { type OnMount } from "@monaco-editor/react";
-import { Button, Select, Space, Spin } from "antd";
+import { Select, Space, Spin } from "antd";
 import * as yaml from "js-yaml";
 import type * as monacoEditor from "monaco-editor";
 import { useCallback, useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
-import { fetchConfig, updateConfig } from "../../api";
+import { fetchConfig, updateConfig, useXdsMode } from "../../api";
 import type { LocalConfig } from "../../api/types";
 import { MonacoEditorWithSettings } from "../../components/MonacoEditor";
+import { XdsAwareButton } from "../../components/XdsAwareButton";
 import { useTheme } from "../../contexts/ThemeContext";
 import { assetUrl } from "../../utils/assetUrl";
 
@@ -72,6 +73,8 @@ export function ConfigEditor({ onClose }: ConfigEditorProps) {
   const editorRef = useRef<monacoEditor.editor.IStandaloneCodeEditor | null>(null);
   const originalConfigRef = useRef<LocalConfig | null>(null);
   const originalValueRef = useRef<string>("");
+
+  const { xdsMode } = useXdsMode();
 
   const convertToFormat = useCallback(
     (config: LocalConfig, targetFormat: ConfigFormat): string => {
@@ -315,24 +318,24 @@ export function ConfigEditor({ onClose }: ConfigEditorProps) {
               { label: "YAML", value: "yaml" },
             ]}
           />
-          <Button onClick={handleFormat} disabled={isLoading}>
+          <XdsAwareButton onClick={handleFormat} disabled={isLoading}>
             Format
-          </Button>
-          <Button onClick={onClose} disabled={isSubmitting}>
+          </XdsAwareButton>
+          <XdsAwareButton onClick={onClose} disabled={isSubmitting}>
             Cancel
-          </Button>
+          </XdsAwareButton>
           <InfoText>
             {hasChanges && "⚠️ You have unsaved changes"}
           </InfoText>
         </Space>
-        <Button
+        <XdsAwareButton
           type="primary"
           onClick={handleSave}
           loading={isSubmitting}
           disabled={!hasChanges || isLoading}
         >
           Save Changes
-        </Button>
+        </XdsAwareButton>
       </ActionBar>
 
       <EditorWrapper>
@@ -347,6 +350,7 @@ export function ConfigEditor({ onClose }: ConfigEditorProps) {
             value={configValue}
             theme={theme}
             onMount={handleEditorDidMount}
+            readOnly={xdsMode}
             onSave={handleSave}
             onQuit={onClose}
             downloadFileName={`agentgateway-config.${format}`}
