@@ -4,13 +4,30 @@
 
 import { mutate } from "swr";
 import { get, post } from "./client";
+import { configDumpToLocalConfig } from "./configMapper";
 import { cleanupConfig } from "./helpers";
 import type { ConfigDump, LocalConfig } from "./types";
+
+async function isXdsMode(): Promise<{ xdsMode: boolean, configDump: ConfigDump }> { 
+  const configDump = await fetchConfigDump();
+  return {
+    xdsMode: !!configDump?.config?.xds?.address,
+    configDump,
+  };
+}
 
 /**
  * Fetches the full configuration from the agentgateway server
  */
 export async function fetchConfig(): Promise<LocalConfig> {
+  // check for xDS mode
+  const {xdsMode, configDump } = await isXdsMode();
+  if (xdsMode) { 
+    console.log("xDS mode detected, returning config servd from xDS");
+    return configDumpToLocalConfig(configDump);
+  }
+
+  console.log("local mode detected, returning config from local file");
   const data = await get<LocalConfig | null>("/config");
   return data ?? { binds: [] };
 }
@@ -21,8 +38,7 @@ export async function fetchConfig(): Promise<LocalConfig> {
  */
 export async function updateConfig(config: LocalConfig): Promise<void> {
   // defensive check to prevent updating configuration in xDS mode
-  const configDump = await fetchConfigDump();
-  const xdsMode = !!configDump?.config?.xds?.address;
+  const { xdsMode } = await isXdsMode();
   if (xdsMode) { 
     throw new Error("Cannot update configuration in xDS mode");
   }

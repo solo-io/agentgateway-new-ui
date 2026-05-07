@@ -9,16 +9,18 @@ export type {
   LocalAIBackend,
   LocalBackendPolicies,
   LocalBind,
-  LocalConfig, LocalListener,
-  LocalListenerProtocol, LocalLLMConfig,
-  LocalLLMModels, LocalMcpTarget,
+  LocalConfig,
+  LocalListener,
+  LocalListenerProtocol,
+  LocalLLMConfig,
+  LocalLLMModels, LocalMcpBackend, LocalMcpTarget,
   LocalPolicy,
   LocalRoute,
   LocalRouteBackend,
   LocalSimpleMcpConfig,
   LocalTCPRoute,
   LocalTCPRouteBackend,
-  LocalTLSServerConfig
+  LocalTLSServerConfig, RouteMatch
 } from "../config";
 
 // Config Dump interface (can move this to another file later if needed)

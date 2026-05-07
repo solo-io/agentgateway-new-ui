@@ -111,32 +111,18 @@ export function ConfigEditor({ onClose }: ConfigEditorProps) {
     async (editor, monaco) => {
       editorRef.current = editor;
 
-      try {
-        const response = await fetch(assetUrl("/config-schema.json"));
-        if (!response.ok) {
-          throw new Error(`Failed to fetch config-schema.json: ${response.statusText}`);
-        }
-        const schema = await response.json();
-        
-        // Configure JSON schema
-        monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
-          validate: true,
-          allowComments: false,
-          schemas: [
-            {
-              uri: "http://agentgateway/config-schema.json",
-              fileMatch: ["*"],
-              schema: schema,
-            },
-          ],
-          enableSchemaRequest: true,
-        });
-
-        // Configure YAML schema (if monaco-yaml is available)
-        const yamlWorker = (monaco.languages as any).yaml?.yamlDefaults;
-        if (yamlWorker) {
-          yamlWorker.setDiagnosticsOptions({
+      if (!xdsMode) { 
+        try {
+          const response = await fetch(assetUrl("/config-schema.json"));
+          if (!response.ok) {
+            throw new Error(`Failed to fetch config-schema.json: ${response.statusText}`);
+          }
+          const schema = await response.json();
+          
+          // Configure JSON schema
+          monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
             validate: true,
+            allowComments: false,
             schemas: [
               {
                 uri: "http://agentgateway/config-schema.json",
@@ -144,11 +130,27 @@ export function ConfigEditor({ onClose }: ConfigEditorProps) {
                 schema: schema,
               },
             ],
+            enableSchemaRequest: true,
           });
+  
+          // Configure YAML schema (if monaco-yaml is available)
+          const yamlWorker = (monaco.languages as any).yaml?.yamlDefaults;
+          if (yamlWorker) {
+            yamlWorker.setDiagnosticsOptions({
+              validate: true,
+              schemas: [
+                {
+                  uri: "http://agentgateway/config-schema.json",
+                  fileMatch: ["*"],
+                  schema: schema,
+                },
+              ],
+            });
+          }
+        } catch (_e) {
+          console.error("Failed to load config schema:", _e);
+          toast.error("Failed to load configuration schema");
         }
-      } catch (_e) {
-        console.error("Failed to load config schema:", _e);
-        toast.error("Failed to load configuration schema");
       }
 
       editor.onDidChangeModelContent(() => {
@@ -161,7 +163,7 @@ export function ConfigEditor({ onClose }: ConfigEditorProps) {
         editor.getAction("editor.action.formatDocument")?.run();
       }, 300);
     },
-    []
+    [xdsMode]
   );
 
   const handleSave = async () => {
