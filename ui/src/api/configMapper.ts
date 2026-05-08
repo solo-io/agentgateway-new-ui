@@ -119,6 +119,7 @@ import type {
     }
   
     if (wire.tcpRoutes) {
+        // eslint-ignore-next-line
       console.warn(
         "configMapper: tcpRoutes present but mapping not yet implemented",
         wire.tcpRoutes,
@@ -218,6 +219,7 @@ import type {
       const ai = mapAiBackend(inner.ai);
       if (ai) kindObj = { ai };
     } else {
+      // eslint-ignore-next-line
       console.warn("configMapper: unknown backend kind", Object.keys(inner));
       return undefined;
     }
@@ -309,6 +311,7 @@ import type {
         schema: wire.openapi.schema,
       };
     } else {
+      // eslint-disable-next-line
       console.warn("configMapper: unknown MCP target kind", wire);
       return undefined;
     }
@@ -396,6 +399,7 @@ import type {
         const destKey = key === "transformation" ? "transformations" : key;
   
         if (!isKnownPolicyKey(destKey)) {
+          // eslint-disable-next-line
           console.warn(`configMapper: unknown inline policy key '${key}'`, value);
         }
         merged[destKey] = value;
@@ -464,6 +468,7 @@ import type {
           ? isKnownGatewayPolicyKey(destKey)
           : isKnownPolicyKey(destKey);
         if (!known) {
+          // eslint-disable-next-line
           console.warn(
             `configMapper: unknown ${listenerName ? "gateway" : "route"} policy key '${key}'`,
             value,

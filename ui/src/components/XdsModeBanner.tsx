@@ -5,8 +5,7 @@ export function XdsModeBanner() {
     const { xdsMode, xdsAddress} = useXdsMode();
 
     if (!xdsMode) return null;
-    console.log(`xdsMode`, xdsMode);
-
+    
     return (
         <Alert 
             type="info"
