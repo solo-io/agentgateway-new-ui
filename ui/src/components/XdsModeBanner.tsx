@@ -16,7 +16,7 @@ export function XdsModeBanner() {
             description={
                 xdsAddress 
                     ? `This agentgateway is receiving its configuration from ${xdsAddress}.  Edits are disabled.` 
-                    : "This agentgateway is receiving its configuration from a remote control plane.  Edits are disabled"
+                    : "This agentgateway is receiving its configuration from a remote control plane.  Edits are disabled."
             }
         />
     );
