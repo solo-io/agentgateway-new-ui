@@ -4,7 +4,6 @@ import { Button, Spin } from "antd";
 import { Network } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useXdsMode } from "../../api";
 import { StyledAlert } from "../../components/StyledAlert";
 import type { AddRootHandlers, UrlParams } from "../../components/TrafficHierarchy";
 import {
@@ -213,8 +212,6 @@ function parseTrafficPath(pathname: string): UrlParams | null {
 // ---------------------------------------------------------------------------
 
 export function TrafficConfigurationPage() {
-  const { xdsMode } = useXdsMode();
-
   const hierarchy = useTrafficHierarchy();
   const location = useLocation();
   const navigate = useNavigate();
