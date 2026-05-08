@@ -23,11 +23,8 @@ export async function fetchConfig(): Promise<LocalConfig> {
   // check for xDS mode
   const {xdsMode, configDump } = await isXdsMode();
   if (xdsMode) { 
-    console.log("xDS mode detected, returning config servd from xDS");
     return configDumpToLocalConfig(configDump);
   }
-
-  console.log("local mode detected, returning config from local file");
   const data = await get<LocalConfig | null>("/config");
   return data ?? { binds: [] };
 }
