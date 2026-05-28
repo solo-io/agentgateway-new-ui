@@ -806,10 +806,17 @@ export function NodeDetailView({ hierarchy, urlParams }: NodeDetailViewProps) {
         selected.type === "mcp" ||
         selected.type === "frontendPolicies"
       ) {
-        setFormData(selected.data as Record<string, unknown>);
+        if (selected.type === "llm" && hierarchy.llm) {
+          setFormData({
+            ...(selected.data as Record<string, unknown>),
+            models: hierarchy.llm.models.map((m) => m.model),
+          });
+        } else {
+          setFormData(selected.data as Record<string, unknown>);
+        }
       }
     }
-  }, [isEditing, selected]);
+  }, [isEditing, selected, hierarchy.llm]);
 
   if (hierarchy.isLoading || isPolling) {
     return (
@@ -2189,14 +2196,13 @@ export function NodeDetailView({ hierarchy, urlParams }: NodeDetailViewProps) {
       setSaving(true);
       try {
         if (selected.type === "llm") {
-          // Reconstruct full config: form data + models + policies (managed as child nodes)
-          const models = hierarchy.llm?.models.map((m) => m.model) ?? [];
+          const models = (fd.models as unknown[]) ?? [];
           const policies = hierarchy.llm?.policies.reduce((acc, p) => {
             acc[p.policyType] = p.policy;
             return acc;
           }, {} as Record<string, unknown>);
           const fullConfig = {
-            ...fd,
+            ...Object.fromEntries(Object.entries(fd).filter(([k]) => k !== "models")),
             models,
             ...(policies && Object.keys(policies).length > 0 ? { policies } : {}),
           };
