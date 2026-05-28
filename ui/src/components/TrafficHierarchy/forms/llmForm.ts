@@ -57,14 +57,15 @@ export const schema: RJSFSchema = {
     },
     port: {
       type: "number",
-      title: "Gateway Port (optional)",
+      title: "Gateway Port",
     },
   },
 };
 
 export const uiSchema: UiSchema = {
   "ui:title": "",
-  "ui:order": ["models", "port"],
+  "ui:description": "Agentgateway exposes an OpenAI-compatible API (e.g. /v1/chat/completions) on the configured port to access your defined models.",
+  "ui:order": ["port", "models"],
   models: {
     items: {
       "ui:order": ["provider", "name", "params", "*"],
@@ -84,17 +85,16 @@ export const uiSchema: UiSchema = {
           "ui:placeholder": "gpt-4-turbo",
         },
         hostOverride: {
-          "ui:placeholder": "localhost:11434",
+          "ui:placeholder": "",
         },
         pathOverride: {
-          "ui:placeholder": "/v1",
+          "ui:placeholder": "",
         },
       },
     },
   },
   port: {
-    "ui:placeholder": "e.g. 3000",
-    "ui:help": "The port Agentgateway will listen on for OpenAI-compatible requests (e.g. /v1/chat/completions). Point your AI clients to http://localhost:<port>. Leave empty to use the main gateway port.",
+    "ui:placeholder": "e.g. 8080",
   },
 };
 
