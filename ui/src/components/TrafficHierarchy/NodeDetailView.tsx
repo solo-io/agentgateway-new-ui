@@ -809,7 +809,15 @@ export function NodeDetailView({ hierarchy, urlParams }: NodeDetailViewProps) {
         if (selected.type === "llm" && hierarchy.llm) {
           setFormData({
             ...(selected.data as Record<string, unknown>),
-            models: hierarchy.llm.models.map((m) => m.model),
+            models: hierarchy.llm.models.map((m) => {
+              const src = m.model as any;
+              const p = (src.params ?? {}) as any;
+              return {
+                provider: src.provider,
+                name: src.name,
+                params: { apiKey: p.apiKey, model: p.model, hostOverride: p.hostOverride, pathOverride: p.pathOverride },
+              };
+            }),
           });
         } else {
           setFormData(selected.data as Record<string, unknown>);
@@ -2196,7 +2204,11 @@ export function NodeDetailView({ hierarchy, urlParams }: NodeDetailViewProps) {
       setSaving(true);
       try {
         if (selected.type === "llm") {
-          const models = (fd.models as unknown[]) ?? [];
+          const originalModels = hierarchy.llm?.models.map((m) => m.model) ?? [];
+          const models = ((fd.models as unknown[]) ?? []).map((formModel, i) => ({
+            ...(originalModels[i] ?? {}) as unknown as Record<string, unknown>,
+            ...(formModel as Record<string, unknown>),
+          }));
           const policies = hierarchy.llm?.policies.reduce((acc, p) => {
             acc[p.policyType] = p.policy;
             return acc;
