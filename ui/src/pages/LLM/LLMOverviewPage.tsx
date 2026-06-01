@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { Button, Drawer, InputNumber, Tag, Tooltip } from "antd";
+import { Button, InputNumber, Tag, Tooltip } from "antd";
 import { Check, Edit2, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
@@ -8,7 +8,6 @@ import { fetchConfig, updateConfig } from "../../api/config";
 import type { LocalConfig } from "../../api/types";
 import { useTrafficHierarchy } from "../../components/TrafficHierarchy";
 import type { BindNode } from "../../components/TrafficHierarchy/hooks/useTrafficHierarchy";
-import { ConfigEditor } from "../ConfigEditor/ConfigEditor";
 
 // Styles
 const PageRoot = styled.div`
@@ -135,8 +134,6 @@ interface AIModelInfo {
 }
 
 // Helpers
-
-
 function extractAIModels(bindNodes: BindNode[]): AIModelInfo[] {
     const results: AIModelInfo[] = [];
     for (const bindNode of bindNodes) {
@@ -184,7 +181,6 @@ function extractAIModels(bindNodes: BindNode[]): AIModelInfo[] {
 export function LLMOverviewPage() {
     const hierarchy = useTrafficHierarchy();
     const navigate = useNavigate();
-    const [drawerModel, setDrawerModel] = useState<AIModelInfo | null>(null);
     const [editingPort, setEditingPort] = useState<number | null>(null);
     const [editPortValue, setEditPortValue] = useState<number | null>(null);
     const [isSavingPort, setIsSavingPort] = useState(false);
@@ -329,9 +325,9 @@ export function LLMOverviewPage() {
                                     </Button>
                                     <Button
                                         size="small"
-                                        onClick={() => setDrawerModel(m)}
+                                        onClick={() => navigate("/traffic-configuration/editor")}
                                     >
-                                        View Config
+                                        Raw Editor
                                     </Button>
                                 </CardActions>
                             </ModelCard>
@@ -339,21 +335,6 @@ export function LLMOverviewPage() {
                     </ModelGrid>
                 </ModelGridScroll>
             </ModelsSection>
-
-            <Drawer
-                title={drawerModel ? `Config - ${drawerModel.name}` : "Config"}
-                open={drawerModel !== null}
-                onClose={() => setDrawerModel(null)}
-                width={720}
-                destroyOnHidden
-            >
-                {drawerModel && (
-                    <ConfigEditor 
-                        onClose={() => setDrawerModel(null)}
-                        configFilter={makeConfigFilter(drawerModel.port)}
-                    />
-                )}
-            </Drawer>
         </PageRoot>
     );
 }
