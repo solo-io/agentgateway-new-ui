@@ -1,13 +1,12 @@
 import type { ReactNode } from "react";
 import React, { createContext, useCallback, useContext, useState } from "react";
 
-export type LLMWizardStep = "port" | "selectModel" | "install" | "setup" | "modelConfig";
+export type LLMWizardStep = "port" | "selectModel" | "install" | "modelConfig";
 
 export const LLM_WIZARD_STEPS: LLMWizardStep[] = [
     "port",
     "selectModel",
     "install",
-    "setup",
     "modelConfig",
 ];
 

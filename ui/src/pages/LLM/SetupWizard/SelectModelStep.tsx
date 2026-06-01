@@ -63,7 +63,7 @@ const OPTIONS = [
   },
   {
     id: "manual",
-    label: "Manual Setup",
+    label: "Manual Configuration",
     subtext: "Set up your model manually",
   },
 ];
@@ -92,10 +92,6 @@ export function SelectModelStep() {
     return (
         <div>
             <StepTitle>How do you want to set up your model?</StepTitle>
-            <StepDescription>
-                Choose a setup path.  More options will be available soon.
-            </StepDescription>
-
             <CardGrid>
                 {OPTIONS.map(({ id, label, subtext }) => (
                     <OptionCard

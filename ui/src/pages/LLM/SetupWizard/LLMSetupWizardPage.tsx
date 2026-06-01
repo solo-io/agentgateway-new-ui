@@ -5,7 +5,6 @@ import { LLMWizardProvider, useLLMWizard } from "./LLMWizardContext";
 import { ModelConfigStep } from "./ModelConfigStep";
 import { PortStep } from "./PortStep";
 import { SelectModelStep } from "./SelectModelStep";
-import { SetupStep } from "./SetupStep";
 
 const PageRoot = styled.div`
   display: flex;
@@ -39,7 +38,6 @@ const StepBody = styled.div`
 const STEP_LABELS = [
     { title: "Model Type" },
     { title: "Install" },
-    { title: "Setup" },
     { title: "Configure" },
 ];
 
@@ -51,7 +49,6 @@ function LLMSetupWizardInner() {
         port: <PortStep />,
         selectModel: <SelectModelStep />,
         install: <InstallStep />,
-        setup: <SetupStep />,
         modelConfig: <ModelConfigStep />,
     }[currentStep];
 
