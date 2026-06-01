@@ -39,11 +39,12 @@ export function extractModels(config: any): PlaygroundModel[] {
               const providerEntry = p.provider ?? p;
               for (const [providerName, providerConfig] of Object.entries(providerEntry)) {
                 const model = (providerConfig as any)?.model;
-                if (!model || seen.has(model)) continue;
-                seen.add(model);
+                const label = ai.name ?? model;
+                if (!label || seen.has(label)) continue;
+                seen.add(label);
                 const baseUrl = `http://localhost:${port}`;
                 models.push({
-                  label: model,
+                  label,
                   defaultModel: model,
                   provider: providerName,
                   baseUrl,

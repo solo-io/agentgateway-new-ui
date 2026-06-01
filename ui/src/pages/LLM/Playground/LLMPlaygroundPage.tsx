@@ -3,7 +3,7 @@ import styled from "@emotion/styled";
 import { Alert, Button, Spin } from "antd";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { CodeBlock } from "../../../components/CodeBlock";
 import { ChatPanel } from "./ChatPanel";
 import { SettingsPanel } from "./SettingsPanel";
@@ -97,9 +97,11 @@ export function LLMPlaygroundPage() {
   } = usePlayground();
   const navigate = useNavigate();
 
+  const [searchParams] = useSearchParams();
   const [showExample, setShowExample] = useState(false);
 
   const showAlert = !isLoading && (hasTopLevelLlm || models.length === 0);
+  const providedModelLabel = searchParams.get("label");
 
   if (isLoading) {
     return (
@@ -170,6 +172,7 @@ export function LLMPlaygroundPage() {
 
       <PlaygroundLayout>
         <SettingsPanel
+          providedModelLabel={providedModelLabel}
           models={models}
           selectedLabel={selectedLabel}
           selectedModel={selectedModel}

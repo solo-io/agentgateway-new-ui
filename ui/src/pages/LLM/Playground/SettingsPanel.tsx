@@ -1,6 +1,7 @@
 import styled from "@emotion/styled";
 import { Button, Card, Input, Select, Tag, Typography } from "antd";
 import { Trash2 } from "lucide-react";
+import { useEffect } from "react";
 import { PROVIDER_COLORS } from "./constants";
 import type { Message, PlaygroundModel } from "./types";
 
@@ -34,6 +35,7 @@ const EndpointInfo = styled.div`
 
 interface SettingsPanelProps {
   models: PlaygroundModel[];
+  providedModelLabel: string | null;
   selectedLabel: string | null;
   selectedModel: PlaygroundModel | null;
   modelOverride: string;
@@ -46,6 +48,7 @@ interface SettingsPanelProps {
 
 export function SettingsPanel({
   models,
+  providedModelLabel,
   selectedLabel,
   selectedModel,
   modelOverride,
@@ -55,6 +58,12 @@ export function SettingsPanel({
   onChangeModelOverride,
   onClear,
 }: SettingsPanelProps) {
+  useEffect(() => {
+    if (!providedModelLabel || selectedLabel !== null) return;
+    const match = models.find((m) => m.label === providedModelLabel);
+    if (match) onSelectLabel(match.label);
+  }, [providedModelLabel, models, selectedLabel, onSelectLabel]);
+
   return (
     <Card title="Settings" size="small">
       <SidebarSection>
@@ -70,6 +79,7 @@ export function SettingsPanel({
               placeholder="Select a configuration"
               value={selectedLabel}
               onChange={onSelectLabel}
+              popupMatchSelectWidth={false}
               options={models.map((m) => ({
                 label: (
                   <span
@@ -77,6 +87,8 @@ export function SettingsPanel({
                       display: "flex",
                       alignItems: "center",
                       gap: 8,
+                      overflow: "hidden",
+                      minWidth: 0,
                     }}
                   >
                     <Tag
