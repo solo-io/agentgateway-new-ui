@@ -1,11 +1,11 @@
 import styled from "@emotion/styled";
-import { Button, Form, Input, Select } from "antd";
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Button, Form, Input } from "antd";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 import { createListener, createRoute } from "../../../api/crud";
-import { useLLMWizard } from "./LLMWizardContext";
 import type { AIProvider, LocalRouteBackend } from "../../../config";
+import { useLLMWizard } from "./LLMWizardContext";
 
 const StepTitle = styled.h2`
   font-size: 20px;
@@ -26,6 +26,11 @@ const Actions = styled.div`
   margin-top: var(--spacing-xl);
 `;
 
+const StyledInput = styled(Input)`
+  width: 100%;
+  border: 1px solid #d9d9d9 !important;
+`;
+
 const LISTENER_NAME = "llm-listener";
 const ROUTE_NAME = "llm-route";
 
@@ -38,6 +43,12 @@ export function ModelConfigStep() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [form] = Form.useForm();
     const navigate = useNavigate();
+
+    const DEFAULT_MODEL_ALIAS = "my-ollama-smallthinker";
+
+    useEffect(() => {
+        form.setFieldValue("name", data.modelFields.name || DEFAULT_MODEL_ALIAS);
+    }, []);
 
     const handleSubmit = async () => { 
         let values;
@@ -94,7 +105,7 @@ export function ModelConfigStep() {
             <Form
                 form={form}
                 layout="vertical"
-                initialValues={data.modelFields}
+                initialValues={{ name: data.modelFields.name || DEFAULT_MODEL_ALIAS }}
                 onValuesChange={(changed) => updateModelFields(changed)}
             >
                 <Form.Item
@@ -102,18 +113,10 @@ export function ModelConfigStep() {
                     label="Model Alias"
                     rules={[{ required: true, message: "Model Alias is required"}]}
                 >
-                    <Input placeholder="e.g. my-ollama-model" />
+                    <StyledInput placeholder="e.g. my-ollama-model" />
                 </Form.Item>
 
-                <Form.Item
-                    name="provider"
-                    label="Provider"
-                    rules={[{ required: true, message: "Provider is required"}]}
-                >
-                    <Select options={PROVIDER_OPTIONS} />
-                </Form.Item>
-
-                <Form.Item
+                {/* <Form.Item
                     name="model"
                     label="Model Name"
                     rules={[{ required: true, message: "Model Name is required" }]}
@@ -127,7 +130,7 @@ export function ModelConfigStep() {
                     rules={[{ required: true, message: "Host Override is required"}]}
                 >
                     <Input placeholder="e.g. localhost:11434" />
-                </Form.Item>
+                </Form.Item> */}
             </Form>
 
             <Actions>

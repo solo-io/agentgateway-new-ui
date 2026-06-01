@@ -1,10 +1,11 @@
 import styled from "@emotion/styled";
-import { Steps } from "antd";
+import { Card, ConfigProvider, Steps } from "antd";
+import { InstallStep } from "./InstallStep";
 import { LLMWizardProvider, useLLMWizard } from "./LLMWizardContext";
 import { ModelConfigStep } from "./ModelConfigStep";
 import { PortStep } from "./PortStep";
 import { SelectModelStep } from "./SelectModelStep";
-import { WalkthroughStep } from "./WalkthroughStep";
+import { SetupStep } from "./SetupStep";
 
 const PageRoot = styled.div`
   display: flex;
@@ -34,42 +35,46 @@ const StepBody = styled.div`
     padding: var(--spacing-xl);  
 `;
 
-const StepContent = styled.div`
-    width: 100%;
-    max-width: 640px;
-`;
 
 const STEP_LABELS = [
-    { title: "Port" },
     { title: "Model Type" },
+    { title: "Install" },
     { title: "Setup" },
     { title: "Configure" },
 ];
 
-function LLMSetupWizardInner() { 
+function LLMSetupWizardInner() {
     const { currentStep, stepIndex } = useLLMWizard();
+    const isPreStep = currentStep === "port";
 
-    const stepComponent = { 
+    const stepComponent = {
         port: <PortStep />,
         selectModel: <SelectModelStep />,
-        walkthrough: <WalkthroughStep />,
+        install: <InstallStep />,
+        setup: <SetupStep />,
         modelConfig: <ModelConfigStep />,
     }[currentStep];
 
     return (
         <PageRoot>
             <PageHeader>
-                <PageTitle>LLM Setup</PageTitle>
-                <Steps
-                    current={stepIndex}
-                    items={STEP_LABELS}
-                    size="small"
-                />
+                <PageTitle>LLM Setup Wizard</PageTitle>
             </PageHeader>
             <StepBody>
-                <StepContent>
+                <Card style={{ width: "100%", maxWidth: 640 }}>
+                    {!isPreStep && (
+                        <ConfigProvider theme={{ token: { colorPrimary: "#6941c6" } }}>
+                            <Steps
+                                current={stepIndex - 1}
+                                items={STEP_LABELS}
+                                labelPlacement="vertical"
+                                size="small"
+                                style={{ marginBottom: "var(--spacing-xl)" }}
+                            />
+                        </ConfigProvider>
+                    )}
                     {stepComponent}
-                </StepContent>
+                </Card>
             </StepBody>
         </PageRoot>
     );

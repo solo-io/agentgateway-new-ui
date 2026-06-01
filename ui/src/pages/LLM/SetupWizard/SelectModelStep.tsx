@@ -1,5 +1,6 @@
 import styled from "@emotion/styled";
 import { Button, Card } from "antd";
+import { useNavigate } from "react-router-dom";
 import { useLLMWizard } from "./LLMWizardContext";
 
 const StepTitle = styled.h2`
@@ -17,28 +18,29 @@ const StepDescription = styled.p`
 
 const CardGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: var(--spacing-lg);
 `;
 
-const OptionCard = styled(Card)<{ $selected: boolean; $disabled: boolean }>`
-  cursor: ${({ $disabled }) => ($disabled ? "not-allowed" : "pointer")};
-  opacity: ${({ $disabled }) => ($disabled ? 0.5 : 1)};
-  border: 2px solid
-    ${({ $selected }) =>
-      $selected ? "var(--color-primary)" : "var(--color-border)"};
-  transition: border-color 0.2s;
+const OptionCard = styled(Card)<{ $selected: boolean }>`
+  cursor: pointer;
+  box-shadow: ${({ $selected }) =>
+    $selected ? "0 0 0 2px var(--color-primary)" : "none"};
+  background: ${({ $selected }) =>
+    $selected ? "var(--color-primary-bg)" : "inherit"};
+  transition: box-shadow 0.2s, background 0.2s;
 
   &:hover {
-    border-color: ${({ $disabled, $selected }) =>
-      $disabled ? "var(--color-border)" : $selected ? "var(--color-primary)" : "var(--color-primary-hover)"};
+    box-shadow: ${({ $selected }) =>
+      $selected ? "0 0 0 2px var(--color-primary)" : "0 0 0 2px var(--color-primary-hover)"};
   }
 `;
 
-const CardLabel = styled.div`
+const CardLabel = styled.div<{ $selected: boolean }>`
   font-weight: 600;
   font-size: 15px;
-  color: var(--color-text-base);
+  color: ${({ $selected }) =>
+    $selected ? "var(--color-primary)" : "var(--color-text-base)"};
   margin-bottom: var(--spacing-xs);
 `;
 
@@ -58,19 +60,11 @@ const OPTIONS = [
     id: "ollama",
     label: "Ollama",
     subtext: "Run models locally with Ollama",
-    disabled: false,
-  },
-  {
-    id: "other-walkthroughs",
-    label: "Other Walkthroughs",
-    subtext: "Coming soon",
-    disabled: true,
   },
   {
     id: "manual",
     label: "Manual Setup",
-    subtext: "Coming soon",
-    disabled: true,
+    subtext: "Set up your model manually",
   },
 ];
 
@@ -78,12 +72,20 @@ export function SelectModelStep() {
     const { data, setSelectedWalkthrough, nextStep, previousStep } = useLLMWizard();
     const selected = data.selectedWalkthrough;
 
-    const handleSelect = (id: string, disabled: boolean) => {
-        if (disabled) return;
+    const navigate = useNavigate();
+
+    const handleSelect = (id: string) => {
         setSelectedWalkthrough(id);
     };
 
     const handleNext = () => { 
+        if (!selected) return;
+
+        if (selected === "manual") { 
+            navigate("/traffic-configuration/editor");
+            return;
+        }
+        
         if (selected) nextStep();
     };
 
@@ -95,14 +97,13 @@ export function SelectModelStep() {
             </StepDescription>
 
             <CardGrid>
-                {OPTIONS.map(({ id, label, subtext, disabled }) => (
+                {OPTIONS.map(({ id, label, subtext }) => (
                     <OptionCard
                         key={id}
                         $selected={selected === id}
-                        $disabled={disabled}
-                        onClick={() => handleSelect(id, disabled)}
+                        onClick={() => handleSelect(id)}
                     >
-                        <CardLabel>{label}</CardLabel>
+                        <CardLabel $selected={selected === id}>{label}</CardLabel>
                         <CardSubtext>{subtext}</CardSubtext>
                     </OptionCard>
                 ))}

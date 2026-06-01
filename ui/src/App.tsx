@@ -10,9 +10,9 @@ import { DashboardPage } from "./pages/Dashboard/DashboardPage";
 import { LLMConfigurationPage } from "./pages/LLM/LLMConfigurationPage";
 import { LLMLogsPage } from "./pages/LLM/LLMLogsPage";
 import { LLMMetricsPage } from "./pages/LLM/LLMMetricsPage";
+import { LLMOverviewPage } from "./pages/LLM/LLMOverviewPage";
 import { LLMPlaygroundPage } from "./pages/LLM/Playground/LLMPlaygroundPage";
 import { LLMSetupWizardPage } from "./pages/LLM/SetupWizard/LLMSetupWizardPage";
-import { LLMOverviewPage } from "./pages/LLM/LLMOverviewPage";
 import { MCPConfigurationPage } from "./pages/MCP/MCPConfigurationPage";
 import { MCPLogsPage } from "./pages/MCP/MCPLogsPage";
 import { MCPMetricsPage } from "./pages/MCP/MCPMetricsPage";
@@ -61,7 +61,7 @@ function App() {
                   <Route path="/dashboard" element={<DashboardPage />} />
 
                   {/* LLM Section */}
-                  <Route path="/llm-setup" element={<LLMSetupWizardPage />} />
+                  <Route path="/llm-setup-wizard" element={<LLMSetupWizardPage />} />
                   <Route path="/llm-configuration" element={<LLMOverviewPage />} />
                   <Route path="/llm-configuration/llm" element={<LLMConfigurationPage />} />
                   <Route path="/llm-configuration/llm/model/:modelIndex" element={<LLMConfigurationPage />} />

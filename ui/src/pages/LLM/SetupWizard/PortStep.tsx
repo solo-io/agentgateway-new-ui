@@ -15,6 +15,16 @@ const StepDescription = styled.p`
     margin: 0 0 var(--spacing-xl) 0;
 `;
 
+const StyledInputNumber = styled(InputNumber)`
+  width: 100%;
+  border: 1px solid #d9d9d9 !important;
+
+  &:hover,
+  &:focus-within {
+    border-color: transparent !important;
+  }
+`;
+
 const Actions = styled.div`
     display: flex;
     justify-content: flex-end;
@@ -24,6 +34,8 @@ const Actions = styled.div`
 export function PortStep() { 
     const { data, setPort, nextStep } = useLLMWizard();
     const [form] = Form.useForm();
+
+    const DEFAULT_PORT = 8621;
 
     const handleNext = async () => { 
         try { 
@@ -37,12 +49,12 @@ export function PortStep() {
 
     return (
         <div>
-            <StepTitle>Where do you want this to run?</StepTitle>
+            <StepTitle>Where do you want agentgateway to listen on?</StepTitle>
             <StepDescription>
-                Choose the port your LLM gateway will listen on.
+                Set the local port where agentgateway will listen for traffic (default: 8621).
             </StepDescription>
 
-            <Form form={form} layout="vertical" initialValues={{ port: data.port ?? undefined }}>
+            <Form form={form} layout="vertical" initialValues={{ port: data.port ?? DEFAULT_PORT }}>
                 <Form.Item
                     name="port"
                     label="Port"
@@ -51,8 +63,7 @@ export function PortStep() {
                         { type: "number", min: 1, max: 65535, message: "Port must be between 1 and 65535" }
                     ]}
                 >
-                    <InputNumber
-                        style={{ width: "100%"}}
+                    <StyledInputNumber
                         placeholder="e.g. 8080"
                         min={1}
                         max={65535}

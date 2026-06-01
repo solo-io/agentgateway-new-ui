@@ -1,12 +1,13 @@
 import type { ReactNode } from "react";
 import React, { createContext, useCallback, useContext, useState } from "react";
 
-export type LLMWizardStep = "port" | "selectModel" | "walkthrough" | "modelConfig";
+export type LLMWizardStep = "port" | "selectModel" | "install" | "setup" | "modelConfig";
 
 export const LLM_WIZARD_STEPS: LLMWizardStep[] = [
     "port",
     "selectModel",
-    "walkthrough",
+    "install",
+    "setup",
     "modelConfig",
 ];
 
@@ -20,13 +21,13 @@ export interface LLMModelFields {
 export interface LLMWizardData { 
     port: number | null;
     selectedWalkthrough: string | null; // null if not yet selected
-    walkthroughVerified: boolean;
-    walkthroughVerifyError: string | null;
+    setupVerified: boolean;
+    setupVerifyError: string | null;
     modelFields: LLMModelFields;
 };
 
 const DEFAULT_MODEL_FIELDS: LLMModelFields = { 
-    name: "",
+    name: "my-ollama-smallthinker",
     provider: "openAI",
     model: "smallthinker",
     hostOverride: "localhost:11434",
@@ -35,8 +36,8 @@ const DEFAULT_MODEL_FIELDS: LLMModelFields = {
 const DEFAULT_DATA: LLMWizardData = { 
     port: null,
     selectedWalkthrough: null,
-    walkthroughVerified: false,
-    walkthroughVerifyError: null,
+    setupVerified: false,
+    setupVerifyError: null,
     modelFields: DEFAULT_MODEL_FIELDS,
 };
 
@@ -94,16 +95,16 @@ export const LLMWizardProvider: React.FC<{ children: ReactNode }> = ({ children 
         setData((prev) => ({
             ...prev,
             selectedWalkthrough: walkthrough,
-            walkthroughVerified: false,
-            walkthroughVerifyError: null,
+            setupVerified: false,
+            setupVerifyError: null,
         }));
     }, []);
 
     const setWalkthroughVerified = useCallback((verified: boolean, error: string | null = null) => { 
         setData((prev) => ({
             ...prev,
-            walkthroughVerified: verified,
-            walkthroughVerifyError: error,
+            setupVerified: verified,
+            setupVerifyError: error,
         }));
     }, []);
 

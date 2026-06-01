@@ -166,7 +166,7 @@ export function LLMOverviewPage() {
     
     useEffect(() => {
         if (!hierarchy.isLoading && !hierarchy.error && !hasAIBackends) { 
-            navigate("/llm-setup", { replace: true })
+            navigate("/llm-setup-wizard", { replace: true })
         }
     }, [hierarchy.isLoading, hierarchy.error, hasAIBackends, navigate]);
 
