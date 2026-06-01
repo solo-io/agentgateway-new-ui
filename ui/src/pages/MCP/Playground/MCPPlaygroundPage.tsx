@@ -156,7 +156,8 @@ export function MCPPlaygroundPage() {
     [resetConnectionForRoute],
   );
 
-  const showAlert = !configLoading && (Boolean(config?.mcp) || routes.length === 0);
+  const showAlert = !configLoading && (Boolean(config?.mcp));
+  console.log(showAlert);
 
   const renderAlert = () => { 
     return (
@@ -224,7 +225,7 @@ export function MCPPlaygroundPage() {
       <Container>
         <PageTitle>MCP Playground</PageTitle>
         <PageSubtitle>Test MCP server tool calls interactively</PageSubtitle>
-        {renderAlert()}
+        {showAlert &&renderAlert()}
         <Card style={{ marginTop: "1rem" }}>
           <div style={{ textAlign: "center", padding: "2rem" }}>
             <p>

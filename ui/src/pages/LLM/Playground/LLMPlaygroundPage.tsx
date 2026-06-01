@@ -100,7 +100,7 @@ export function LLMPlaygroundPage() {
   const [searchParams] = useSearchParams();
   const [showExample, setShowExample] = useState(false);
 
-  const showAlert = !isLoading && (hasTopLevelLlm || models.length === 0);
+  const showAlert = !isLoading && (hasTopLevelLlm);
   const providedModelLabel = searchParams.get("label");
 
   if (isLoading) {
