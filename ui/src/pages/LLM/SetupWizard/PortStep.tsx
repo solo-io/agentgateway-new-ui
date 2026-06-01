@@ -51,7 +51,7 @@ export function PortStep() {
         <div>
             <StepTitle>Where do you want agentgateway to listen on?</StepTitle>
             <StepDescription>
-                Set the local port where agentgateway will listen for traffic (default: 8621).
+                Set the local port where agentgateway will listen for traffic.
             </StepDescription>
 
             <Form form={form} layout="vertical" initialValues={{ port: data.port ?? DEFAULT_PORT }}>

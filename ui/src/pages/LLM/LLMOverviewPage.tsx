@@ -1,8 +1,10 @@
 import styled from "@emotion/styled";
-import { Button, Drawer } from "antd";
-import { Edit2 } from "lucide-react";
+import { Button, Drawer, InputNumber, Tag, Tooltip } from "antd";
+import { Check, Edit2, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import { fetchConfig, updateConfig } from "../../api/config";
 import type { LocalConfig } from "../../api/types";
 import { useTrafficHierarchy } from "../../components/TrafficHierarchy";
 import type { BindNode } from "../../components/TrafficHierarchy/hooks/useTrafficHierarchy";
@@ -18,11 +20,6 @@ const PageRoot = styled.div`
   gap: var(--spacing-xl);
 `;
 
-const PageHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-`;
 
 const PageTitle = styled.h1`
   margin: 0;
@@ -49,6 +46,18 @@ const SectionTitle = styled.h2`
   font-weight: 600;
   color: var(--color-text-base);
   margin: 0 0 var(--spacing-md) 0;
+`;
+
+const ModelsSection = styled.div`
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+`;
+
+const ModelGridScroll = styled.div`
+  max-height: calc(100vh - 260px);
+  overflow-y: auto;
 `;
 
 const ModelGrid = styled.div`
@@ -83,6 +92,37 @@ const CardActions = styled.div`
   gap: var(--spacing-sm);
   margin-top: auto;
 `;
+
+const PageHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+const EditIconButton = styled(Button)`
+  && {
+    color: var(--color-text-tertiary, #999);
+    &:hover {
+      color: var(--color-text-base) !important;
+      background: var(--color-bg-elevated, rgba(0,0,0,0.06)) !important;
+    }
+  }
+`;
+
+const PillTag = styled(Tag)`
+  && {
+    border-radius: 10px !important;
+    margin: 0;
+    padding: 0 8px;
+  }
+`;
+
+const PORT_COLORS = ["blue", "purple", "cyan", "orange", "geekblue", "magenta", "gold"];
+
+function getPortColor(port: number, ports: number[]): string {
+    const idx = ports.indexOf(port);
+    return PORT_COLORS[idx % PORT_COLORS.length];
+}
 
 // Types
 interface AIModelInfo {
@@ -141,10 +181,40 @@ function extractAIModels(bindNodes: BindNode[]): AIModelInfo[] {
   }
 
 // Main Component
-export function LLMOverviewPage() { 
+export function LLMOverviewPage() {
     const hierarchy = useTrafficHierarchy();
     const navigate = useNavigate();
     const [drawerModel, setDrawerModel] = useState<AIModelInfo | null>(null);
+    const [editingPort, setEditingPort] = useState<number | null>(null);
+    const [editPortValue, setEditPortValue] = useState<number | null>(null);
+    const [isSavingPort, setIsSavingPort] = useState(false);
+
+    const handlePortEditStart = (port: number) => {
+        setEditingPort(port);
+        setEditPortValue(port);
+    };
+
+    const handlePortEditCancel = () => {
+        setEditingPort(null);
+        setEditPortValue(null);
+    };
+
+    const handlePortEditSave = async (oldPort: number) => {
+        if (editPortValue === null) return;
+        setIsSavingPort(true);
+        try {
+            const config = await fetchConfig();
+            const bind = (config.binds ?? []).find((b) => b.port === oldPort);
+            if (bind) bind.port = editPortValue;
+            await updateConfig(config);
+            setEditingPort(null);
+            setEditPortValue(null);
+        } catch (err: any) {
+            toast.error(err.message ?? "Failed to update port");
+        } finally {
+            setIsSavingPort(false);
+        }
+    };
 
     const models = extractAIModels(hierarchy.binds);
 
@@ -174,60 +244,101 @@ export function LLMOverviewPage() {
         <PageRoot>
             <PageHeader>
                 <div>
-                    <PageTitle>LLM Overview</PageTitle>
+                    <PageTitle>LLM Configuration</PageTitle>
                     {ports.length > 0 && (
                         <PortRow>
-                        Gateway port{ports.length > 1 ? "s" : ""}:{" "}
-                        {ports.map((p) => (
-                            <span key={p}>
-                            <PortValue>{p}</PortValue>
-                            <Button
-                                type="text"
-                                size="small"
-                                icon={<Edit2 size={13} />}
-                                onClick={() => navigate(`/llm-configuration`)}
-                            />
-                            </span>
-                        ))}
+                            agentgateway exposed port{ports.length > 1 ? "s" : ""}:{" "}
+                            {ports.map((p) => (
+                                <span key={p} style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                                    {editingPort === p ? (
+                                        <>
+                                            <InputNumber
+                                                size="small"
+                                                min={1}
+                                                max={65535}
+                                                precision={0}
+                                                value={editPortValue}
+                                                onChange={(v) => setEditPortValue(v)}
+                                                style={{ width: 90 }}
+                                                autoFocus
+                                                onPressEnter={() => handlePortEditSave(p)}
+                                            />
+                                            <Button
+                                                type="text"
+                                                size="small"
+                                                icon={<Check size={13} color="var(--color-success)" strokeWidth={4} />}
+                                                loading={isSavingPort}
+                                                onClick={() => handlePortEditSave(p)}
+                                            />
+                                            <Button
+                                                type="text"
+                                                size="small"
+                                                icon={<X size={13} color="var(--color-error)" strokeWidth={4} />}
+                                                onClick={handlePortEditCancel}
+                                                disabled={isSavingPort}
+                                            />
+                                        </>
+                                    ) : (
+                                        <>
+                                            <PortValue>
+                                                <PillTag color={getPortColor(p, ports)}>{p}</PillTag>
+                                            </PortValue>
+                                            <Tooltip title="Edit">     
+                                                <EditIconButton
+                                                    type="text"
+                                                    size="small"
+                                                    icon={<Edit2 size={15} />}
+                                                    onClick={() => handlePortEditStart(p)}
+                                                />
+                                            </Tooltip>
+                                        </>
+                                    )}
+                                </span>
+                            ))}
                         </PortRow>
                     )}
                 </div>
                 <Button
                     type="primary"
-                    onClick={() => navigate("/llm-setup")}
+                    onClick={() => navigate("/llm-setup-wizard")}
                 >
                     Add Model
                 </Button>
             </PageHeader>
 
-            <div>
+            <ModelsSection>
                 <SectionTitle>Models</SectionTitle>
-                <ModelGrid>
-                    {models.map((m, i) => (
-                        <ModelCard key={i}>
-                            <ModelName>{m.name}</ModelName>
-                            <ModelMeta>{m.providerKey} / {m.model}</ModelMeta>
-                            {m.hostOverride && (
-                                <ModelMeta>Host: {m.hostOverride}</ModelMeta>
-                            )}
-                            <CardActions>
-                                <Button
-                                    size="small"
-                                    onClick={() => navigate("/llm-playground")}
-                                >
-                                    Open Playground
-                                </Button>
-                                <Button
-                                    size="small"
-                                    onClick={() => setDrawerModel(m)}
-                                >
-                                    View Config
-                                </Button>
-                            </CardActions>
-                        </ModelCard>
-                    ))}
-                </ModelGrid>
-            </div>
+                <ModelGridScroll>
+                    <ModelGrid>
+                        {models.map((m, i) => (
+                            <ModelCard key={i}>
+                                <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
+                                    <ModelName>{m.name}</ModelName>
+                                    <PillTag color={getPortColor(m.port, ports)}>:{m.port}</PillTag>
+                                </div>
+                                <ModelMeta>{m.providerKey} / {m.model}</ModelMeta>
+                                {m.hostOverride && (
+                                    <ModelMeta>Host: <b>{m.hostOverride}</b></ModelMeta>
+                                )}
+                                <CardActions>
+                                    <Button
+                                        size="small"
+                                        onClick={() => navigate("/llm-playground")}
+                                    >
+                                        Open Playground
+                                    </Button>
+                                    <Button
+                                        size="small"
+                                        onClick={() => setDrawerModel(m)}
+                                    >
+                                        View Config
+                                    </Button>
+                                </CardActions>
+                            </ModelCard>
+                        ))}
+                    </ModelGrid>
+                </ModelGridScroll>
+            </ModelsSection>
 
             <Drawer
                 title={drawerModel ? `Config - ${drawerModel.name}` : "Config"}

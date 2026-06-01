@@ -4,6 +4,7 @@ import { Check, CheckCircle, Copy } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import { mutate } from "swr";
 import { fetchConfig, updateConfig } from "../../../api/config";
 import { findBindByPort } from "../../../api/helpers";
 import type { LocalBind } from "../../../api/types";
@@ -240,9 +241,10 @@ export function ModelConfigStep() {
         bind.listeners.push(listener);
       }
       await updateConfig(config);
+      await mutate("/config");
 
       toast.success("LLM configuration created");
-      navigate(`/llm-configuration`);
+      navigate("/llm-configuration");
     } catch (err: any) {
       toast.error(err.message ?? "Failed to create LLM configuration");
     } finally {
