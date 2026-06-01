@@ -4,7 +4,9 @@ import { Check, CheckCircle, Copy } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
-import { createListener, createRoute } from "../../../api/crud";
+import { fetchConfig, updateConfig } from "../../../api/config";
+import { findBindByPort } from "../../../api/helpers";
+import type { LocalBind } from "../../../api/types";
 import type { AIProvider, LocalRouteBackend } from "../../../config";
 import { useLLMWizard } from "./LLMWizardContext";
 
@@ -202,10 +204,6 @@ export function ModelConfigStep() {
     setIsSubmitting(true);
     try {
       const { name, model, hostOverride } = values;
-      await createListener(data.port!, {
-        name: LISTENER_NAME,
-        protocol: "HTTP",
-      });
 
       const aiBackend: LocalRouteBackend = {
         ai: {
@@ -215,17 +213,33 @@ export function ModelConfigStep() {
         },
       };
 
-      await createRoute(data.port!, LISTENER_NAME, {
-        name: ROUTE_NAME,
-        backends: [aiBackend],
-        policies: {
-          cors: {
-            allowOrigins: ["*"],
-            allowMethods: ["GET", "POST", "OPTIONS"],
-            allowHeaders: ["*"],
+      const listener = {
+        name: LISTENER_NAME,
+        protocol: "HTTP" as const,
+        routes: [{
+          name: ROUTE_NAME,
+          backends: [aiBackend],
+          policies: {
+            cors: {
+              allowOrigins: ["*"],
+              allowMethods: ["GET", "POST", "OPTIONS"],
+              allowHeaders: ["*"],
+            },
           },
-        },
-      });
+        }],
+      };
+
+      const config = await fetchConfig();
+      let bind = findBindByPort(config.binds || [], data.port!);
+      if (!bind) {
+        const newBind: LocalBind = { port: data.port!, listeners: [listener] };
+        if (!config.binds) config.binds = [];
+        config.binds.push(newBind);
+      } else {
+        if (!bind.listeners) bind.listeners = [];
+        bind.listeners.push(listener);
+      }
+      await updateConfig(config);
 
       toast.success("LLM configuration created");
       navigate(`/llm-configuration`);
