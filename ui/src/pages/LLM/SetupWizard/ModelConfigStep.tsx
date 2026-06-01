@@ -244,7 +244,7 @@ export function ModelConfigStep() {
       await mutate("/config");
 
       toast.success("LLM configuration created");
-      navigate("/llm-configuration");
+      navigate("/llm-configuration", { state: { skipWizardRedirect: true } });
     } catch (err: any) {
       toast.error(err.message ?? "Failed to create LLM configuration");
     } finally {

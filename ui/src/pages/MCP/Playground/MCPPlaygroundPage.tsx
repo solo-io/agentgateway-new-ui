@@ -225,7 +225,7 @@ export function MCPPlaygroundPage() {
       <Container>
         <PageTitle>MCP Playground</PageTitle>
         <PageSubtitle>Test MCP server tool calls interactively</PageSubtitle>
-        {showAlert &&renderAlert()}
+        {showAlert && renderAlert()}
         <Card style={{ marginTop: "1rem" }}>
           <div style={{ textAlign: "center", padding: "2rem" }}>
             <p>

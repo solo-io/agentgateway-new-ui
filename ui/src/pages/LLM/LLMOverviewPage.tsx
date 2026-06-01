@@ -3,7 +3,7 @@ import { Button, InputNumber, Tag, Tooltip } from "antd";
 import { Check, Edit2, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { fetchConfig, updateConfig } from "../../api/config";
 import type { LocalConfig } from "../../api/types";
 import { useTrafficHierarchy } from "../../components/TrafficHierarchy";
@@ -181,6 +181,7 @@ function extractAIModels(bindNodes: BindNode[]): AIModelInfo[] {
 export function LLMOverviewPage() {
     const hierarchy = useTrafficHierarchy();
     const navigate = useNavigate();
+    const location = useLocation();
     const [editingPort, setEditingPort] = useState<number | null>(null);
     const [editPortValue, setEditPortValue] = useState<number | null>(null);
     const [isSavingPort, setIsSavingPort] = useState(false);
@@ -231,10 +232,11 @@ export function LLMOverviewPage() {
       
     
     useEffect(() => {
-        if (!hierarchy.isLoading && !hierarchy.error && !hasAIBackends) { 
+        const skipRedirect = (location.state as { skipWizardRedirect?: boolean } | null)?.skipWizardRedirect;
+        if (!hierarchy.isLoading && !hierarchy.error && !hasAIBackends && !skipRedirect) {
             navigate("/llm-setup-wizard", { replace: true })
         }
-    }, [hierarchy.isLoading, hierarchy.error, hasAIBackends, navigate]);
+    }, [hierarchy.isLoading, hierarchy.error, hasAIBackends, navigate, location.state]);
 
     return (
         <PageRoot>
