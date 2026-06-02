@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { Card, Col, Row, Spin, Statistic, Tag, Tooltip } from "antd";
+import { Button, Card, Col, Row, Spin, Statistic, Tag, Tooltip } from "antd";
 import {
   Brain,
   Headphones,
@@ -8,9 +8,12 @@ import {
   Server,
   Shield,
   Workflow,
+  X,
 } from "lucide-react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useConfig, useLLMConfig, useMCPConfig } from "../../api";
+import { AgentgatewayLogo } from "../../components/AgentgatewayLogo";
 import { StyledAlert } from "../../components/StyledAlert";
 import { useTrafficHierarchy } from "../../components/TrafficHierarchy";
 
@@ -66,6 +69,20 @@ const IconBox = styled.div<{ color?: string }>`
   flex-shrink: 0;
 `;
 
+const CTAHeader = styled.div`
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--color-bg-hover) 0%, var(--color-bg-container) 100%);
+  border: 1px solid var(--color-border-secondary);
+  text-align: center;
+  gap: 12px;
+`;
+
 const IconLabel = styled.div`
   display: flex;
   align-items: center;
@@ -81,6 +98,8 @@ export const DashboardPage = () => {
   const hierarchy = useTrafficHierarchy();
   const { data: llm } = useLLMConfig();
   const { data: mcp } = useMCPConfig();
+
+  const [showCTAHeader, setShowCTAHeader] = useState(true);
 
   const isLoading = configLoading || hierarchy.isLoading;
 
@@ -110,6 +129,20 @@ export const DashboardPage = () => {
   }
 
   const { stats } = hierarchy;
+  const hasPortBindAIBackends = hierarchy.binds.some((bind) =>
+    bind.listeners.some((listener) =>
+      listener.routes.some((route) =>
+        route.backends.some((b) => "ai" in (b.backend as Record<string, unknown>))
+      )
+    )
+  );
+  const hasPortBindMCPTargets = hierarchy.binds.some((bind) =>
+    bind.listeners.some((listener) =>
+      listener.routes.some((route) =>
+        route.backends.some((b) => "mcp" in (b.backend as Record<string, unknown>))
+      )
+    )
+  );
   const llmModelCount = llm?.models?.length ?? 0;
   const mcpTargetCount = mcp?.targets?.length ?? 0;
 
@@ -210,12 +243,52 @@ export const DashboardPage = () => {
     },
   ];
 
+  const llmMissing = llmModelCount === 0 && !hasPortBindAIBackends;
+  const mcpMissing = mcpTargetCount === 0 && !hasPortBindMCPTargets;
+
+  const ctaDescription =
+    llmMissing && mcpMissing
+      ? "Connect an LLM model and MCP targets to get started with agentgateway."
+      : llmMissing
+        ? "Connect your first LLM model to start routing AI traffic through agentgateway."
+        : "Add MCP targets to enable model context protocol support with agentgateway.";
+
   return (
     <Container>
-      <div>
-        <PageTitle>Home</PageTitle>
-        <PageSubtitle>AgentGateway configuration overview</PageSubtitle>
-      </div>
+      
+      {/* Call to action header */}
+      {((llmModelCount === 0 && !hasPortBindAIBackends) || (mcpTargetCount === 0 && !hasPortBindMCPTargets)) && showCTAHeader && (
+        <CTAHeader>
+          <X
+            size={14}
+            style={{ position: "absolute", top: 16, right: 16, cursor: "pointer", color: "var(--color-text-secondary)" }}
+            onClick={() => setShowCTAHeader(false)}
+          />
+          <div style={{ width: 40, height: 40 }}>
+            <AgentgatewayLogo />
+          </div>
+          <div>
+            <div style={{ fontSize: 20, fontWeight: 600, marginBottom: 6 }}>
+              Get started with agentgateway
+            </div>
+            <div style={{ fontSize: 13, color: "var(--color-text-secondary)", maxWidth: 420 }}>
+              {ctaDescription}
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: 8}}>
+            {(llmModelCount === 0 && !hasPortBindAIBackends) && (  
+              <Button type="primary" size="large" onClick={() => navigate("/llm-configuration")}>
+                Open LLM Setup Wizard →
+              </Button>
+            )}
+            {(mcpTargetCount === 0 && !hasPortBindMCPTargets) && (
+              <Button type="primary" size="large" onClick={() => navigate("/mcp-configuration")}>
+                Open MCP Setup Wizard →
+              </Button>
+            )}
+          </div>
+        </CTAHeader>
+      )}
 
       {/* Quick stats bar */}
       <Row gutter={[12, 12]}>
@@ -329,6 +402,7 @@ export const DashboardPage = () => {
           </Col>
         ))}
       </Row>
+
     </Container>
   );
 };

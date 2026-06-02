@@ -87,11 +87,11 @@ export function InstallStep() {
       <StepTitle>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }} >
           <Download size={20} />
-          Set your model provider
+          Install your model provider
         </div>
       </StepTitle>
       <StepDescription>
-        Follow the steps below to install your model provider.
+        Follow the steps below to download and install your model provider.
       </StepDescription>
 
       {content}

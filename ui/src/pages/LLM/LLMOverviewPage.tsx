@@ -66,13 +66,13 @@ const ModelGrid = styled.div`
 `;
 
 const ModelCard = styled.div`
-  border: 1px solid var(--color-border);
   border-radius: var(--border-radius-md);
   padding: var(--spacing-lg);
   background: var(--color-bg-container);
   display: flex;
   flex-direction: column;
   gap: var(--spacing-md);
+  border: 1px solid rgba(0, 0, 0, 0.3);
 `;
 
 const ModelName = styled.div`

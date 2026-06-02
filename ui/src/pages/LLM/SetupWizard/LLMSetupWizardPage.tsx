@@ -16,7 +16,8 @@ const PageRoot = styled.div`
 const PageHeader = styled.div`
     padding: var(--spacing-lg) var(--spacing-xl);
     border-bottom: 1px solid var(--color-border);
-    background: linear-gradient(to bottom, rgba(105, 65, 198, 0.08), transparent);
+    border: 1px solid var(--color-border-secondary);
+    background: linear-gradient(to right, var(--color-bg-hover) 0%, var(--color-bg-container) 100%);
 `;
 
 const PageTitle = styled.h1`
