@@ -1,5 +1,6 @@
 import styled from "@emotion/styled";
 import { Button, Form, InputNumber } from "antd";
+import { EthernetPort } from "lucide-react";
 import { useLLMWizard } from "./LLMWizardContext";
 
 const StepTitle = styled.h2`
@@ -49,7 +50,12 @@ export function PortStep() {
 
     return (
         <div>
-            <StepTitle>Where do you want agentgateway to listen on?</StepTitle>
+            <StepTitle>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <EthernetPort size={20} />
+                    Where do you want agentgateway to listen on?
+                </div>
+            </StepTitle>
             <StepDescription>
                 Set the local port where agentgateway will listen for traffic.
             </StepDescription>

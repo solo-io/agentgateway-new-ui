@@ -7,16 +7,16 @@ import { PortStep } from "./PortStep";
 import { SelectModelStep } from "./SelectModelStep";
 
 const PageRoot = styled.div`
-  display: flex;
-  flex-direction: column;
-  height: calc()(100vh - 64px);
-  overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: calc()(100vh - 64px);
+    overflow: hidden;
 `;
 
 const PageHeader = styled.div`
     padding: var(--spacing-lg) var(--spacing-xl);
     border-bottom: 1px solid var(--color-border);
-    background: var(--color-bg-layout);
+    background: linear-gradient(to bottom, rgba(105, 65, 198, 0.08), transparent);
 `;
 
 const PageTitle = styled.h1`
@@ -24,6 +24,8 @@ const PageTitle = styled.h1`
     font-size: 24px;
     font-weight: 600;
     color: var(--color-text-base);
+    border-left: 3px solid #6941c6;
+    padding-left: var(--spacing-sm);
 `;
 
 const StepBody = styled.div`
@@ -58,7 +60,7 @@ function LLMSetupWizardInner() {
                 <PageTitle>LLM Setup Wizard</PageTitle>
             </PageHeader>
             <StepBody>
-                <Card style={{ width: "100%", maxWidth: 640 }}>
+                <Card style={{ width: "100%", maxWidth: 640, "--color-border-secondary": "rgba(0, 0, 0, 0.3)", boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.3)" } as React.CSSProperties}>
                     {!isPreStep && (
                         <ConfigProvider theme={{ token: { colorPrimary: "#6941c6" } }}>
                             <Steps

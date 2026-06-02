@@ -1,5 +1,6 @@
 import styled from "@emotion/styled";
 import { Button, Card } from "antd";
+import { Bot } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useLLMWizard } from "./LLMWizardContext";
 
@@ -91,7 +92,12 @@ export function SelectModelStep() {
 
     return (
         <div>
-            <StepTitle>How do you want to set up your model?</StepTitle>
+            <StepTitle>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }} >
+                <Bot size={20} />
+                How do you want to set up your model?
+              </div>
+            </StepTitle>
             <CardGrid>
                 {OPTIONS.map(({ id, label, subtext }) => (
                     <OptionCard

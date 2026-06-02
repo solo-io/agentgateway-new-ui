@@ -1,7 +1,7 @@
 import styled from "@emotion/styled";
 import { Button, Form, Input, Spin, Tooltip, Typography } from "antd";
-import { Check, CheckCircle, Copy } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { Check, CheckCircle, Cog, Copy } from "lucide-react";
+import { useCallback, useState } from "react";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { mutate } from "swr";
@@ -26,9 +26,20 @@ const StepDescription = styled.p`
   margin: 0 0 var(--spacing-xl) 0;
 `;
 
-const FieldDescription = styled.p`
-  color: var(--color-text-secondary);
+const FieldFormItem = styled(Form.Item)`
+  .ant-form-item-label > label {
+    align-items: baseline;
+  }
+`;
+
+const FieldFormTitle = styled.div`
+  font-weight: 600;
+`
+
+const FieldFormDescription = styled.div`
+  color: var(--color-text-tertiary);
   font-size: 12px;
+  font-style: italic;
   margin: 0 0 var(--spacing-xs) 0;
 `;
 
@@ -45,6 +56,7 @@ const TerminalBlock = styled.code`
   padding: 4px 10px;
   font-family: monospace;
   font-size: 13px;
+  border: none;
 `;
 
 const CommandWrapper = styled.div`
@@ -164,13 +176,6 @@ export function ModelConfigStep() {
   const modelValue = Form.useWatch("model", form) ?? data.modelFields.model ?? DEFAULT_MODEL;
   const hostValue = Form.useWatch("hostOverride", form) ?? data.modelFields.hostOverride ?? DEFAULT_HOST;
 
-  useEffect(() => {
-    form.setFieldsValue({
-      name: data.modelFields.name || DEFAULT_MODEL_ALIAS,
-      model: data.modelFields.model || DEFAULT_MODEL,
-      hostOverride: data.modelFields.hostOverride || DEFAULT_HOST,
-    });
-  }, []);
 
   const handleVerify = async () => {
     setIsVerifying(true);
@@ -254,7 +259,12 @@ export function ModelConfigStep() {
 
   return (
     <div>
-      <StepTitle>Configure your model</StepTitle>
+      <StepTitle>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <Cog size={20} />
+          Configure your model
+        </div>
+      </StepTitle>
       <StepDescription>
         These settings will be used to connect agentgateway to your model.
       </StepDescription>
@@ -262,6 +272,11 @@ export function ModelConfigStep() {
       <Form
         form={form}
         layout="vertical"
+        initialValues={{
+          name: data.modelFields.name || DEFAULT_MODEL_ALIAS,
+          model: data.modelFields.model || DEFAULT_MODEL,
+          hostOverride: data.modelFields.hostOverride || DEFAULT_HOST,
+        }}
         onValuesChange={(changed) => {
           updateModelFields(changed);
           if (changed.hostOverride || changed.model) {
@@ -269,26 +284,35 @@ export function ModelConfigStep() {
           }
         }}
       >
-        <Form.Item
+        <FieldFormItem
           name="name"
-          label="Model Alias"
           rules={[{ required: true, message: "Model Alias is required" }]}
+          label={
+            <div>
+              <FieldFormTitle>Model Alias</FieldFormTitle>
+              <FieldFormDescription>A name that can be used to refer to this particular model.</FieldFormDescription>
+            </div>
+          }
         >
           <StyledInput placeholder="e.g. my-ollama-smallthinker" />
-        </Form.Item>
-        <FieldDescription>A name that can be used to refer to this particular model.</FieldDescription>
+        </FieldFormItem>
 
-        <Form.Item
+        <FieldFormItem
           name="model"
-          label="Model Name"
+          label={
+            <div>
+              <FieldFormTitle>Model Name</FieldFormTitle>
+              <FieldFormDescription>
+              Browse the <Link href="https://ollama.com/search" target="_blank" rel="noopener noreferrer">Ollama registry</Link> - copy a model name, paste it below, then run:
+              </FieldFormDescription>
+            </div>
+          }
           style={{ marginTop: "var(--spacing-md)" }}
           rules={[{ required: true, message: "Model Name is required" }]}
         >
           <StyledInput placeholder="e.g. smallthinker" />
-        </Form.Item>
-        <FieldDescription>
-          <span>Browse available models on the <Link href="https://ollama.com/search" target="_blank" rel="noopener noreferrer">Ollama registry</Link> — copy the model name from the tag list and run:</span>
-        </FieldDescription>
+        </FieldFormItem>
+
         <CommandStepList>
           <CommandStepRow>
             <CommandStepNumber>1</CommandStepNumber>
@@ -300,15 +324,19 @@ export function ModelConfigStep() {
           </CommandStepRow>
         </CommandStepList>
 
-        <Form.Item
+        <FieldFormItem
           name="hostOverride"
-          label="Ollama Host"
+          label={
+            <div>
+              <FieldFormTitle>Ollama Host</FieldFormTitle>
+              <FieldFormDescription>Address where Ollama is serving (default: localhost:11434).</FieldFormDescription>
+            </div>
+          }
           style={{ marginTop: "var(--spacing-lg)" }}
           rules={[{ required: true, message: "Ollama host is required" }]}
         >
           <StyledInput placeholder="e.g. localhost:11434" />
-        </Form.Item>
-        <FieldDescription>Address where Ollama is serving (default: localhost:11434).</FieldDescription>
+        </FieldFormItem>
 
         <VerifyRow>
           <Button type="primary" ghost onClick={handleVerify} disabled={isVerifying}>

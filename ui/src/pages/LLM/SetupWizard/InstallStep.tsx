@@ -1,5 +1,6 @@
 import styled from "@emotion/styled";
 import { Button, Typography } from "antd";
+import { Download } from "lucide-react";
 import { useLLMWizard } from "./LLMWizardContext";
 
 const { Link } = Typography;
@@ -83,7 +84,12 @@ export function InstallStep() {
 
   return (
     <div>
-      <StepTitle>Set your model provider</StepTitle>
+      <StepTitle>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }} >
+          <Download size={20} />
+          Set your model provider
+        </div>
+      </StepTitle>
       <StepDescription>
         Follow the steps below to install your model provider.
       </StepDescription>
