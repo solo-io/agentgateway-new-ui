@@ -320,7 +320,7 @@ export function ModelConfigStep() {
           label={
             <div>
               <FieldFormTitle>Ollama Host</FieldFormTitle>
-              <FieldFormDescription>Address where Ollama is serving (default: localhost:11434).</FieldFormDescription>
+              <FieldFormDescription>Address where Ollama is listening (default: localhost:11434).</FieldFormDescription>
             </div>
           }
           style={{ marginTop: "var(--spacing-lg)" }}

@@ -56,12 +56,12 @@ const OPTIONS = [
     {
         id: "server-everything",
         label: "server-everything (streamableHttp)",
-        subtext: "Run the MCP reference server locally via npx",
+        subtext: "Run a local MCP server",
     },
     {
         id: "manual",
         label: "Manual Configuration",
-        subtext: "Configure an MCP server manually in the traffic config",
+        subtext: "Set up your MCP server manually",
     },
 ];
 

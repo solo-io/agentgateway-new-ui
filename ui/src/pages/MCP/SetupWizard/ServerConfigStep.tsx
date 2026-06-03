@@ -11,25 +11,11 @@ import type { LocalBind } from "../../../api/types";
 import type { LocalRouteBackend } from "../../../config";
 import { useMCPWizard } from "./MCPWizardContext";
 
-// --- Styled components (same palette as ModelConfigStep) ---
-
 const StepTitle = styled.h2`
   font-size: 20px;
   font-weight: 600;
   color: var(--color-text-base);
   margin: 0 0 var(--spacing-sm) 0;
-`;
-
-const StepDescription = styled.p`
-  color: var(--color-text-secondary);
-  font-size: 14px;
-  margin: 0 0 var(--spacing-xl) 0;
-`;
-
-const FieldDescription = styled.p`
-  color: var(--color-text-secondary);
-  font-size: 12px;
-  margin: 0 0 var(--spacing-xs) 0;
 `;
 
 const StyledInput = styled(Input)`
@@ -40,40 +26,6 @@ const StyledInput = styled(Input)`
 const StyledInputNumber = styled(InputNumber)`
   width: 100%;
   border: 1px solid #d9d9d9 !important;
-`;
-
-const TerminalBlock = styled.code`
-  display: inline-block;
-  background: #8b8b8b;
-  color: #ffffff;
-  border-radius: var(--border-radius-sm);
-  padding: 4px 10px;
-  font-family: monospace;
-  font-size: 13px;
-`;
-
-const CommandWrapper = styled.div`
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  margin-top: var(--spacing-xs);
-`;
-
-const CopyButton = styled.button`
-  flex-shrink: 0;
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: #888;
-  padding: 2px 4px;
-  border-radius: var(--border-radius-sm);
-  display: flex;
-  align-items: center;
-
-  &:hover {
-    color: #d4d4d4;
-    background: rgba(0, 0, 0, 0.06);
-  }
 `;
 
 const VerifyRow = styled.div`
@@ -238,7 +190,7 @@ export function ServerConfigStep() {
                     label={
                         <div>
                             <FieldFormTitle>Server Alias</FieldFormTitle>
-                            <FieldFormDescription>A name used to identify this MCP target.</FieldFormDescription>
+                            <FieldFormDescription>A name used to identify this MCP server.</FieldFormDescription>
                         </div>
                     }
                     rules={[{ required: true, message: "Server alias is required" }]}
@@ -251,7 +203,7 @@ export function ServerConfigStep() {
                     label={
                         <div>
                             <FieldFormTitle>Host</FieldFormTitle>
-                            <FieldFormDescription>Address where your MCP server is serving (default: localhost).</FieldFormDescription>
+                            <FieldFormDescription>Address where MCP server is listening (default: localhost).</FieldFormDescription>
                         </div>
                     }
                     style={{ marginTop: "var(--spacing-md)" }}
@@ -265,7 +217,7 @@ export function ServerConfigStep() {
                     label={
                         <div>
                             <FieldFormTitle>Port</FieldFormTitle>
-                            <FieldFormDescription>Port your MCP server is listening on (default: 3001).</FieldFormDescription>
+                            <FieldFormDescription>Port where MCP server is listening (default: 3001).</FieldFormDescription>
                         </div>
                     }
                     style={{ marginTop: "var(--spacing-md)" }}
@@ -279,7 +231,7 @@ export function ServerConfigStep() {
                     label={
                         <div>
                             <FieldFormTitle>Path</FieldFormTitle>
-                            <FieldFormDescription>Endpoint path for the MCP server (default: /mcp).</FieldFormDescription>
+                            <FieldFormDescription>Endpoint path for MCP server (default: /mcp).</FieldFormDescription>
                         </div>
                     }
                     style={{ marginTop: "var(--spacing-md)" }}
