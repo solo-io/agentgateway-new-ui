@@ -16,6 +16,7 @@ import { LLMSetupWizardPage } from "./pages/LLM/SetupWizard/LLMSetupWizardPage";
 import { MCPConfigurationPage } from "./pages/MCP/MCPConfigurationPage";
 import { MCPLogsPage } from "./pages/MCP/MCPLogsPage";
 import { MCPMetricsPage } from "./pages/MCP/MCPMetricsPage";
+import { MCPOverviewPage } from "./pages/MCP/MCPOverviewPage";
 import { MCPPlaygroundPage } from "./pages/MCP/Playground/MCPPlaygroundPage";
 import { MCPSetupWizardPage } from "./pages/MCP/SetupWizard/MCPSetupWizardPage";
 import { SetupWizardPage } from "./pages/SetupWizard/SetupWizardPage";
@@ -77,7 +78,7 @@ function App() {
 
                   {/* MCP Section */}
                   <Route path="/mcp-setup-wizard" element={<MCPSetupWizardPage />} />
-                  <Route path="/mcp-configuration" element={<MCPConfigurationPage />} />
+                  <Route path="/mcp-configuration" element={<MCPOverviewPage />} />
                   <Route path="/mcp-configuration/mcp" element={<MCPConfigurationPage />} />
                   <Route path="/mcp-configuration/mcp/target/:targetIndex" element={<MCPConfigurationPage />} />
                   <Route path="/mcp-configuration/mcp/target/:targetIndex/policy/:policyType" element={<MCPConfigurationPage />} />

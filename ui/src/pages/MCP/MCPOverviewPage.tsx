@@ -5,7 +5,6 @@ import { useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import { useLocation, useNavigate } from "react-router-dom";
 import { fetchConfig, updateConfig } from "../../api/config";
-import type { LocalConfig } from "../../api/types";
 import { useTrafficHierarchy } from "../../components/TrafficHierarchy";
 import type { BindNode } from "../../components/TrafficHierarchy/hooks/useTrafficHierarchy";
 
@@ -17,7 +16,6 @@ const PageRoot = styled.div`
   padding: var(--spacing-xl);
   gap: var(--spacing-xl);
 `;
-
 
 const PageTitle = styled.h1`
   margin: 0;
@@ -46,25 +44,25 @@ const SectionTitle = styled.h2`
   margin: 0 0 var(--spacing-md) 0;
 `;
 
-const ModelsSection = styled.div`
+const ServersSection = styled.div`
   flex: 1;
   min-height: 0;
   display: flex;
   flex-direction: column;
 `;
 
-const ModelGridScroll = styled.div`
+const ServerGridScroll = styled.div`
   max-height: calc(100vh - 260px);
   overflow-y: auto;
 `;
 
-const ModelGrid = styled.div`
+const ServerGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: var(--spacing-lg);
 `;
 
-const ModelCard = styled.div`
+const ServerCard = styled.div`
   border-radius: var(--border-radius-md);
   padding: var(--spacing-lg);
   background: var(--color-bg-container);
@@ -74,13 +72,13 @@ const ModelCard = styled.div`
   border: 1px solid rgba(0, 0, 0, 0.3);
 `;
 
-const ModelName = styled.div`
+const ServerName = styled.div`
   font-weight: 600;
   font-size: 15px;
   color: var(--color-text-base);
 `;
 
-const ModelMeta = styled.div`
+const ServerMeta = styled.div`
   font-size: 13px;
   color: var(--color-text-secondary);
 `;
@@ -115,52 +113,95 @@ const PillTag = styled(Tag)`
   }
 `;
 
-const PORT_COLORS = ["blue", "purple", "cyan", "orange", "geekblue", "magenta", "gold"];
+const BadgeRow = styled.div`
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+`;
 
-function getPortColor(port: number, ports: number[]): string {
+const PORT_COLORS = ["blue", "purple", "cyan", "orange", "geekblue", "magenta", "gold"];
+const TYPE_COLORS: Record<string, string> = {
+    stdio: "volcano",
+    sse: "cyan",
+    mcp: "geekblue",
+    openapi: "gold",
+    unknown: "default",
+};
+
+function getPortColor(port: number, ports: number[]): string { 
     const idx = ports.indexOf(port);
     return PORT_COLORS[idx % PORT_COLORS.length];
 }
 
-interface AIModelInfo {
+interface MCPTargetInfo {
     name: string;
-    providerKey: string;
-    model: string;
-    hostOverride: string | null;
+    type: "stdio" | "sse" | "mcp" | "openapi" | "unknown";
+    endpoint: string;
+    statefulMode: "stateful" | "stateless" | undefined;
     port: number;
     bindNode: BindNode;
 }
 
-function extractAIModels(bindNodes: BindNode[]): AIModelInfo[] {
-    const results: AIModelInfo[] = [];
+function deriveTypeAndEndpoint(target: Record<string, unknown>): {
+    type: MCPTargetInfo["type"];
+    endpoint: string;
+} {
+    if ("stdio" in target) {
+        const stdio = target.stdio as Record<string, unknown>;
+        return { type: "stdio", endpoint: String(stdio.cmd ?? "") };
+    }
+    if ("sse" in target) {
+        const sse = target.sse as Record<string, unknown>;
+        const hostPort = [sse.host, sse.port].filter(Boolean).join(":");
+        const path = sse.path ? String(sse.path) : "";
+        return { type: "sse", endpoint: hostPort + path };
+    }
+    if ("mcp" in target) {
+        const mcp = target.mcp as Record<string, unknown>;
+        const hostPort = [mcp.host, mcp.port].filter(Boolean).join(":");
+        const path = mcp.path ? String(mcp.path) : "";
+        return { type: "mcp", endpoint: hostPort + path };
+    }
+    if ("openapi" in target) {
+        const openapi = target.openapi as Record<string, unknown>;
+        const hostPort = [openapi.host, openapi.port].filter(Boolean).join(":");
+        return { type: "openapi", endpoint: hostPort };
+    }
+    return { type: "unknown", endpoint: "" };
+}
+
+function extractMCPTargets(bindNodes: BindNode[]): MCPTargetInfo[] {
+    const results: MCPTargetInfo[] = [];
     for (const bindNode of bindNodes) {
-      for (const listenerNode of bindNode.listeners) {
-        for (const routeNode of listenerNode.routes) {
-          for (const backendNode of routeNode.backends) {
-            const raw = backendNode.backend as Record<string, unknown>;
-            if ("ai" in raw) {
-              const ai = raw.ai as Record<string, unknown>;
-              const provider = ai.provider as Record<string, unknown> | undefined;
-              const providerKey = provider ? Object.keys(provider)[0] : "unknown";
-              const providerVal = provider?.[providerKey] as Record<string, unknown> | undefined;
-              results.push({
-                name: (ai.name as string) ?? "unnamed",
-                providerKey,
-                model: (providerVal?.model as string) ?? "",
-                hostOverride: (ai.hostOverride as string) ?? null,
-                port: bindNode.bind.port,
-                bindNode,
-              });
+        for (const listenerNode of bindNode.listeners) {
+            for (const routeNode of listenerNode.routes) {
+                for (const backendNode of routeNode.backends) {
+                    const raw = backendNode.backend as Record<string, unknown>;
+                    if ("mcp" in raw) {
+                        const mcp = raw.mcp as Record<string, unknown>;
+                        const targets = Array.isArray(mcp.targets) ? mcp.targets : [];
+                        const statefulMode = mcp.statefulMode as MCPTargetInfo["statefulMode"];
+                        for (const target of targets) {
+                            const t = target as Record<string, unknown>;
+                            const { type, endpoint } = deriveTypeAndEndpoint(t);
+                            results.push({
+                                name: String(t.name ?? "unnamed"),
+                                type,
+                                endpoint,
+                                statefulMode,
+                                port: bindNode.bind.port,
+                                bindNode,
+                            });
+                        }
+                    }
+                }
             }
-          }
         }
-      }
     }
     return results;
 }
 
-// Main Component
-export function LLMOverviewPage() {
+export function MCPOverviewPage() { 
     const hierarchy = useTrafficHierarchy();
     const navigate = useNavigate();
     const location = useLocation();
@@ -195,36 +236,33 @@ export function LLMOverviewPage() {
         }
     };
 
-    const models = extractAIModels(hierarchy.binds);
+    const targets = extractMCPTargets(hierarchy.binds);
+    const ports = [...new Set(targets.map((t) => t.port))];
 
-    // Group ports for display, show unique ports that have AI backends
-    const ports = [...new Set(models.map((m) => m.port))];
-
-    const hasAIBackends = useMemo(
+    const hasMCPBackends = useMemo(
         () =>
-          hierarchy.binds.some((bind) =>
-            bind.listeners.some((listener) =>
-              listener.routes.some((route) =>
-                route.backends.some((b) => "ai" in (b.backend as Record<string, unknown>))
-              )
-            )
-          ),
-        [hierarchy.binds],
-      );
-      
-    
+            hierarchy.binds.some((bind) =>
+                bind.listeners.some((listener) =>
+                    listener.routes.some((route) =>
+                        route.backends.some((b) => "mcp" in (b.backend as Record<string, unknown>))
+                    )
+                )
+            ),
+        [hierarchy.binds]
+    );
+
     useEffect(() => {
         const skipRedirect = (location.state as { skipWizardRedirect?: boolean } | null)?.skipWizardRedirect;
-        if (!hierarchy.isLoading && !hierarchy.error && !hasAIBackends && !skipRedirect) {
-            navigate("/llm-setup-wizard", { replace: true })
+        if (!hierarchy.isLoading && !hierarchy.error && !hasMCPBackends && !skipRedirect) {
+            navigate("/mcp-setup-wizard", { replace: true });
         }
-    }, [hierarchy.isLoading, hierarchy.error, hasAIBackends, navigate, location.state]);
+    }, [hierarchy.isLoading, hierarchy.error, hasMCPBackends, navigate, location.state]);
 
     return (
         <PageRoot>
             <PageHeader>
                 <div>
-                    <PageTitle>LLM Configuration</PageTitle>
+                    <PageTitle>MCP Configuration</PageTitle>
                     {ports.length > 0 && (
                         <PortRow>
                             agentgateway exposed port{ports.length > 1 ? "s" : ""}:{" "}
@@ -263,7 +301,7 @@ export function LLMOverviewPage() {
                                             <PortValue>
                                                 <PillTag color={getPortColor(p, ports)}>{p}</PillTag>
                                             </PortValue>
-                                            <Tooltip title="Edit">     
+                                            <Tooltip title="Edit">
                                                 <EditIconButton
                                                     type="text"
                                                     size="small"
@@ -280,31 +318,31 @@ export function LLMOverviewPage() {
                 </div>
                 <Button
                     type="primary"
-                    onClick={() => navigate("/llm-setup-wizard")}
+                    onClick={() => navigate("/mcp-setup-wizard")}
                 >
-                    Add Model
+                    Add MCP Server
                 </Button>
             </PageHeader>
 
-            <ModelsSection>
-                <SectionTitle>Models</SectionTitle>
-                <ModelGridScroll>
-                    <ModelGrid>
-                        {models.map((m, i) => (
-                            <ModelCard key={i}>
+            <ServersSection>
+                <SectionTitle>MCP Servers</SectionTitle>
+                <ServerGridScroll>
+                    <ServerGrid>
+                        {targets.map((t, i) => (
+                            <ServerCard key={i}>
                                 <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
-                                    <ModelName>{m.name}</ModelName>
-                                    <PillTag color={getPortColor(m.port, ports)}>:{m.port}</PillTag>
+                                    <ServerName>{t.name}</ServerName>
+                                    <PillTag color={getPortColor(t.port, ports)}>:{t.port}</PillTag>
                                 </div>
-                                <ModelMeta>{m.providerKey} / {m.model}</ModelMeta>
-                                {m.hostOverride && (
-                                    <ModelMeta>Host: <b>{m.hostOverride}</b></ModelMeta>
-                                )}
+                                <BadgeRow>
+                                    <PillTag color={TYPE_COLORS[t.type]}>{t.type}</PillTag>
+                                    <PillTag color={t.statefulMode === "stateful" ? "green" : "default"}>
+                                        {t.statefulMode ?? "stateless"}
+                                    </PillTag>
+                                </BadgeRow>
+                                {t.endpoint && <ServerMeta>{t.endpoint}</ServerMeta>}
                                 <CardActions>
-                                    <Button
-                                        size="small"
-                                        onClick={() => navigate(`/llm-playground?label=${m.name}`)}
-                                    >
+                                    <Button size="small" disabled>
                                         Open Playground
                                     </Button>
                                     <Button
@@ -314,11 +352,11 @@ export function LLMOverviewPage() {
                                         Raw Editor
                                     </Button>
                                 </CardActions>
-                            </ModelCard>
+                            </ServerCard>
                         ))}
-                    </ModelGrid>
-                </ModelGridScroll>
-            </ModelsSection>
+                    </ServerGrid>
+                </ServerGridScroll>
+            </ServersSection>
         </PageRoot>
     );
 }
