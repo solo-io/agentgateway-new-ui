@@ -7,10 +7,8 @@ import {
   Route,
   Server,
   Shield,
-  Workflow,
-  X,
+  Workflow
 } from "lucide-react";
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useConfig, useLLMConfig, useMCPConfig } from "../../api";
 import { AgentgatewayLogo } from "../../components/AgentgatewayLogo";
@@ -99,8 +97,6 @@ export const DashboardPage = () => {
   const { data: llm } = useLLMConfig();
   const { data: mcp } = useMCPConfig();
 
-  const [showCTAHeader, setShowCTAHeader] = useState(true);
-
   const isLoading = configLoading || hierarchy.isLoading;
 
   if (configError) {
@@ -129,20 +125,7 @@ export const DashboardPage = () => {
   }
 
   const { stats } = hierarchy;
-  const hasPortBindAIBackends = hierarchy.binds.some((bind) =>
-    bind.listeners.some((listener) =>
-      listener.routes.some((route) =>
-        route.backends.some((b) => "ai" in (b.backend as Record<string, unknown>))
-      )
-    )
-  );
-  const hasPortBindMCPTargets = hierarchy.binds.some((bind) =>
-    bind.listeners.some((listener) =>
-      listener.routes.some((route) =>
-        route.backends.some((b) => "mcp" in (b.backend as Record<string, unknown>))
-      )
-    )
-  );
+
   const llmModelCount = llm?.models?.length ?? 0;
   const mcpTargetCount = mcp?.targets?.length ?? 0;
 
@@ -243,52 +226,33 @@ export const DashboardPage = () => {
     },
   ];
 
-  const llmMissing = llmModelCount === 0 && !hasPortBindAIBackends;
-  const mcpMissing = mcpTargetCount === 0 && !hasPortBindMCPTargets;
-
-  const ctaDescription =
-    llmMissing && mcpMissing
-      ? "Connect an LLM model and MCP targets to get started with agentgateway."
-      : llmMissing
-        ? "Connect your first LLM model to start routing AI traffic through agentgateway."
-        : "Add MCP targets to enable model context protocol support with agentgateway.";
+  const ctaDescription = "Connect an LLM model and MCP targets to get started with agentgateway."
 
   return (
     <Container>
       
       {/* Call to action header */}
-      {((llmModelCount === 0 && !hasPortBindAIBackends) || (mcpTargetCount === 0 && !hasPortBindMCPTargets)) && showCTAHeader && (
-        <CTAHeader>
-          <X
-            size={14}
-            style={{ position: "absolute", top: 16, right: 16, cursor: "pointer", color: "var(--color-text-secondary)" }}
-            onClick={() => setShowCTAHeader(false)}
-          />
-          <div style={{ width: 40, height: 40 }}>
-            <AgentgatewayLogo />
+      <CTAHeader>
+        <div style={{ width: 40, height: 40 }}>
+          <AgentgatewayLogo />
+        </div>
+        <div>
+          <div style={{ fontSize: 20, fontWeight: 600, marginBottom: 6 }}>
+            Get started with agentgateway
           </div>
-          <div>
-            <div style={{ fontSize: 20, fontWeight: 600, marginBottom: 6 }}>
-              Get started with agentgateway
-            </div>
-            <div style={{ fontSize: 13, color: "var(--color-text-secondary)", maxWidth: 420 }}>
-              {ctaDescription}
-            </div>
+          <div style={{ fontSize: 13, color: "var(--color-text-secondary)", maxWidth: 420 }}>
+            {ctaDescription}
           </div>
-          <div style={{ display: 'flex', gap: 8}}>
-            {(llmModelCount === 0 && !hasPortBindAIBackends) && (  
-              <Button type="primary" size="large" onClick={() => navigate("/llm-configuration")}>
-                Open LLM Setup Wizard →
-              </Button>
-            )}
-            {(mcpTargetCount === 0 && !hasPortBindMCPTargets) && (
-              <Button type="primary" size="large" onClick={() => navigate("/mcp-configuration")}>
-                Open MCP Setup Wizard →
-              </Button>
-            )}
-          </div>
-        </CTAHeader>
-      )}
+        </div>
+        <div style={{ display: 'flex', gap: 8}}>  
+          <Button type="primary" size="large" onClick={() => navigate("/llm-setup-wizard")}>
+            Open LLM Setup Wizard →
+          </Button>
+          <Button type="primary" size="large" onClick={() => navigate("/mcp-setup-wizard")}>
+            Open MCP Setup Wizard →
+          </Button>
+        </div>
+      </CTAHeader>
 
       {/* Quick stats bar */}
       <Row gutter={[12, 12]}>

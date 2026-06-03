@@ -11,12 +11,6 @@ const StepTitle = styled.h2`
   margin: 0 0 var(--spacing-sm) 0;
 `;
 
-const StepDescription = styled.p`
-  color: var(--color-text-secondary);
-  font-size: 14px;
-  margin: 0 0 var(--spacing-xl) 0;
-`;
-
 const CardGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(2, 1fr);

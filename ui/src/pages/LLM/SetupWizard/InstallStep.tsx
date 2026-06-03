@@ -12,12 +12,6 @@ const StepTitle = styled.h2`
   margin: 0 0 var(--spacing-sm) 0;
 `;
 
-const StepDescription = styled.p`
-  color: var(--color-text-secondary);
-  font-size: 14px;
-  margin: 0 0 var(--spacing-xl) 0;
-`;
-
 const StepList = styled.div`
   display: flex;
   flex-direction: column;
@@ -87,12 +81,9 @@ export function InstallStep() {
       <StepTitle>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }} >
           <Download size={20} />
-          Install your model provider
+          Install Ollama
         </div>
       </StepTitle>
-      <StepDescription>
-        Follow the steps below to download and install your model provider.
-      </StepDescription>
 
       {content}
 

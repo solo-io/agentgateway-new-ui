@@ -20,12 +20,6 @@ const StepTitle = styled.h2`
   margin: 0 0 var(--spacing-sm) 0;
 `;
 
-const StepDescription = styled.p`
-  color: var(--color-text-secondary);
-  font-size: 14px;
-  margin: 0 0 var(--spacing-xl) 0;
-`;
-
 const FieldFormItem = styled(Form.Item)`
   .ant-form-item-label > label {
     align-items: baseline;
@@ -262,12 +256,9 @@ export function ModelConfigStep() {
       <StepTitle>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <Cog size={20} />
-          Configure your model
+          Set up your model
         </div>
       </StepTitle>
-      <StepDescription>
-        These settings will be used to connect agentgateway to your model.
-      </StepDescription>
 
       <Form
         form={form}
@@ -303,7 +294,7 @@ export function ModelConfigStep() {
             <div>
               <FieldFormTitle>Model Name</FieldFormTitle>
               <FieldFormDescription>
-              Browse the <Link href="https://ollama.com/search" target="_blank" rel="noopener noreferrer">Ollama registry</Link> - copy a model name, paste it below, then run:
+              Browse the <Link href="https://ollama.com/search" target="_blank" rel="noopener noreferrer">Ollama registry</Link> - copy & paste a model name below, then run the following commands:
               </FieldFormDescription>
             </div>
           }
