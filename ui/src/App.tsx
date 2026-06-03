@@ -17,6 +17,7 @@ import { MCPConfigurationPage } from "./pages/MCP/MCPConfigurationPage";
 import { MCPLogsPage } from "./pages/MCP/MCPLogsPage";
 import { MCPMetricsPage } from "./pages/MCP/MCPMetricsPage";
 import { MCPPlaygroundPage } from "./pages/MCP/Playground/MCPPlaygroundPage";
+import { MCPSetupWizardPage } from "./pages/MCP/SetupWizard/MCPSetupWizardPage";
 import { SetupWizardPage } from "./pages/SetupWizard/SetupWizardPage";
 import { TrafficConfigurationPage } from "./pages/Traffic/TrafficConfigurationPage";
 import { TrafficLogsPage } from "./pages/Traffic/TrafficLogsPage";
@@ -75,6 +76,7 @@ function App() {
                   />
 
                   {/* MCP Section */}
+                  <Route path="/mcp-setup-wizard" element={<MCPSetupWizardPage />} />
                   <Route path="/mcp-configuration" element={<MCPConfigurationPage />} />
                   <Route path="/mcp-configuration/mcp" element={<MCPConfigurationPage />} />
                   <Route path="/mcp-configuration/mcp/target/:targetIndex" element={<MCPConfigurationPage />} />

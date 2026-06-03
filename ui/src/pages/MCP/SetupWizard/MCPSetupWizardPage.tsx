@@ -1,63 +1,62 @@
 import styled from "@emotion/styled";
 import { Card, ConfigProvider, Steps } from "antd";
 import { InstallStep } from "./InstallStep";
-import { LLMWizardProvider, useLLMWizard } from "./LLMWizardContext";
-import { ModelConfigStep } from "./ModelConfigStep";
+import { MCPWizardProvider, useMCPWizard } from "./MCPWizardContext";
 import { PortStep } from "./PortStep";
-import { SelectModelStep } from "./SelectModelStep";
+import { SelectServerStep } from "./SelectServerStep";
+import { ServerConfigStep } from "./ServerConfigStep";
 
 const PageRoot = styled.div`
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 `;
 
 const PageHeader = styled.div`
-    padding: var(--spacing-lg) var(--spacing-xl);
-    border-bottom: 1px solid var(--color-border);
-    border: 1px solid var(--color-border-secondary);
-    background: linear-gradient(to right, var(--color-bg-hover) 0%, var(--color-bg-container) 100%);
+  padding: var(--spacing-lg) var(--spacing-xl);
+  border-bottom: 1px solid var(--color-border);
+  border: 1px solid var(--color-border-secondary);
+  background: linear-gradient(to right, var(--color-bg-hover) 0%, var(--color-bg-container) 100%);
 `;
 
 const PageTitle = styled.h1`
-    margin: 0 0 var(--spacing-md) 0;
-    font-size: 24px;
-    font-weight: 600;
-    color: var(--color-text-base);
-    border-left: 3px solid #6941c6;
-    padding-left: var(--spacing-sm);
+  margin: 0 0 var(--spacing-md) 0;
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--color-text-base);
+  border-left: 3px solid #6941c6;
+  padding-left: var(--spacing-sm);
 `;
 
 const StepBody = styled.div`
-    flex: 1;
-    overflow-y: auto;
-    display: flex;
-    justify-content: center;
-    padding: var(--spacing-xl);  
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  justify-content: center;
+  padding: var(--spacing-xl);
 `;
 
-
 const STEP_LABELS = [
-    { title: "Model Type" },
+    { title: "Server" },
     { title: "Install" },
     { title: "Configure" },
 ];
 
-function LLMSetupWizardInner() {
-    const { currentStep, stepIndex } = useLLMWizard();
+function MCPSetupWizardInner() {
+    const { currentStep, stepIndex } = useMCPWizard();
     const isPreStep = currentStep === "port";
 
     const stepComponent = {
         port: <PortStep />,
-        selectModel: <SelectModelStep />,
+        selectServer: <SelectServerStep />,
         install: <InstallStep />,
-        modelConfig: <ModelConfigStep />,
+        config: <ServerConfigStep />,
     }[currentStep];
 
     return (
         <PageRoot>
             <PageHeader>
-                <PageTitle>LLM Setup Wizard</PageTitle>
+                <PageTitle>MCP Setup Wizard</PageTitle>
             </PageHeader>
             <StepBody>
                 <Card style={{ width: "100%", maxWidth: 640, "--color-border-secondary": "rgba(0, 0, 0, 0.3)", boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.3)" } as React.CSSProperties}>
@@ -79,10 +78,10 @@ function LLMSetupWizardInner() {
     );
 }
 
-export function LLMSetupWizardPage() { 
+export function MCPSetupWizardPage() {
     return (
-        <LLMWizardProvider>
-            <LLMSetupWizardInner />
-        </LLMWizardProvider>
+        <MCPWizardProvider>
+            <MCPSetupWizardInner />
+        </MCPWizardProvider>
     );
 }
