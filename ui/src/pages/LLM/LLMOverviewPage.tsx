@@ -1,9 +1,11 @@
+import { DeleteOutlined } from "@ant-design/icons";
 import styled from "@emotion/styled";
-import { Button, InputNumber, Tag, Tooltip } from "antd";
-import { Check, Edit2, X } from "lucide-react";
+import { App, Button, Dropdown, InputNumber, Tag, Tooltip } from "antd";
+import { Check, Edit2, EllipsisVertical, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useConfig } from "../../api";
 import { fetchConfig, updateConfig } from "../../api/config";
 import { useTrafficHierarchy } from "../../components/TrafficHierarchy";
 import type { BindNode } from "../../components/TrafficHierarchy/hooks/useTrafficHierarchy";
@@ -161,9 +163,12 @@ function extractAIModels(bindNodes: BindNode[]): AIModelInfo[] {
 
 // Main Component
 export function LLMOverviewPage() {
+    const { modal } = App.useApp();
+    const { mutate } = useConfig();
     const hierarchy = useTrafficHierarchy();
     const navigate = useNavigate();
     const location = useLocation();
+
     const [editingPort, setEditingPort] = useState<number | null>(null);
     const [editPortValue, setEditPortValue] = useState<number | null>(null);
     const [isSavingPort, setIsSavingPort] = useState(false);
@@ -176,6 +181,39 @@ export function LLMOverviewPage() {
     const handlePortEditCancel = () => {
         setEditingPort(null);
         setEditPortValue(null);
+    };
+
+    const handleDeleteModel = async (m: AIModelInfo) => {
+        try {
+            const config = await fetchConfig();
+            for (const bind of config.binds ?? []) {
+                if (bind.port !== m.port) continue;
+                for (const listener of bind.listeners ?? []) {
+                    for (const route of listener.routes ?? []) {
+                        route.backends = (route.backends ?? []).filter((b: any) => {
+                            if (!b || !("ai" in b)) return true;
+                            return b.ai?.name !== m.name;
+                        });
+                    }
+                    listener.routes = (listener.routes ?? []).filter(
+                        (r: any) => (r.backends?.length ?? 0) > 0
+                    );
+                }
+                bind.listeners = (bind.listeners ?? []).filter(
+                    (l: any) => (l.routes?.length ?? 0) > 0
+                );
+            }
+            config.binds = (config.binds ?? []).filter(
+                (b: any) => (b.listeners?.length ?? 0) > 0
+            );
+            await updateConfig(config);
+            await mutate();
+            if (models.length === 1) {
+                navigate("/llm-setup-wizard", { replace: true });
+            }
+        } catch (err: any) {
+            toast.error(err.message ?? "Failed to delete model");
+        }
     };
 
     const handlePortEditSave = async (oldPort: number) => {
@@ -295,6 +333,27 @@ export function LLMOverviewPage() {
                                 <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
                                     <ModelName>{m.name}</ModelName>
                                     <PillTag color={getPortColor(m.port, ports)}>:{m.port}</PillTag>
+                                    <Dropdown
+                                      menu={{
+                                        items: [
+                                          { 
+                                            key: "delete", 
+                                            label: "Delete",
+                                            icon: <DeleteOutlined />,
+                                            onClick: () => modal.confirm({
+                                              title: "Delete Model?",
+                                              content: <span>Are you sure you want to delete <b>{m.name}</b>?</span>,
+                                              okText: "Delete",
+                                              okButtonProps: { danger: true },
+                                              onOk: () => handleDeleteModel(m),
+                                            }),
+                                          },
+                                        ],
+                                      }}
+                                      trigger={["click"]}
+                                    >
+                                      <EllipsisVertical size={15} style={{ cursor: "pointer" }} />
+                                    </Dropdown>
                                 </div>
                                 <ModelMeta>
                                   <PillTag color={PROVIDER_COLORS[m.providerKey]}>
