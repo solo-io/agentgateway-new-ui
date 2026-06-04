@@ -3,7 +3,7 @@ import { Button, Form, Input } from "antd";
 // import { InputNumber, Spin } from "antd";  // streamableHttp only
 import { Cog } from "lucide-react";
 // import { CheckCircle } from "lucide-react";  // streamableHttp only
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { mutate } from "swr";
@@ -85,8 +85,13 @@ export function ServerConfigStep() {
     const { data, updateServerFields, previousStep } = useMCPWizard();
     // const [isVerifying, setIsVerifying] = useState(false);  // streamableHttp only
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [nameError, setNameError] = useState(true);
     const [form] = Form.useForm();
     const navigate = useNavigate();
+
+    useEffect(() => {
+        form.validateFields(["name"]).then(() => setNameError(false)).catch(() => setNameError(true));
+    }, [form]);
 
     // streamableHttp only
     // const hostValue = Form.useWatch("host", form) ?? DEFAULT_HOST;
@@ -195,6 +200,9 @@ export function ServerConfigStep() {
                 }}
                 onValuesChange={(changed) => {
                     updateServerFields(changed);
+                    if (changed.name !== undefined) {
+                        form.validateFields(["name"]).then(() => setNameError(false)).catch(() => setNameError(true));
+                    }
                     // streamableHttp only:
                     // if (changed.host || changed.port || changed.path) { setVerified(false); }
                 }}
@@ -207,7 +215,26 @@ export function ServerConfigStep() {
                             <FieldFormDescription>A name used to identify this MCP server.</FieldFormDescription>
                         </div>
                     }
-                    rules={[{ required: true, message: "Server alias is required" }]}
+                    validateTrigger="onBlur"
+                    rules={[
+                        { required: true, message: "Server alias is required" },
+                        {
+                            validator: async (_, value) => {
+                                if (!value) return;
+                                const config = await fetchConfig();
+                                const taken = config.binds?.some((b: any) =>
+                                    b.listeners?.some((l: any) =>
+                                        l.routes?.some((r: any) =>
+                                            r.backends?.some((bk: any) =>
+                                                bk.mcp?.targets?.some((t: any) => t.name === value)
+                                            )
+                                        )
+                                    )
+                                );
+                                if (taken) return Promise.reject("Server alias is already in use");
+                            },
+                        },
+                    ]}
                 >
                     <StyledInput placeholder="e.g. server-everything" />
                 </FieldFormItem>
@@ -246,6 +273,7 @@ export function ServerConfigStep() {
                     type="primary"
                     onClick={handleSubmit}
                     loading={isSubmitting}
+                    disabled={nameError}
                 >
                     Create
                 </Button>

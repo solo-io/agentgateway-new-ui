@@ -1,7 +1,7 @@
 import styled from "@emotion/styled";
 import { Button, Form, Input, Spin, Tooltip, Typography } from "antd";
 import { Check, CheckCircle, Cog, Copy } from "lucide-react";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { mutate } from "swr";
@@ -164,11 +164,16 @@ export function ModelConfigStep() {
   const { data, updateModelFields, setWalkthroughVerified, previousStep } = useLLMWizard();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
+  const [nameError, setNameError] = useState(true);
   const [form] = Form.useForm();
   const navigate = useNavigate();
 
   const modelValue = Form.useWatch("model", form) ?? data.modelFields.model ?? DEFAULT_MODEL;
   const hostValue = Form.useWatch("hostOverride", form) ?? data.modelFields.hostOverride ?? DEFAULT_HOST;
+
+  useEffect(() => {
+    form.validateFields(["name"]).then(() => setNameError(false)).catch(() => setNameError(true));
+  }, [form]);
 
 
   const handleVerify = async () => {
@@ -273,11 +278,31 @@ export function ModelConfigStep() {
           if (changed.hostOverride || changed.model) {
             setWalkthroughVerified(false, null);
           }
+          if (changed.name !== undefined) {
+            form.validateFields(["name"]).then(() => setNameError(false)).catch(() => setNameError(true));
+          }
         }}
       >
         <FieldFormItem
           name="name"
-          rules={[{ required: true, message: "Model Alias is required" }]}
+          validateTrigger="onBlur"
+          rules={[
+            { required: true, message: "Model Alias is required" },
+            {
+              validator: async (_, value) => {
+                if (!value) return;
+                const config = await fetchConfig();
+                const taken = config.binds?.some((b: any) =>
+                  b.listeners?.some((l: any) =>
+                    l.routes?.some((r: any) =>
+                      r.backends?.some((bk: any) => bk.ai?.name === value)
+                    )
+                  )
+                );
+                if (taken) return Promise.reject("Model alias is already in use");
+              },
+            },
+          ]}
           label={
             <div>
               <FieldFormTitle>Model Alias</FieldFormTitle>
@@ -348,7 +373,7 @@ export function ModelConfigStep() {
           type="primary"
           onClick={handleSubmit}
           loading={isSubmitting}
-          disabled={!data.setupVerified}
+          disabled={!data.setupVerified || nameError}
         >
           Create
         </Button>
