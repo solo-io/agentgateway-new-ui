@@ -170,7 +170,7 @@ export function ServerConfigStep() {
             await mutate("/config");
 
             toast.success("MCP configuration created");
-            navigate("/mcp-configuration");
+            navigate("/mcp-configuration", { state: { skipWizardRedirect: true } });
         } catch (err: any) {
             toast.error(err.message ?? "Failed to create MCP configuration");
         } finally {

@@ -1,9 +1,10 @@
 import styled from "@emotion/styled";
-import { Button, InputNumber, Tag, Tooltip } from "antd";
-import { Check, Edit2, X } from "lucide-react";
+import { App, Button, Dropdown, InputNumber, Tag, Tooltip } from "antd";
+import { Check, Edit2, EllipsisVertical, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useConfig } from "../../api";
 import { fetchConfig, updateConfig } from "../../api/config";
 import { useTrafficHierarchy } from "../../components/TrafficHierarchy";
 import type { BindNode } from "../../components/TrafficHierarchy/hooks/useTrafficHierarchy";
@@ -201,7 +202,9 @@ function extractMCPTargets(bindNodes: BindNode[]): MCPTargetInfo[] {
     return results;
 }
 
-export function MCPOverviewPage() { 
+export function MCPOverviewPage() {
+    const { modal } = App.useApp();
+    const { mutate } = useConfig();
     const hierarchy = useTrafficHierarchy();
     const navigate = useNavigate();
     const location = useLocation();
@@ -233,6 +236,40 @@ export function MCPOverviewPage() {
             toast.error(err.message ?? "Failed to update port");
         } finally {
             setIsSavingPort(false);
+        }
+    };
+
+    const handleDeleteServer = async (t: MCPTargetInfo) => {
+        try {
+            const config = await fetchConfig();
+            for (const bind of config.binds ?? []) {
+                if (bind.port !== t.port) continue;
+                for (const listener of bind.listeners ?? []) {
+                    for (const route of listener.routes ?? []) {
+                        route.backends = (route.backends ?? []).filter((b: any) => {
+                            if (!b || !("mcp" in b)) return true;
+                            b.mcp.targets = (b.mcp.targets ?? []).filter((tgt: any) => tgt.name !== t.name);
+                            return (b.mcp.targets?.length ?? 0) > 0;
+                        });
+                    }
+                    listener.routes = (listener.routes ?? []).filter(
+                        (r: any) => (r.backends?.length ?? 0) > 0
+                    );
+                }
+                bind.listeners = (bind.listeners ?? []).filter(
+                    (l: any) => (l.routes?.length ?? 0) > 0
+                );
+            }
+            config.binds = (config.binds ?? []).filter(
+                (b: any) => (b.listeners?.length ?? 0) > 0
+            );
+            await updateConfig(config);
+            await mutate();
+            if (targets.length === 1) {
+                navigate("/mcp-setup-wizard", { replace: true });
+            }
+        } catch (err: any) {
+            toast.error(err.message ?? "Failed to delete server");
         }
     };
 
@@ -333,6 +370,26 @@ export function MCPOverviewPage() {
                                 <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
                                     <ServerName>{t.name}</ServerName>
                                     <PillTag color={getPortColor(t.port, ports)}>:{t.port}</PillTag>
+                                    <Dropdown
+                                      menu={{
+                                        items: [
+                                          {
+                                            key: "delete",
+                                            label: <span style={{ color: "#ff4d4f" }}>Delete</span>,
+                                            onClick: () => modal.confirm({
+                                              title: "Delete MCP Server",
+                                              content: `Are you sure you want to delete "${t.name}"?`,
+                                              okText: "Delete",
+                                              okButtonProps: { danger: true },
+                                              onOk: () => handleDeleteServer(t),
+                                            }),
+                                          },
+                                        ],
+                                      }}
+                                      trigger={["click"]}
+                                    >
+                                      <EllipsisVertical size={15} style={{ cursor: "pointer" }} />
+                                    </Dropdown>
                                 </div>
                                 <BadgeRow>
                                     <PillTag color={TYPE_COLORS[t.type]}>{t.type}</PillTag>
