@@ -87,7 +87,7 @@ export function RouteSelector({
                 }}
               >
                 <span style={{ fontWeight: 500 }}>
-                  {routeInfo.route.name || `Route ${idx + 1}`}
+                  {routeInfo.targetName || `Route ${idx + 1}`}
                 </span>
                 <Tag color="blue">Port {routeInfo.bindPort}</Tag>
                 <Tag style={{ fontSize: "11px", fontFamily: "monospace" }}>

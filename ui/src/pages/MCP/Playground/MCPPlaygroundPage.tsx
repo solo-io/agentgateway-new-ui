@@ -120,6 +120,9 @@ export function MCPPlaygroundPage() {
             const port = bind.port;
             const baseEndpoint = `${protocol}://${hostname}:${port}`;
 
+            const mcpBackend = route.backends?.find((b: any) => b.mcp) as any;
+            const targetName = mcpBackend?.mcp?.targets?.[0]?.name ?? route.name ?? `Route ${routeIndex + 1}`;
+
             let routePath = "/";
             if (route.matches?.[0]?.path) {
               const pathMatch = route.matches[0].path;
@@ -135,6 +138,7 @@ export function MCPPlaygroundPage() {
             extractedRoutes.push({
               bindPort: port,
               listener,
+              targetName,
               route,
               endpoint: baseEndpoint,
               protocol,
