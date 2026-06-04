@@ -3,7 +3,7 @@ import styled from "@emotion/styled";
 import { Alert, Button, Card, Spin } from "antd";
 import { ChevronDown, ChevronRight, Settings } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useConfig } from "../../../api/hooks";
 import { CodeBlock } from "../../../components/CodeBlock";
 import type { LocalBind, LocalListener, LocalRoute } from "../../../config";
@@ -64,6 +64,9 @@ export function MCPPlaygroundPage() {
   const [selectedRoute, setSelectedRoute] = useState<RouteInfo | null>(null);
   const [resultExpanded, setResultExpanded] = useState<boolean>(true);
   const [showExample, setShowExample] = useState<boolean>(false);
+
+  const [searchParams] = useSearchParams();
+  const providedTargetLabel = searchParams.get("label");
 
   const exampleConfig = `
     binds:
@@ -161,7 +164,6 @@ export function MCPPlaygroundPage() {
   );
 
   const showAlert = !configLoading && (Boolean(config?.mcp));
-  console.log(showAlert);
 
   const renderAlert = () => { 
     return (
@@ -258,6 +260,7 @@ export function MCPPlaygroundPage() {
       >
         <RouteSelector
           routes={routes}
+          providedTargetLabel={providedTargetLabel}
           selectedRoute={selectedRoute}
           connectionState={connectionState}
           onSelectRoute={handleRouteSelect}

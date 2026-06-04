@@ -5,7 +5,6 @@ import { useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import { useLocation, useNavigate } from "react-router-dom";
 import { fetchConfig, updateConfig } from "../../api/config";
-import type { LocalConfig } from "../../api/types";
 import { useTrafficHierarchy } from "../../components/TrafficHierarchy";
 import type { BindNode } from "../../components/TrafficHierarchy/hooks/useTrafficHierarchy";
 
@@ -298,7 +297,7 @@ export function LLMOverviewPage() {
                                 </div>
                                 <ModelMeta>{m.providerKey} / {m.model}</ModelMeta>
                                 {m.hostOverride && (
-                                    <ModelMeta>Host: <b>{m.hostOverride}</b></ModelMeta>
+                                    <ModelMeta>LLM Host: <b>{m.hostOverride}</b></ModelMeta>
                                 )}
                                 <CardActions>
                                     <Button

@@ -340,9 +340,12 @@ export function MCPOverviewPage() {
                                         {t.statefulMode ?? "stateless"}
                                     </PillTag>
                                 </BadgeRow>
-                                {t.endpoint && <ServerMeta>{t.endpoint}</ServerMeta>}
+                                {t.endpoint && <ServerMeta>Server Endpoint: <b>{t.endpoint}</b></ServerMeta>}
                                 <CardActions>
-                                    <Button size="small" disabled>
+                                    <Button 
+                                        size="small"
+                                        onClick={() => navigate(`/mcp-playground?label=${t.name}`)}
+                                    >
                                         Open Playground
                                     </Button>
                                     <Button

@@ -1,5 +1,6 @@
 import styled from "@emotion/styled";
 import { Button, Card, Input, Tag } from "antd";
+import { useEffect } from "react";
 import type { ConnectionState, RouteInfo } from "./types";
 
 const RouteCard = styled(Card)`
@@ -38,6 +39,7 @@ const RouteCard = styled(Card)`
 
 interface RouteSelectorProps {
   routes: RouteInfo[];
+  providedTargetLabel: string | null;
   selectedRoute: RouteInfo | null;
   connectionState: ConnectionState;
   onSelectRoute: (route: RouteInfo) => void;
@@ -47,12 +49,19 @@ interface RouteSelectorProps {
 
 export function RouteSelector({
   routes,
+  providedTargetLabel,
   selectedRoute,
   connectionState,
   onSelectRoute,
   onAuthTokenChange,
   onConnect,
 }: RouteSelectorProps) {
+  useEffect(() => {
+    if (!providedTargetLabel || selectedRoute !== null) return;
+    const match = routes.find((r) => r.targetName === providedTargetLabel);
+    if (match) onSelectRoute(match);
+  }, [providedTargetLabel, routes, selectedRoute, onSelectRoute]);
+
   return (
     <>
       <div
@@ -74,8 +83,9 @@ export function RouteSelector({
                   ? "var(--color-bg-selected)"
                   : "var(--color-bg-spotlight)",
                 border: isSelected
-                  ? "2px solid var(--color-primary)"
+                  ? "1px solid var(--color-border-base) !important"
                   : undefined,
+                fontWeight: isSelected ? 600 : 400,
               }}
               onClick={() => onSelectRoute(routeInfo)}
             >
@@ -86,7 +96,7 @@ export function RouteSelector({
                   gap: "0.5rem",
                 }}
               >
-                <span style={{ fontWeight: 500 }}>
+                <span style={{ fontWeight: isSelected ? 600 : 400 }}>
                   {routeInfo.targetName || `Route ${idx + 1}`}
                 </span>
                 <Tag color="blue">Port {routeInfo.bindPort}</Tag>
