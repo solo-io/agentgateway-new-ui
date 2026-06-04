@@ -7,6 +7,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { fetchConfig, updateConfig } from "../../api/config";
 import { useTrafficHierarchy } from "../../components/TrafficHierarchy";
 import type { BindNode } from "../../components/TrafficHierarchy/hooks/useTrafficHierarchy";
+import { PROVIDER_COLORS } from "./Playground/constants";
 
 const PageRoot = styled.div`
   display: flex;
@@ -295,7 +296,13 @@ export function LLMOverviewPage() {
                                     <ModelName>{m.name}</ModelName>
                                     <PillTag color={getPortColor(m.port, ports)}>:{m.port}</PillTag>
                                 </div>
-                                <ModelMeta>{m.providerKey} / {m.model}</ModelMeta>
+                                <ModelMeta>
+                                  <PillTag color={PROVIDER_COLORS[m.providerKey]}>
+                                    {m.providerKey}
+                                  </PillTag>
+                                  {" "}
+                                  <PillTag color="gold">{m.model}</PillTag>
+                                </ModelMeta>
                                 {m.hostOverride && (
                                     <ModelMeta>LLM Host: <b>{m.hostOverride}</b></ModelMeta>
                                 )}
