@@ -3,10 +3,17 @@ import { Button, Card, Input, Tag } from "antd";
 import { useEffect } from "react";
 import type { ConnectionState, RouteInfo } from "./types";
 
-const RouteCard = styled(Card)`
+const RouteCard = styled(Card)<{ $selected?: boolean }>`
   cursor: pointer;
   transition: all 0.15s ease;
   position: relative;
+
+  ${({ $selected }) =>
+    $selected &&
+    `
+    border-color: rgba(255, 255, 255, 0.6) !important;
+    box-shadow: 0 0 10px 4px rgba(139, 92, 246, 0.25);
+  `}
 
   &::before {
     content: "";
@@ -78,13 +85,11 @@ export function RouteSelector({
             <RouteCard
               key={`${routeInfo.bindPort}-${routeInfo.routeIndex}`}
               size="small"
+              $selected={isSelected}
               style={{
                 background: isSelected
                   ? "var(--color-bg-selected)"
                   : "var(--color-bg-spotlight)",
-                border: isSelected
-                  ? "1px solid var(--color-border-base) !important"
-                  : undefined,
                 fontWeight: isSelected ? 600 : 400,
               }}
               onClick={() => onSelectRoute(routeInfo)}

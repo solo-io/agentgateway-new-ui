@@ -61,7 +61,7 @@ const OPTIONS = [
     // },
     {
       id: "server-everything-stdio",
-      label: "Local stdio MCP Server",
+      label: "stdio MCP Server",
       subtext: "Run a local MCP server using stdio",
     },
     {
