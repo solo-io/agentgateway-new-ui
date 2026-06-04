@@ -1,6 +1,8 @@
 import styled from "@emotion/styled";
-import { Button, Form, Input, InputNumber, Spin } from "antd";
-import { CheckCircle, Cog } from "lucide-react";
+import { Button, Form, Input } from "antd";
+// import { InputNumber, Spin } from "antd";  // streamableHttp only
+import { Cog } from "lucide-react";
+// import { CheckCircle } from "lucide-react";  // streamableHttp only
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
@@ -23,27 +25,30 @@ const StyledInput = styled(Input)`
   border: 1px solid #d9d9d9 !important;
 `;
 
-const StyledInputNumber = styled(InputNumber)`
-  width: 100%;
-  border: 1px solid #d9d9d9 !important;
-`;
+// streamableHttp only
+// const StyledInputNumber = styled(InputNumber)`
+//   width: 100%;
+//   border: 1px solid #d9d9d9 !important;
+// `;
 
-const VerifyRow = styled.div`
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
-  margin-top: var(--spacing-lg);
-  margin-bottom: var(--spacing-sm);
-`;
+// streamableHttp only
+// const VerifyRow = styled.div`
+//   display: flex;
+//   align-items: center;
+//   gap: var(--spacing-md);
+//   margin-top: var(--spacing-lg);
+//   margin-bottom: var(--spacing-sm);
+// `;
 
-const SuccessText = styled.span`
-  color: var(--color-success, #52c41a);
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  font-size: 14px;
-  font-weight: 500;
-`;
+// streamableHttp only
+// const SuccessText = styled.span`
+//   color: var(--color-success, #52c41a);
+//   display: flex;
+//   align-items: center;
+//   gap: var(--spacing-xs);
+//   font-size: 14px;
+//   font-weight: 500;
+// `;
 
 const Actions = styled.div`
   display: flex;
@@ -71,34 +76,37 @@ const FieldFormDescription = styled.div`
 const LISTENER_NAME = "mcp-listener";
 const ROUTE_NAME = "mcp-route";
 const DEFAULT_NAME = "server-everything";
-const DEFAULT_HOST = "localhost";
-const DEFAULT_PORT = 3001;
-const DEFAULT_PATH = "/mcp";
+const DEFAULT_ARGS = "-y @modelcontextprotocol/server-everything";
+// const DEFAULT_HOST = "localhost";  // streamableHttp only
+// const DEFAULT_PORT = 3001;         // streamableHttp only
+// const DEFAULT_PATH = "/mcp";       // streamableHttp only
 
 export function ServerConfigStep() {
-    const { data, updateServerFields, setVerified, previousStep } = useMCPWizard();
-    const [isVerifying, setIsVerifying] = useState(false);
+    const { data, updateServerFields, previousStep } = useMCPWizard();
+    // const [isVerifying, setIsVerifying] = useState(false);  // streamableHttp only
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [form] = Form.useForm();
     const navigate = useNavigate();
 
-    const hostValue = Form.useWatch("host", form) ?? DEFAULT_HOST;
-    const portValue = Form.useWatch("port", form) ?? DEFAULT_PORT;
-    const pathValue = Form.useWatch("path", form) ?? DEFAULT_PATH;
+    // streamableHttp only
+    // const hostValue = Form.useWatch("host", form) ?? DEFAULT_HOST;
+    // const portValue = Form.useWatch("port", form) ?? DEFAULT_PORT;
+    // const pathValue = Form.useWatch("path", form) ?? DEFAULT_PATH;
 
-    const handleVerify = async () => {
-        setIsVerifying(true);
-        setVerified(false);
-        try {
-            await fetch(`http://${hostValue}:${portValue}${pathValue}`, { mode: "no-cors" });
-            setVerified(true);
-        } catch {
-            toast.error(`Could not reach MCP server at ${hostValue}:${portValue}. Is it running?`);
-            setVerified(false);
-        } finally {
-            setIsVerifying(false);
-        }
-    };
+    // streamableHttp only
+    // const handleVerify = async () => {
+    //     setIsVerifying(true);
+    //     setVerified(false);
+    //     try {
+    //         await fetch(`http://${hostValue}:${portValue}${pathValue}`, { mode: "no-cors" });
+    //         setVerified(true);
+    //     } catch {
+    //         toast.error(`Could not reach MCP server at ${hostValue}:${portValue}. Is it running?`);
+    //         setVerified(false);
+    //     } finally {
+    //         setIsVerifying(false);
+    //     }
+    // };
 
     const handleSubmit = async () => {
         let values;
@@ -110,13 +118,18 @@ export function ServerConfigStep() {
 
         setIsSubmitting(true);
         try {
-            const { name, host, port, path } = values;
+            const { name, args } = values;
 
             const mcpBackend: LocalRouteBackend = {
                 mcp: {
                     targets: [{
                         name,
-                        mcp: { host, port, path },
+                        stdio: {
+                            cmd: "npx",
+                            args: [args],
+                        },
+                        // streamableHttp only:
+                        // mcp: { host, port, path },
                     }],
                     statefulMode: "stateful",
                 },
@@ -174,15 +187,16 @@ export function ServerConfigStep() {
                 layout="vertical"
                 initialValues={{
                     name: data.serverFields.name || DEFAULT_NAME,
-                    host: data.serverFields.host || DEFAULT_HOST,
-                    port: data.serverFields.port || DEFAULT_PORT,
-                    path: data.serverFields.path || DEFAULT_PATH,
+                    args: data.serverFields.args || DEFAULT_ARGS,
+                    // streamableHttp only:
+                    // host: data.serverFields.host || DEFAULT_HOST,
+                    // port: data.serverFields.port || DEFAULT_PORT,
+                    // path: data.serverFields.path || DEFAULT_PATH,
                 }}
                 onValuesChange={(changed) => {
                     updateServerFields(changed);
-                    if (changed.host || changed.port || changed.path) {
-                        setVerified(false);
-                    }
+                    // streamableHttp only:
+                    // if (changed.host || changed.port || changed.path) { setVerified(false); }
                 }}
             >
                 <FieldFormItem
@@ -199,57 +213,31 @@ export function ServerConfigStep() {
                 </FieldFormItem>
 
                 <FieldFormItem
-                    name="host"
+                    name="args"
                     label={
                         <div>
-                            <FieldFormTitle>Host</FieldFormTitle>
-                            <FieldFormDescription>Address where MCP server is listening (default: localhost).</FieldFormDescription>
+                            <FieldFormTitle>npx Arguments</FieldFormTitle>
+                            <FieldFormDescription>Arguments passed to npx to start the MCP server.</FieldFormDescription>
                         </div>
                     }
                     style={{ marginTop: "var(--spacing-md)" }}
-                    rules={[{ required: true, message: "Host is required" }]}
+                    rules={[{ required: true, message: "npx arguments are required" }]}
                 >
-                    <StyledInput placeholder="e.g. localhost" />
+                    <StyledInput placeholder="e.g. -y @modelcontextprotocol/server-everything" />
                 </FieldFormItem>
 
-                <FieldFormItem
-                    name="port"
-                    label={
-                        <div>
-                            <FieldFormTitle>Port</FieldFormTitle>
-                            <FieldFormDescription>Port where MCP server is listening (default: 3001).</FieldFormDescription>
-                        </div>
-                    }
-                    style={{ marginTop: "var(--spacing-md)" }}
-                    rules={[{ required: true, message: "Port is required" }]}
-                >
-                    <StyledInputNumber min={1} max={65535} precision={0} placeholder="e.g. 3001" />
-                </FieldFormItem>
-
-                <FieldFormItem
-                    name="path"
-                    label={
-                        <div>
-                            <FieldFormTitle>Path</FieldFormTitle>
-                            <FieldFormDescription>Endpoint path for MCP server (default: /mcp).</FieldFormDescription>
-                        </div>
-                    }
-                    style={{ marginTop: "var(--spacing-md)" }}
-                    rules={[{ required: true, message: "Path is required" }]}
-                >
-                    <StyledInput placeholder="e.g. /mcp" />
-                </FieldFormItem>
-
-                <VerifyRow>
+                {/* streamableHttp only — uncomment to re-enable host/port/path fields and verify */}
+                {/* <FieldFormItem name="host" ...><StyledInput /></FieldFormItem> */}
+                {/* <FieldFormItem name="port" ...><StyledInputNumber /></FieldFormItem> */}
+                {/* <FieldFormItem name="path" ...><StyledInput /></FieldFormItem> */}
+                {/* <VerifyRow>
                     <Button type="primary" ghost onClick={handleVerify} disabled={isVerifying}>
                         {isVerifying ? <Spin size="small" /> : "Verify Connection"}
                     </Button>
                     {data.setupVerified && (
-                        <SuccessText>
-                            <CheckCircle size={16} /> MCP server detected
-                        </SuccessText>
+                        <SuccessText><CheckCircle size={16} /> MCP server detected</SuccessText>
                     )}
-                </VerifyRow>
+                </VerifyRow> */}
             </Form>
 
             <Actions>
@@ -258,7 +246,6 @@ export function ServerConfigStep() {
                     type="primary"
                     onClick={handleSubmit}
                     loading={isSubmitting}
-                    disabled={!data.setupVerified}
                 >
                     Create
                 </Button>

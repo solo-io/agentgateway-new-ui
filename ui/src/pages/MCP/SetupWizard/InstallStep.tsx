@@ -198,13 +198,15 @@ function ServerEverythingInstall() {
     );
 }
 
-const PROVIDER_CONTENT: Record<string, React.ReactNode> = {
-    "server-everything": <ServerEverythingInstall />,
-};
+// streamableHttp only — uncomment when re-enabling server-everything
+// const PROVIDER_CONTENT: Record<string, React.ReactNode> = {
+//     "server-everything": <ServerEverythingInstall />,
+// };
 
 export function InstallStep() {
-    const { data, nextStep, previousStep } = useMCPWizard();
-    const content = PROVIDER_CONTENT[data.selectedServer ?? ""] ?? null;
+    const { nextStep, previousStep } = useMCPWizard();
+    // const content = PROVIDER_CONTENT[data.selectedServer ?? ""] ?? null;  // streamableHttp only
+    const content = null;
 
     return (
         <div>

@@ -53,10 +53,16 @@ const Actions = styled.div`
 `;
 
 const OPTIONS = [
+    // streamableHttp option — commented out, may be re-enabled by product
+    // {
+    //     id: "server-everything",
+    //     label: "server-everything (streamableHttp)",
+    //     subtext: "Run a local MCP server",
+    // },
     {
-        id: "server-everything",
-        label: "server-everything (streamableHttp)",
-        subtext: "Run a local MCP server",
+      id: "server-everything-stdio",
+      label: "Local stdio MCP Server",
+      subtext: "Run a local MCP server using stdio",
     },
     {
         id: "manual",

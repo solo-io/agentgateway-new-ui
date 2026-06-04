@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { Card, ConfigProvider, Steps } from "antd";
-import { InstallStep } from "./InstallStep";
+// import { InstallStep } from "./InstallStep";  // streamableHttp only
 import { MCPWizardProvider, useMCPWizard } from "./MCPWizardContext";
 import { PortStep } from "./PortStep";
 import { SelectServerStep } from "./SelectServerStep";
@@ -38,7 +38,7 @@ const StepBody = styled.div`
 
 const STEP_LABELS = [
     { title: "Server" },
-    { title: "Install" },
+    // { title: "Install" },  // streamableHttp only
     { title: "Configure" },
 ];
 
@@ -49,7 +49,7 @@ function MCPSetupWizardInner() {
     const stepComponent = {
         port: <PortStep />,
         selectServer: <SelectServerStep />,
-        install: <InstallStep />,
+        // install: <InstallStep />,  // streamableHttp only
         config: <ServerConfigStep />,
     }[currentStep];
 

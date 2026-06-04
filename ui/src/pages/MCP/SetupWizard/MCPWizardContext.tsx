@@ -1,42 +1,44 @@
 import type { ReactNode } from "react";
 import React, { createContext, useCallback, useContext, useState } from "react";
 
-export type MCPWizardStep = "port" | "selectServer" | "install" | "config";
+export type MCPWizardStep = "port" | "selectServer" | /* "install" | */ "config";
 
 export const MCP_WIZARD_STEPS: MCPWizardStep[] = [
     "port",
     "selectServer",
-    "install",
+    // "install",  // streamableHttp only — uncomment when re-enabling
     "config",
 ];
 
-export interface MCPServerFields { 
+export interface MCPServerFields {
     name: string;
-    host: string;
-    port: number;
-    path: string;
+    args: string;
+    // host: string;  // streamableHttp only
+    // port: number;  // streamableHttp only
+    // path: string;  // streamableHttp only
 }
 
-export interface MCPWizardData { 
+export interface MCPWizardData {
     port: number | null;
     selectedServer: string | null;
-    setupVerified: boolean;
-    setupVerifyError: string | null;
+    // setupVerified: boolean;          // streamableHttp only
+    // setupVerifyError: string | null; // streamableHttp only
     serverFields: MCPServerFields;
 }
 
-const DEFAULT_SERVER_FIELDS: MCPServerFields = { 
+const DEFAULT_SERVER_FIELDS: MCPServerFields = {
     name: "my-server-everything",
-    host: "localhost",
-    port: 3001,
-    path: "/mcp",
+    args: "@modelcontextprotocol/server-everything",
+    // host: "localhost",  // streamableHttp only
+    // port: 3001,         // streamableHttp only
+    // path: "/mcp",       // streamableHttp only
 };
 
-const DEFAULT_DATA: MCPWizardData = { 
+const DEFAULT_DATA: MCPWizardData = {
     port: null,
     selectedServer: null,
-    setupVerified: false,
-    setupVerifyError: null,
+    // setupVerified: false,       // streamableHttp only
+    // setupVerifyError: null,     // streamableHttp only
     serverFields: DEFAULT_SERVER_FIELDS,
 };
 
@@ -48,7 +50,7 @@ interface MCPWizardContextType {
     previousStep: () => void;
     setPort: (port: number) => void;
     setSelectedServer: (server: string) => void;
-    setVerified: (verified: boolean, error?: string | null) => void;
+    // setVerified: (verified: boolean, error?: string | null) => void;  // streamableHttp only
     updateServerFields: (fields: Partial<MCPServerFields>) => void;
     canGoNext: boolean;
     canGoPrevious: boolean;
@@ -85,9 +87,9 @@ export const MCPWizardProvider: React.FC<{ children: ReactNode }> = ({ children 
         }));
     }, []);
 
-    const setVerified = useCallback((verified: boolean, error: string | null = null) => {
-        setData((prev) => ({ ...prev, setupVerified: verified, setupVerifyError: error }));
-    }, []);
+    // const setVerified = useCallback((verified: boolean, error: string | null = null) => {  // streamableHttp only
+    //     setData((prev) => ({ ...prev, setupVerified: verified, setupVerifyError: error }));
+    // }, []);
 
     const updateServerFields = useCallback((fields: Partial<MCPServerFields>) => {
         setData((prev) => ({ ...prev, serverFields: { ...prev.serverFields, ...fields } }));
@@ -103,7 +105,7 @@ export const MCPWizardProvider: React.FC<{ children: ReactNode }> = ({ children 
                 previousStep,
                 setPort,
                 setSelectedServer: setSelectedServer,
-                setVerified,
+                // setVerified,  // streamableHttp only
                 updateServerFields,
                 canGoNext,
                 canGoPrevious,
