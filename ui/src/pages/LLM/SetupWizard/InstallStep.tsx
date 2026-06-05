@@ -1,6 +1,9 @@
 import styled from "@emotion/styled";
-import { Button, Typography } from "antd";
-import { Download } from "lucide-react";
+import { Button, Tabs, Typography } from "antd";
+import { Check, Copy, Download } from "lucide-react";
+import { useCallback, useState } from "react";
+import { LinuxLogo, MacLogo, WindowsLogo } from "../../../assets/logos";
+import { detectPlatform } from "../../../utils/platform";
 import { useLLMWizard } from "./LLMWizardContext";
 
 const { Link } = Typography;
@@ -39,20 +42,139 @@ const StepContent = styled.div`
   line-height: 1.6;
 `;
 
+const StyledTabs = styled(Tabs)`
+  display: flex;
+  align-items: center;
+  .ant-tabs-tab {
+    color: var(--color-text-secondary);
+    width: 100px !important;
+    justify-content: center;
+    background-color: transparent !important;
+    border-bottom: none !important;
+    padding: 5px 0 !important;
+  }
+  .ant-tabs-tab-active .ant-tabs-tab-btn {
+    color: var(--color-text-base) !important;
+  }
+  .ant-tabs-tab-active { 
+    background-color: #f0f0f0 !important;
+  }
+`;
+
+const TerminalBlock = styled.code`
+  display: inline-block;
+  background: #8b8b8b;
+  color: #ffffff;
+  border-radius: var(--border-radius-sm);
+  border: none;
+  padding: 4px 10px;
+  font-family: monospace;
+  font-size: 13px;
+`;
+
+const CommandWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-top: 2px;
+`;
+
+const CopyButton = styled.button`
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #888;
+  padding: 2px 4px;
+  border-radius: var(--border-radius-sm);
+  display: flex;
+  align-items: center;
+
+  &:hover {
+    color: #d4d4d4;
+    background: rgba(0, 0, 0, 0.06);
+  }
+`;
+
 const Actions = styled.div`
   display: flex;
   justify-content: space-between;
   margin-top: var(--spacing-xl);
 `;
 
-function OllamaInstall() {
+const TabContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-xs);
+`;
+
+function CopyableCommand({ children }: { children: string }) {
+  const [copied, setCopied] = useState(false);
+  const handleCopy = useCallback(() => {
+      navigator.clipboard.writeText(children);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+  }, [children]);
+
   return (
-    // TODO: replace this with direct install script for macOS/Linux/Windows platforms?
+      <CommandWrapper>
+          <TerminalBlock>{children}</TerminalBlock>
+          <CopyButton onClick={handleCopy}>
+              {copied ? <Check size={14} color="#52c41a" /> : <Copy size={14} />}
+          </CopyButton>
+      </CommandWrapper>
+  );
+}
+
+function OllamaInstall() {
+  const platform = detectPlatform();
+
+  return (
     <>
       <StepList>
         <StepRow>
           <StepContent>
-            <span>Download and install Ollama from <Link href="https://ollama.com/download" target="_blank" rel="noopener noreferrer">ollama.com/download</Link></span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-md)' }}>
+              <StyledTabs
+                  type="card"
+                  size="small"
+                  defaultActiveKey={platform}
+                  items={[
+                    {
+                      key: "macos",
+                      label: (
+                        <TabContainer>
+                          <MacLogo />
+                          macOS
+                        </TabContainer>
+                      ),
+                      children: <CopyableCommand>curl -fsSL https://ollama.com/install.sh | sh</CopyableCommand>
+                    },
+                    {
+                      key: "linux",
+                      label: (
+                        <TabContainer>
+                          <LinuxLogo />
+                          Linux
+                        </TabContainer>
+                      ),
+                      children: <CopyableCommand>curl -fsSL https://ollama.com/install.sh | sh</CopyableCommand>,
+                    },
+                    {
+                      key: "windows",
+                      label: (
+                        <TabContainer>
+                          <WindowsLogo />
+                          Windows
+                        </TabContainer>
+                      ),
+                      children: <CopyableCommand>irm https://ollama.com/install.ps1 | iex</CopyableCommand>,
+                    },
+                  ]}
+                />
+              <span>Or, download and install Ollama from the offical <Link href="https://ollama.com/download" target="_blank" rel="noopener noreferrer">ollama.com/download</Link> website.</span>
+            </div>
           </StepContent>
         </StepRow>
       </StepList>
@@ -86,6 +208,10 @@ export function InstallStep() {
       </StepTitle>
 
       {content}
+
+      <Typography.Text type="secondary" style={{ fontSize: 11 }}>
+        Windows, macOS, and Linux are trademarks of their respective owners. No affiliation or endorsement is implied.
+      </Typography.Text>
 
       <Actions>
         <Button onClick={previousStep}>Back</Button>

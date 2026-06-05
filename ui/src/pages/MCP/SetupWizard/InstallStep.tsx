@@ -2,6 +2,7 @@ import styled from "@emotion/styled";
 import { Button, Tabs, Typography } from "antd";
 import { Check, Copy, Download } from "lucide-react";
 import { useCallback, useState } from "react";
+import { detectPlatform } from "../../../utils/platform";
 import { useMCPWizard } from "./MCPWizardContext";
 
 const { Link } = Typography;
@@ -140,7 +141,7 @@ function ServerEverythingInstall() {
                 <StyledTabs
                   type="card"
                   size="small"
-                  defaultActiveKey="windows"
+                  defaultActiveKey={detectPlatform()}
                   items={[
                     {
                       key: "windows",
