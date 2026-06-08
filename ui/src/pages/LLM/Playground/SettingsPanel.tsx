@@ -35,7 +35,7 @@ const EndpointInfo = styled.div`
 
 interface SettingsPanelProps {
   models: PlaygroundModel[];
-  providedModelLabel: string | null;
+  providedModelName: string | null;
   selectedLabel: string | null;
   selectedModel: PlaygroundModel | null;
   modelOverride: string;
@@ -48,7 +48,7 @@ interface SettingsPanelProps {
 
 export function SettingsPanel({
   models,
-  providedModelLabel,
+  providedModelName,
   selectedLabel,
   selectedModel,
   modelOverride,
@@ -59,10 +59,13 @@ export function SettingsPanel({
   onClear,
 }: SettingsPanelProps) {
   useEffect(() => {
-    if (!providedModelLabel || selectedLabel !== null) return;
-    const match = models.find((m) => m.label === providedModelLabel);
-    if (match) onSelectLabel(match.label);
-  }, [providedModelLabel, models, selectedLabel, onSelectLabel]);
+    if (!providedModelName || selectedLabel !== null) return;
+    const match = models.find((m) => m.defaultModel === providedModelName);
+    if (match) {
+      onSelectLabel(match.label);
+      onChangeModelOverride(providedModelName);
+    }
+  }, [providedModelName, models, selectedLabel, onSelectLabel, onChangeModelOverride]);
 
   return (
     <Card title="Settings" size="small">
@@ -80,7 +83,7 @@ export function SettingsPanel({
               value={selectedLabel}
               onChange={onSelectLabel}
               popupMatchSelectWidth={false}
-              options={models.map((m) => ({
+              options={models.filter((m, i, arr) => arr.findIndex(x => x.label === m.label) === i).map((m) => ({
                 label: (
                   <span
                     style={{

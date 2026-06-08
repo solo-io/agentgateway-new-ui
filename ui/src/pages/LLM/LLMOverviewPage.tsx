@@ -294,7 +294,7 @@ export function LLMOverviewPage() {
                                 <CardActions>
                                     <Button
                                         size="small"
-                                        onClick={() => navigate(`/llm-playground?label=${m.name}`)}
+                                        onClick={() => navigate(`/llm-playground?modelName=${encodeURIComponent(m.name)}`)}
                                     >
                                         Open Playground
                                     </Button>

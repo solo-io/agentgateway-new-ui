@@ -55,7 +55,7 @@ export function LLMPlaygroundPage() {
   } = usePlayground();
 
   const [searchParams] = useSearchParams();
-  const providedModelLabel = searchParams.get("label");
+  const providedModelName = searchParams.get("modelName");
 
   if (isLoading) {
     return (
@@ -80,7 +80,7 @@ export function LLMPlaygroundPage() {
 
       <PlaygroundLayout>
         <SettingsPanel
-          providedModelLabel={providedModelLabel}
+          providedModelName={providedModelName}
           models={models}
           selectedLabel={selectedLabel}
           selectedModel={selectedModel}

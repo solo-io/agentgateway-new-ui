@@ -10,8 +10,7 @@ export function extractModels(config: any): PlaygroundModel[] {
     const baseUrl = `http://localhost:${llmPort}`;
     for (const m of config.llm.models) {
       const label = m.params?.model ?? m.name;
-      if (!label || seen.has(label)) continue;
-      seen.add(label);
+      if (!label) continue;
 
       models.push({
         label,
