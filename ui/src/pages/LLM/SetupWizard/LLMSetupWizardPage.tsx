@@ -3,7 +3,6 @@ import { Card, ConfigProvider, Steps } from "antd";
 import { InstallStep } from "./InstallStep";
 import { LLMWizardProvider, useLLMWizard } from "./LLMWizardContext";
 import { ModelConfigStep } from "./ModelConfigStep";
-import { PortStep } from "./PortStep";
 import { SelectModelStep } from "./SelectModelStep";
 
 const PageRoot = styled.div`
@@ -45,10 +44,8 @@ const STEP_LABELS = [
 
 function LLMSetupWizardInner() {
     const { currentStep, stepIndex } = useLLMWizard();
-    const isPreStep = currentStep === "port";
 
     const stepComponent = {
-        port: <PortStep />,
         selectModel: <SelectModelStep />,
         install: <InstallStep />,
         modelConfig: <ModelConfigStep />,
@@ -61,17 +58,15 @@ function LLMSetupWizardInner() {
             </PageHeader>
             <StepBody>
                 <Card style={{ width: "100%", maxWidth: 640, "--color-border-secondary": "rgba(0, 0, 0, 0.3)", boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.3)" } as React.CSSProperties}>
-                    {!isPreStep && (
-                        <ConfigProvider theme={{ token: { colorPrimary: "#6941c6" } }}>
-                            <Steps
-                                current={stepIndex - 1}
-                                items={STEP_LABELS}
-                                labelPlacement="vertical"
-                                size="small"
-                                style={{ marginBottom: "var(--spacing-xl)" }}
-                            />
-                        </ConfigProvider>
-                    )}
+                    <ConfigProvider theme={{ token: { colorPrimary: "#6941c6" } }}>
+                        <Steps
+                            current={stepIndex}
+                            items={STEP_LABELS}
+                            labelPlacement="vertical"
+                            size="small"
+                            style={{ marginBottom: "var(--spacing-xl)" }}
+                        />
+                    </ConfigProvider>
                     {stepComponent}
                 </Card>
             </StepBody>

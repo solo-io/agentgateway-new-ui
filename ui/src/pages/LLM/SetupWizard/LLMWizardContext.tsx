@@ -1,10 +1,9 @@
 import type { ReactNode } from "react";
 import React, { createContext, useCallback, useContext, useState } from "react";
 
-export type LLMWizardStep = "port" | "selectModel" | "install" | "modelConfig";
+export type LLMWizardStep = "selectModel" | "install" | "modelConfig";
 
 export const LLM_WIZARD_STEPS: LLMWizardStep[] = [
-    "port",
     "selectModel",
     "install",
     "modelConfig",
@@ -17,30 +16,28 @@ export interface LLMModelFields {
     hostOverride: string;
 };
 
-export interface LLMWizardData { 
-    port: number | null;
-    selectedWalkthrough: string | null; // null if not yet selected
+export interface LLMWizardData {
+    selectedWalkthrough: string | null;
     setupVerified: boolean;
     setupVerifyError: string | null;
     modelFields: LLMModelFields;
 };
 
-const DEFAULT_MODEL_FIELDS: LLMModelFields = { 
+const DEFAULT_MODEL_FIELDS: LLMModelFields = {
     name: "my-ollama-smallthinker",
     provider: "openAI",
     model: "smallthinker",
-    hostOverride: "localhost:11434",
+    hostOverride: "http://localhost:11434",
 };
 
-const DEFAULT_DATA: LLMWizardData = { 
-    port: null,
+const DEFAULT_DATA: LLMWizardData = {
     selectedWalkthrough: null,
     setupVerified: false,
     setupVerifyError: null,
     modelFields: DEFAULT_MODEL_FIELDS,
 };
 
-interface LLMWizardContextType { 
+interface LLMWizardContextType {
     currentStep: LLMWizardStep;
     stepIndex: number;
     totalSteps: number;
@@ -48,7 +45,6 @@ interface LLMWizardContextType {
     nextStep: () => void;
     previousStep: () => void;
     goToStep: (step: LLMWizardStep) => void;
-    setPort: (port: number) => void;
     setSelectedWalkthrough: (walkthrough: string) => void;
     setWalkthroughVerified: (verified: boolean, error?: string | null) => void;
     updateModelFields: (fields: Partial<LLMModelFields>) => void;
@@ -60,7 +56,7 @@ interface LLMWizardContextType {
 const LLMWizardContext = createContext<LLMWizardContextType | undefined>(undefined);
 
 export const LLMWizardProvider: React.FC<{ children: ReactNode }> = ({ children }) => { 
-    const [currentStep, setCurrentStep] = useState<LLMWizardStep>("port");
+    const [currentStep, setCurrentStep] = useState<LLMWizardStep>("selectModel");
     const [data, setData] = useState<LLMWizardData>(DEFAULT_DATA);
 
     const stepIndex = LLM_WIZARD_STEPS.indexOf(currentStep);
@@ -84,10 +80,6 @@ export const LLMWizardProvider: React.FC<{ children: ReactNode }> = ({ children 
         if (LLM_WIZARD_STEPS.includes(step)) {
             setCurrentStep(step);
         }
-    }, []);
-
-    const setPort = useCallback((port: number) => { 
-        setData((prev) => ({ ...prev, port }))
     }, []);
 
     const setSelectedWalkthrough = useCallback((walkthrough: string) => { 
@@ -115,7 +107,7 @@ export const LLMWizardProvider: React.FC<{ children: ReactNode }> = ({ children 
     }, []);
 
     const resetWizard = useCallback(() => { 
-        setCurrentStep("port");
+        setCurrentStep("selectModel");
         setData(DEFAULT_DATA);
     }, []);
 
@@ -129,7 +121,6 @@ export const LLMWizardProvider: React.FC<{ children: ReactNode }> = ({ children 
                 nextStep,
                 previousStep,
                 goToStep,
-                setPort,
                 setSelectedWalkthrough,
                 setWalkthroughVerified,
                 updateModelFields,

@@ -2,13 +2,13 @@ import { DeleteOutlined } from "@ant-design/icons";
 import styled from "@emotion/styled";
 import { App, Button, Dropdown, InputNumber, Tag, Tooltip } from "antd";
 import { Check, Edit2, EllipsisVertical, X } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useConfig } from "../../api";
 import { fetchConfig, updateConfig } from "../../api/config";
-import { useTrafficHierarchy } from "../../components/TrafficHierarchy";
-import type { BindNode } from "../../components/TrafficHierarchy/hooks/useTrafficHierarchy";
+import { deleteLLM, removeLLMModelByIndex } from "../../api/crud";
+import { useLLMConfig } from "../../api/hooks";
 import { PROVIDER_COLORS } from "./Playground/constants";
 
 const PageRoot = styled.div`
@@ -117,96 +117,62 @@ const PillTag = styled(Tag)`
   }
 `;
 
-const PORT_COLORS = ["blue", "purple", "cyan", "orange", "geekblue", "magenta", "gold"];
-
-function getPortColor(port: number, ports: number[]): string {
-    const idx = ports.indexOf(port);
-    return PORT_COLORS[idx % PORT_COLORS.length];
-}
-
-interface AIModelInfo {
-    name: string;
-    providerKey: string;
-    model: string;
-    hostOverride: string | null;
-    port: number;
-    bindNode: BindNode;
-}
-
-function extractAIModels(bindNodes: BindNode[]): AIModelInfo[] {
-    const results: AIModelInfo[] = [];
-    for (const bindNode of bindNodes) {
-      for (const listenerNode of bindNode.listeners) {
-        for (const routeNode of listenerNode.routes) {
-          for (const backendNode of routeNode.backends) {
-            const raw = backendNode.backend as Record<string, unknown>;
-            if ("ai" in raw) {
-              const ai = raw.ai as Record<string, unknown>;
-              const provider = ai.provider as Record<string, unknown> | undefined;
-              const providerKey = provider ? Object.keys(provider)[0] : "unknown";
-              const providerVal = provider?.[providerKey] as Record<string, unknown> | undefined;
-              results.push({
-                name: (ai.name as string) ?? "unnamed",
-                providerKey,
-                model: (providerVal?.model as string) ?? "",
-                hostOverride: (ai.hostOverride as string) ?? null,
-                port: bindNode.bind.port,
-                bindNode,
-              });
-            }
-          }
-        }
-      }
-    }
-    return results;
-}
-
 // Main Component
 export function LLMOverviewPage() {
     const { modal } = App.useApp();
     const { mutate } = useConfig();
-    const hierarchy = useTrafficHierarchy();
+    const { data: llmConfig, isLoading, error } = useLLMConfig();
     const navigate = useNavigate();
     const location = useLocation();
 
-    const [editingPort, setEditingPort] = useState<number | null>(null);
+    const [isEditingPort, setIsEditingPort] = useState(false);
     const [editPortValue, setEditPortValue] = useState<number | null>(null);
     const [isSavingPort, setIsSavingPort] = useState(false);
 
-    const handlePortEditStart = (port: number) => {
-        setEditingPort(port);
+    const models: Array<{ name: string; provider: string; model: string; baseUrl: string | null }> =
+        ((llmConfig as any)?.models ?? []).map((m: any) => ({
+            name: m.name ?? "unnamed",
+            provider: m.provider ?? "unknown",
+            model: m.params?.model ?? "",
+            baseUrl: m.params?.baseUrl ?? null,
+        }));
+
+    const port: number | null = (llmConfig as any)?.port ?? null;
+
+    const handlePortEditStart = () => {
+        setIsEditingPort(true);
         setEditPortValue(port);
     };
 
     const handlePortEditCancel = () => {
-        setEditingPort(null);
+        setIsEditingPort(false);
         setEditPortValue(null);
     };
 
-    const handleDeleteModel = async (m: AIModelInfo) => {
+    const handlePortEditSave = async () => {
+        if (editPortValue === null) return;
+        setIsSavingPort(true);
         try {
             const config = await fetchConfig();
-            for (const bind of config.binds ?? []) {
-                if (bind.port !== m.port) continue;
-                for (const listener of bind.listeners ?? []) {
-                    for (const route of listener.routes ?? []) {
-                        route.backends = (route.backends ?? []).filter((b: any) => {
-                            if (!b || !("ai" in b)) return true;
-                            return b.ai?.name !== m.name;
-                        });
-                    }
-                    listener.routes = (listener.routes ?? []).filter(
-                        (r: any) => (r.backends?.length ?? 0) > 0
-                    );
-                }
-                bind.listeners = (bind.listeners ?? []).filter(
-                    (l: any) => (l.routes?.length ?? 0) > 0
-                );
-            }
-            config.binds = (config.binds ?? []).filter(
-                (b: any) => (b.listeners?.length ?? 0) > 0
-            );
+            if (config.llm) (config.llm as any).port = editPortValue;
             await updateConfig(config);
+            await mutate();
+            setIsEditingPort(false);
+            setEditPortValue(null);
+        } catch (err: any) {
+            toast.error(err.message ?? "Failed to update port");
+        } finally {
+            setIsSavingPort(false);
+        }
+    };
+
+    const handleDeleteModel = async (index: number) => {
+        try {
+            if (models.length === 1) {
+                await deleteLLM();
+            } else {
+                await removeLLMModelByIndex(index);
+            }
             await mutate();
             if (models.length === 1) {
                 navigate("/llm-setup-wizard", { replace: true });
@@ -216,103 +182,64 @@ export function LLMOverviewPage() {
         }
     };
 
-    const handlePortEditSave = async (oldPort: number) => {
-        if (editPortValue === null) return;
-        setIsSavingPort(true);
-        try {
-            const config = await fetchConfig();
-            const bind = (config.binds ?? []).find((b) => b.port === oldPort);
-            if (bind) bind.port = editPortValue;
-            await updateConfig(config);
-            setEditingPort(null);
-            setEditPortValue(null);
-        } catch (err: any) {
-            toast.error(err.message ?? "Failed to update port");
-        } finally {
-            setIsSavingPort(false);
-        }
-    };
-
-    const models = extractAIModels(hierarchy.binds);
-
-    // Group ports for display, show unique ports that have AI backends
-    const ports = [...new Set(models.map((m) => m.port))];
-
-    const hasAIBackends = useMemo(
-        () =>
-          hierarchy.binds.some((bind) =>
-            bind.listeners.some((listener) =>
-              listener.routes.some((route) =>
-                route.backends.some((b) => "ai" in (b.backend as Record<string, unknown>))
-              )
-            )
-          ),
-        [hierarchy.binds],
-      );
-      
-    
     useEffect(() => {
         const skipRedirect = (location.state as { skipWizardRedirect?: boolean } | null)?.skipWizardRedirect;
-        if (!hierarchy.isLoading && !hierarchy.error && !hasAIBackends && !skipRedirect) {
-            navigate("/llm-setup-wizard", { replace: true })
+        if (!isLoading && !error && models.length === 0 && !skipRedirect) {
+            navigate("/llm-setup-wizard", { replace: true });
         }
-    }, [hierarchy.isLoading, hierarchy.error, hasAIBackends, navigate, location.state]);
+    }, [isLoading, error, models.length, navigate, location.state]);
 
     return (
         <PageRoot>
             <PageHeader>
                 <div>
                     <PageTitle>LLM Configuration</PageTitle>
-                    {ports.length > 0 && (
+                    {port !== null && (
                         <PortRow>
-                            agentgateway exposed port{ports.length > 1 ? "s" : ""}:{" "}
-                            {ports.map((p) => (
-                                <span key={p} style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
-                                    {editingPort === p ? (
-                                        <>
-                                            <InputNumber
-                                                size="small"
-                                                min={1}
-                                                max={65535}
-                                                precision={0}
-                                                value={editPortValue}
-                                                onChange={(v) => setEditPortValue(v)}
-                                                style={{ width: 90 }}
-                                                autoFocus
-                                                onPressEnter={() => handlePortEditSave(p)}
-                                            />
-                                            <Button
+                            agentgateway exposed port:{" "}
+                            <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                                {isEditingPort ? (
+                                    <>
+                                        <InputNumber
+                                            size="small"
+                                            min={1}
+                                            max={65535}
+                                            precision={0}
+                                            value={editPortValue}
+                                            onChange={(v) => setEditPortValue(v)}
+                                            style={{ width: 90 }}
+                                            autoFocus
+                                            onPressEnter={handlePortEditSave}
+                                        />
+                                        <Button
+                                            type="text"
+                                            size="small"
+                                            icon={<Check size={13} color="var(--color-success)" strokeWidth={4} />}
+                                            loading={isSavingPort}
+                                            onClick={handlePortEditSave}
+                                        />
+                                        <Button
+                                            type="text"
+                                            size="small"
+                                            icon={<X size={13} color="var(--color-error)" strokeWidth={4} />}
+                                            onClick={handlePortEditCancel}
+                                            disabled={isSavingPort}
+                                        />
+                                    </>
+                                ) : (
+                                    <>
+                                        <PortValue>{port}</PortValue>
+                                        <Tooltip title="Edit">
+                                            <EditIconButton
                                                 type="text"
                                                 size="small"
-                                                icon={<Check size={13} color="var(--color-success)" strokeWidth={4} />}
-                                                loading={isSavingPort}
-                                                onClick={() => handlePortEditSave(p)}
+                                                icon={<Edit2 size={15} />}
+                                                onClick={handlePortEditStart}
                                             />
-                                            <Button
-                                                type="text"
-                                                size="small"
-                                                icon={<X size={13} color="var(--color-error)" strokeWidth={4} />}
-                                                onClick={handlePortEditCancel}
-                                                disabled={isSavingPort}
-                                            />
-                                        </>
-                                    ) : (
-                                        <>
-                                            <PortValue>
-                                                <PillTag color={getPortColor(p, ports)}>{p}</PillTag>
-                                            </PortValue>
-                                            <Tooltip title="Edit">     
-                                                <EditIconButton
-                                                    type="text"
-                                                    size="small"
-                                                    icon={<Edit2 size={15} />}
-                                                    onClick={() => handlePortEditStart(p)}
-                                                />
-                                            </Tooltip>
-                                        </>
-                                    )}
-                                </span>
-                            ))}
+                                        </Tooltip>
+                                    </>
+                                )}
+                            </span>
                         </PortRow>
                     )}
                 </div>
@@ -332,12 +259,11 @@ export function LLMOverviewPage() {
                             <ModelCard key={i}>
                                 <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
                                     <ModelName>{m.name}</ModelName>
-                                    <PillTag color={getPortColor(m.port, ports)}>:{m.port}</PillTag>
                                     <Dropdown
                                       menu={{
                                         items: [
-                                          { 
-                                            key: "delete", 
+                                          {
+                                            key: "delete",
                                             label: "Delete",
                                             icon: <DeleteOutlined />,
                                             onClick: () => modal.confirm({
@@ -345,7 +271,7 @@ export function LLMOverviewPage() {
                                               content: <span>Are you sure you want to delete <b>{m.name}</b>?</span>,
                                               okText: "Delete",
                                               okButtonProps: { danger: true },
-                                              onOk: () => handleDeleteModel(m),
+                                              onOk: () => handleDeleteModel(i),
                                             }),
                                           },
                                         ],
@@ -356,14 +282,14 @@ export function LLMOverviewPage() {
                                     </Dropdown>
                                 </div>
                                 <ModelMeta>
-                                  <PillTag color={PROVIDER_COLORS[m.providerKey]}>
-                                    {m.providerKey}
+                                  <PillTag color={PROVIDER_COLORS[m.provider]}>
+                                    {m.provider}
                                   </PillTag>
                                   {" "}
                                   <PillTag color="gold">{m.model}</PillTag>
                                 </ModelMeta>
-                                {m.hostOverride && (
-                                    <ModelMeta>LLM Host: <b>{m.hostOverride}</b></ModelMeta>
+                                {m.baseUrl && (
+                                    <ModelMeta>LLM Host: <b>{m.baseUrl}</b></ModelMeta>
                                 )}
                                 <CardActions>
                                     <Button

@@ -3,6 +3,8 @@ import { Button, Form, InputNumber } from "antd";
 import { EthernetPort } from "lucide-react";
 import { useLLMWizard } from "./LLMWizardContext";
 
+export const DEFAULT_LLM_PORT = 8621;
+
 const StepTitle = styled.h2`
     font-size: 20px;
     font-weight: 600;
@@ -33,15 +35,14 @@ const Actions = styled.div`
 `;
 
 export function PortStep() { 
-    const { data, setPort, nextStep } = useLLMWizard();
+    const { data, /*setPort,*/ nextStep } = useLLMWizard();
     const [form] = Form.useForm();
 
-    const DEFAULT_PORT = 8621;
 
     const handleNext = async () => { 
         try { 
             const values = await form.validateFields();
-            setPort(values.port);
+            //setPort(values.port);
             nextStep();
         } catch { 
             // validation failed, antd shows inline errors
@@ -60,7 +61,7 @@ export function PortStep() {
                 Set the local port where agentgateway will listen for LLM traffic.
             </StepDescription>
 
-            <Form form={form} layout="vertical" initialValues={{ port: data.port ?? DEFAULT_PORT }}>
+            <Form form={form} layout="vertical" initialValues={{ port: DEFAULT_PORT }}>
                 <Form.Item
                     name="port"
                     label="Port"

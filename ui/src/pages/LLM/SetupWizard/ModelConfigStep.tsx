@@ -6,10 +6,8 @@ import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { mutate } from "swr";
 import { fetchConfig, updateConfig } from "../../../api/config";
-import { findBindByPort } from "../../../api/helpers";
-import type { LocalBind } from "../../../api/types";
-import type { AIProvider, LocalRouteBackend } from "../../../config";
 import { useLLMWizard } from "./LLMWizardContext";
+import { DEFAULT_LLM_PORT } from "./PortStep";
 
 const { Link } = Typography;
 
@@ -133,8 +131,6 @@ const Actions = styled.div`
   margin-top: var(--spacing-xl);
 `;
 
-const LISTENER_NAME = "llm-listener";
-const ROUTE_NAME = "llm-route";
 const DEFAULT_MODEL_ALIAS = "my-ollama-smallthinker";
 const DEFAULT_HOST = "localhost:11434";
 const DEFAULT_MODEL = "smallthinker";
@@ -181,7 +177,7 @@ export function ModelConfigStep() {
     setWalkthroughVerified(false, null);
 
     try {
-      const res = await fetch(`http://${hostValue}/api/version`);
+      const res = await fetch(`${hostValue}/api/version`);
       if (res.ok) {
         setWalkthroughVerified(true, null);
       } else {
@@ -209,41 +205,31 @@ export function ModelConfigStep() {
     setIsSubmitting(true);
     try {
       const { name, model, hostOverride } = values;
+      const config = await fetchConfig();
 
-      const aiBackend: LocalRouteBackend = {
-        ai: {
-          name,
-          provider: { openAI: { model } } as AIProvider,
-          hostOverride,
-        },
-      };
-
-      const listener = {
-        name: LISTENER_NAME,
-        protocol: "HTTP" as const,
-        routes: [{
-          name: ROUTE_NAME,
-          backends: [aiBackend],
+      if (!config.llm) {
+        (config as any).llm = {
+          port: DEFAULT_LLM_PORT,
+          models: [],
           policies: {
             cors: {
               allowOrigins: ["*"],
               allowMethods: ["GET", "POST", "OPTIONS"],
-              allowHeaders: ["*"],
+              allowHeaders: ["Content-Type", "Authorization"],
+              maxAge: "3600s",
             },
           },
-        }],
-      };
-
-      const config = await fetchConfig();
-      let bind = findBindByPort(config.binds || [], data.port!);
-      if (!bind) {
-        const newBind: LocalBind = { port: data.port!, listeners: [listener] };
-        if (!config.binds) config.binds = [];
-        config.binds.push(newBind);
-      } else {
-        if (!bind.listeners) bind.listeners = [];
-        bind.listeners.push(listener);
+        };
       }
+      if (!Array.isArray((config.llm as any).models)) {
+        (config.llm as any).models = [];
+      }
+      (config.llm as any).models.push({
+        name,
+        provider: "openAI",
+        params: { model, baseUrl: hostOverride },
+      });
+
       await updateConfig(config);
       await mutate("/config");
 
@@ -292,12 +278,8 @@ export function ModelConfigStep() {
               validator: async (_, value) => {
                 if (!value) return;
                 const config = await fetchConfig();
-                const taken = config.binds?.some((b: any) =>
-                  b.listeners?.some((l: any) =>
-                    l.routes?.some((r: any) =>
-                      r.backends?.some((bk: any) => bk.ai?.name === value)
-                    )
-                  )
+                const taken = ((config.llm as any)?.models ?? []).some(
+                  (m: any) => m.name === value
                 );
                 if (taken) return Promise.reject("Model alias is already in use");
               },
