@@ -9,14 +9,13 @@ export function extractModels(config: any): PlaygroundModel[] {
     const llmPort = config.llm.port ?? 3000;
     const baseUrl = `http://localhost:${llmPort}`;
     for (const m of config.llm.models) {
-      const label = m.name;
+      const label = m.params?.model ?? m.name;
       if (!label || seen.has(label)) continue;
       seen.add(label);
 
       models.push({
         label,
-        // params.model is the actual model forwarded to the provider
-        defaultModel: "",
+        defaultModel: m.name,
         provider: m.provider ?? "unknown",
         baseUrl,
       });
