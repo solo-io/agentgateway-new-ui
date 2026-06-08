@@ -16,7 +16,7 @@ export function extractModels(config: any): PlaygroundModel[] {
       models.push({
         label,
         // params.model is the actual model forwarded to the provider
-        defaultModel: m.params?.model ?? "",
+        defaultModel: "",
         provider: m.provider ?? "unknown",
         baseUrl,
       });

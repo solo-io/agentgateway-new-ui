@@ -206,13 +206,7 @@ export function InstallStep() {
           Install Ollama
         </div>
       </StepTitle>
-
       {content}
-
-      <Typography.Text type="secondary" style={{ fontSize: 11 }}>
-        Windows, macOS, and Linux are trademarks of their respective owners. No affiliation or endorsement is implied.
-      </Typography.Text>
-
       <Actions>
         <Button onClick={previousStep}>Back</Button>
         <Button type="primary" onClick={nextStep}>
