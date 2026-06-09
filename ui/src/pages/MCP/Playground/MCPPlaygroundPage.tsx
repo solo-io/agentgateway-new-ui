@@ -106,11 +106,11 @@ export function MCPPlaygroundPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!config || !config.binds) return;
+    if (!config) return;
     const extractedRoutes: RouteInfo[] = [];
 
     // extract routes from port binds
-    config.binds.forEach((bind: LocalBind) => {
+    config.binds?.forEach((bind: LocalBind) => {
       bind.listeners.forEach((listener: LocalListener) => {
         if (listener.routes) {
           listener.routes.forEach((route: LocalRoute, routeIndex: number) => {
@@ -152,6 +152,25 @@ export function MCPPlaygroundPage() {
         }
       });
     });
+    // extract routes from top-level mcp config
+    if (config.mcp?.targets) {
+      const port = config.mcp.port!;
+      const baseEndpoint = `http://localhost:${port}`;
+
+      config.mcp.targets.forEach((target, targetIndex) => {
+        extractedRoutes.push({
+          bindPort: port,
+          listener: {} as LocalListener,
+          targetName: target.name ?? `Target ${targetIndex + 1}`,
+          route: {} as LocalRoute,
+          endpoint: baseEndpoint,
+          protocol: "http",
+          routeIndex: targetIndex,
+          routePath: "/",
+        });
+      });
+    }
+
     setRoutes(extractedRoutes);
   }, [config]);
 
