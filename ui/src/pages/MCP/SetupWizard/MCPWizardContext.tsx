@@ -34,7 +34,7 @@ const DEFAULT_SERVER_FIELDS: MCPServerFields = {
 };
 
 const DEFAULT_DATA: MCPWizardData = {
-    port: null,
+    port: 8622,
     selectedServer: null,
     // setupVerified: false,       // streamableHttp only
     // setupVerifyError: null,     // streamableHttp only
