@@ -329,7 +329,7 @@ export function MCPOverviewPage() {
                                     }}
                                 >
                                     <span style={{ display: "inline-flex", alignItems: "center", gap: 4, cursor: "pointer" }}>
-                                        <PillTag color={statefulMode === "stateless" ? "default" : "green"}>
+                                        <PillTag color={statefulMode === "stateless" ? "purple" : "green"}>
                                             {statefulMode ?? "stateful"}
                                         </PillTag>
                                         <EditIconButton

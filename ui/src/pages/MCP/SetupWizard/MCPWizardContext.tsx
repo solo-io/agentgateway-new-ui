@@ -1,10 +1,9 @@
 import type { ReactNode } from "react";
 import React, { createContext, useCallback, useContext, useState } from "react";
 
-export type MCPWizardStep = "port" | "selectServer" | /* "install" | */ "config";
+export type MCPWizardStep = "selectServer" | /* "install" | */ "config";
 
 export const MCP_WIZARD_STEPS: MCPWizardStep[] = [
-    "port",
     "selectServer",
     // "install",  // streamableHttp only — uncomment when re-enabling
     "config",
@@ -59,7 +58,7 @@ interface MCPWizardContextType {
 const MCPWizardContext = createContext<MCPWizardContextType | undefined>(undefined);
 
 export const MCPWizardProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-    const [currentStep, setCurrentStep] = useState<MCPWizardStep>("port");
+    const [currentStep, setCurrentStep] = useState<MCPWizardStep>("selectServer");
     const [data, setData] = useState<MCPWizardData>(DEFAULT_DATA);
 
     const stepIndex = MCP_WIZARD_STEPS.indexOf(currentStep);

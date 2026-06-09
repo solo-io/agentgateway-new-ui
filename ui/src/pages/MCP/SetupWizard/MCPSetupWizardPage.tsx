@@ -2,7 +2,6 @@ import styled from "@emotion/styled";
 import { Card, ConfigProvider, Steps } from "antd";
 // import { InstallStep } from "./InstallStep";  // streamableHttp only
 import { MCPWizardProvider, useMCPWizard } from "./MCPWizardContext";
-import { PortStep } from "./PortStep";
 import { SelectServerStep } from "./SelectServerStep";
 import { ServerConfigStep } from "./ServerConfigStep";
 
@@ -44,10 +43,8 @@ const STEP_LABELS = [
 
 function MCPSetupWizardInner() {
     const { currentStep, stepIndex } = useMCPWizard();
-    const isPreStep = currentStep === "port";
 
     const stepComponent = {
-        port: <PortStep />,
         selectServer: <SelectServerStep />,
         // install: <InstallStep />,  // streamableHttp only
         config: <ServerConfigStep />,
@@ -60,17 +57,15 @@ function MCPSetupWizardInner() {
             </PageHeader>
             <StepBody>
                 <Card style={{ width: "100%", maxWidth: 640, "--color-border-secondary": "rgba(0, 0, 0, 0.3)", boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.3)" } as React.CSSProperties}>
-                    {!isPreStep && (
-                        <ConfigProvider theme={{ token: { colorPrimary: "#6941c6" } }}>
-                            <Steps
-                                current={stepIndex - 1}
-                                items={STEP_LABELS}
-                                labelPlacement="vertical"
-                                size="small"
-                                style={{ marginBottom: "var(--spacing-xl)" }}
-                            />
-                        </ConfigProvider>
-                    )}
+                    <ConfigProvider theme={{ token: { colorPrimary: "#6941c6" } }}>
+                        <Steps
+                            current={stepIndex}
+                            items={STEP_LABELS}
+                            labelPlacement="vertical"
+                            size="small"
+                            style={{ marginBottom: "var(--spacing-xl)" }}
+                        />
+                    </ConfigProvider>
                     {stepComponent}
                 </Card>
             </StepBody>
