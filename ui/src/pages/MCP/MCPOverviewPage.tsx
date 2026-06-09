@@ -1,13 +1,11 @@
 import styled from "@emotion/styled";
 import { App, Button, Dropdown, InputNumber, Tag, Tooltip } from "antd";
 import { Check, Edit2, EllipsisVertical, X } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useConfig } from "../../api";
 import { fetchConfig, updateConfig } from "../../api/config";
-import { useTrafficHierarchy } from "../../components/TrafficHierarchy";
-import type { BindNode } from "../../components/TrafficHierarchy/hooks/useTrafficHierarchy";
 
 const PageRoot = styled.div`
   display: flex;
@@ -120,7 +118,6 @@ const BadgeRow = styled.div`
   flex-wrap: wrap;
 `;
 
-const PORT_COLORS = ["blue", "purple", "cyan", "orange", "geekblue", "magenta", "gold"];
 const TYPE_COLORS: Record<string, string> = {
     stdio: "volcano",
     sse: "cyan",
@@ -129,18 +126,11 @@ const TYPE_COLORS: Record<string, string> = {
     unknown: "default",
 };
 
-function getPortColor(port: number, ports: number[]): string { 
-    const idx = ports.indexOf(port);
-    return PORT_COLORS[idx % PORT_COLORS.length];
-}
-
 interface MCPTargetInfo {
     name: string;
     type: "stdio" | "sse" | "mcp" | "openapi" | "unknown";
     endpoint: string;
     statefulMode: "stateful" | "stateless" | undefined;
-    port: number;
-    bindNode: BindNode;
 }
 
 function deriveTypeAndEndpoint(target: Record<string, unknown>): {
@@ -171,66 +161,53 @@ function deriveTypeAndEndpoint(target: Record<string, unknown>): {
     return { type: "unknown", endpoint: "" };
 }
 
-function extractMCPTargets(bindNodes: BindNode[]): MCPTargetInfo[] {
-    const results: MCPTargetInfo[] = [];
-    for (const bindNode of bindNodes) {
-        for (const listenerNode of bindNode.listeners) {
-            for (const routeNode of listenerNode.routes) {
-                for (const backendNode of routeNode.backends) {
-                    const raw = backendNode.backend as Record<string, unknown>;
-                    if ("mcp" in raw) {
-                        const mcp = raw.mcp as Record<string, unknown>;
-                        const targets = Array.isArray(mcp.targets) ? mcp.targets : [];
-                        const statefulMode = mcp.statefulMode as MCPTargetInfo["statefulMode"];
-                        for (const target of targets) {
-                            const t = target as Record<string, unknown>;
-                            const { type, endpoint } = deriveTypeAndEndpoint(t);
-                            results.push({
-                                name: String(t.name ?? "unnamed"),
-                                type,
-                                endpoint,
-                                statefulMode,
-                                port: bindNode.bind.port,
-                                bindNode,
-                            });
-                        }
-                    }
-                }
-            }
-        }
-    }
-    return results;
+function extractMCPTargets(rawTargets: Record<string, unknown>[], statefulMode: MCPTargetInfo["statefulMode"]): MCPTargetInfo[] {
+    return rawTargets.map((t) => {
+        const { type, endpoint } = deriveTypeAndEndpoint(t);
+        return {
+            name: String(t.name ?? "unnamed"),
+            type,
+            endpoint,
+            statefulMode,
+        };
+    });
 }
 
 export function MCPOverviewPage() {
     const { modal } = App.useApp();
-    const { mutate } = useConfig();
-    const hierarchy = useTrafficHierarchy();
+    const { data: config, isLoading: configLoading, mutate } = useConfig();
     const navigate = useNavigate();
     const location = useLocation();
-    const [editingPort, setEditingPort] = useState<number | null>(null);
+    const [editingPort, setEditingPort] = useState(false);
     const [editPortValue, setEditPortValue] = useState<number | null>(null);
     const [isSavingPort, setIsSavingPort] = useState(false);
+    const [isSavingStatefulMode, setIsSavingStatefulMode] = useState(false);
 
-    const handlePortEditStart = (port: number) => {
-        setEditingPort(port);
-        setEditPortValue(port);
+    const mcpPort = config?.mcp?.port ?? null;
+    const rawTargets = (config?.mcp?.targets ?? []) as Record<string, unknown>[];
+    const statefulMode = config?.mcp?.statefulMode as MCPTargetInfo["statefulMode"];
+    const targets = extractMCPTargets(rawTargets, statefulMode);
+    const hasMCPTargets = targets.length > 0;
+
+    const handlePortEditStart = () => {
+        setEditingPort(true);
+        setEditPortValue(mcpPort);
     };
 
     const handlePortEditCancel = () => {
-        setEditingPort(null);
+        setEditingPort(false);
         setEditPortValue(null);
     };
 
-    const handlePortEditSave = async (oldPort: number) => {
+    const handlePortEditSave = async () => {
         if (editPortValue === null) return;
         setIsSavingPort(true);
         try {
-            const config = await fetchConfig();
-            const bind = (config.binds ?? []).find((b) => b.port === oldPort);
-            if (bind) bind.port = editPortValue;
-            await updateConfig(config);
-            setEditingPort(null);
+            const cfg = await fetchConfig();
+            if (cfg.mcp) cfg.mcp.port = editPortValue;
+            await updateConfig(cfg);
+            await mutate();
+            setEditingPort(false);
             setEditPortValue(null);
         } catch (err: any) {
             toast.error(err.message ?? "Failed to update port");
@@ -239,31 +216,32 @@ export function MCPOverviewPage() {
         }
     };
 
+    const handleStatefulModeChange = async (mode: "stateful" | "stateless") => {
+        setIsSavingStatefulMode(true);
+        try {
+            const cfg = await fetchConfig();
+            if (cfg.mcp) cfg.mcp.statefulMode = mode;
+            await updateConfig(cfg);
+            await mutate();
+        } catch (err: any) {
+            toast.error(err.message ?? "Failed to update stateful mode");
+        } finally {
+            setIsSavingStatefulMode(false);
+        }
+    };
+
     const handleDeleteServer = async (t: MCPTargetInfo) => {
         try {
-            const config = await fetchConfig();
-            for (const bind of config.binds ?? []) {
-                if (bind.port !== t.port) continue;
-                for (const listener of bind.listeners ?? []) {
-                    for (const route of listener.routes ?? []) {
-                        route.backends = (route.backends ?? []).filter((b: any) => {
-                            if (!b || !("mcp" in b)) return true;
-                            b.mcp.targets = (b.mcp.targets ?? []).filter((tgt: any) => tgt.name !== t.name);
-                            return (b.mcp.targets?.length ?? 0) > 0;
-                        });
-                    }
-                    listener.routes = (listener.routes ?? []).filter(
-                        (r: any) => (r.backends?.length ?? 0) > 0
-                    );
+            const cfg = await fetchConfig();
+            if (cfg.mcp) {
+                const remaining = (cfg.mcp.targets ?? []).filter((tgt: any) => tgt.name !== t.name);
+                if (remaining.length === 0) {
+                    cfg.mcp = null;
+                } else {
+                    cfg.mcp.targets = remaining;
                 }
-                bind.listeners = (bind.listeners ?? []).filter(
-                    (l: any) => (l.routes?.length ?? 0) > 0
-                );
             }
-            config.binds = (config.binds ?? []).filter(
-                (b: any) => (b.listeners?.length ?? 0) > 0
-            );
-            await updateConfig(config);
+            await updateConfig(cfg);
             await mutate();
             if (targets.length === 1) {
                 navigate("/mcp-setup-wizard", { replace: true });
@@ -273,83 +251,95 @@ export function MCPOverviewPage() {
         }
     };
 
-    const targets = extractMCPTargets(hierarchy.binds);
-    const ports = [...new Set(targets.map((t) => t.port))];
-
-    const hasMCPBackends = useMemo(
-        () =>
-            hierarchy.binds.some((bind) =>
-                bind.listeners.some((listener) =>
-                    listener.routes.some((route) =>
-                        route.backends.some((b) => "mcp" in (b.backend as Record<string, unknown>))
-                    )
-                )
-            ),
-        [hierarchy.binds]
-    );
-
     useEffect(() => {
         const skipRedirect = (location.state as { skipWizardRedirect?: boolean } | null)?.skipWizardRedirect;
-        if (!hierarchy.isLoading && !hierarchy.error && !hasMCPBackends && !skipRedirect) {
+        if (!configLoading && !hasMCPTargets && !skipRedirect) {
             navigate("/mcp-setup-wizard", { replace: true });
         }
-    }, [hierarchy.isLoading, hierarchy.error, hasMCPBackends, navigate, location.state]);
+    }, [configLoading, hasMCPTargets, navigate, location.state]);
 
     return (
         <PageRoot>
             <PageHeader>
                 <div>
                     <PageTitle>MCP Configuration</PageTitle>
-                    {ports.length > 0 && (
+                    {mcpPort !== null && (
                         <PortRow>
-                            agentgateway exposed port{ports.length > 1 ? "s" : ""}:{" "}
-                            {ports.map((p) => (
-                                <span key={p} style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
-                                    {editingPort === p ? (
-                                        <>
-                                            <InputNumber
-                                                size="small"
-                                                min={1}
-                                                max={65535}
-                                                precision={0}
-                                                value={editPortValue}
-                                                onChange={(v) => setEditPortValue(v)}
-                                                style={{ width: 90 }}
-                                                autoFocus
-                                                onPressEnter={() => handlePortEditSave(p)}
-                                            />
-                                            <Button
+                            agentgateway exposed port:{" "}
+                            <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                                {editingPort ? (
+                                    <>
+                                        <InputNumber
+                                            size="small"
+                                            min={1}
+                                            max={65535}
+                                            precision={0}
+                                            value={editPortValue}
+                                            onChange={(v) => setEditPortValue(v)}
+                                            style={{ width: 90 }}
+                                            autoFocus
+                                            onPressEnter={handlePortEditSave}
+                                        />
+                                        <Button
+                                            type="text"
+                                            size="small"
+                                            icon={<Check size={13} color="var(--color-success)" strokeWidth={4} />}
+                                            loading={isSavingPort}
+                                            onClick={handlePortEditSave}
+                                        />
+                                        <Button
+                                            type="text"
+                                            size="small"
+                                            icon={<X size={13} color="var(--color-error)" strokeWidth={4} />}
+                                            onClick={handlePortEditCancel}
+                                            disabled={isSavingPort}
+                                        />
+                                    </>
+                                ) : (
+                                    <>
+                                        <PortValue>
+                                            <PillTag color="blue">{mcpPort}</PillTag>
+                                        </PortValue>
+                                        <Tooltip title="Edit">
+                                            <EditIconButton
                                                 type="text"
                                                 size="small"
-                                                icon={<Check size={13} color="var(--color-success)" strokeWidth={4} />}
-                                                loading={isSavingPort}
-                                                onClick={() => handlePortEditSave(p)}
+                                                icon={<Edit2 size={15} />}
+                                                onClick={handlePortEditStart}
                                             />
-                                            <Button
-                                                type="text"
-                                                size="small"
-                                                icon={<X size={13} color="var(--color-error)" strokeWidth={4} />}
-                                                onClick={handlePortEditCancel}
-                                                disabled={isSavingPort}
-                                            />
-                                        </>
-                                    ) : (
-                                        <>
-                                            <PortValue>
-                                                <PillTag color={getPortColor(p, ports)}>{p}</PillTag>
-                                            </PortValue>
-                                            <Tooltip title="Edit">
-                                                <EditIconButton
-                                                    type="text"
-                                                    size="small"
-                                                    icon={<Edit2 size={15} />}
-                                                    onClick={() => handlePortEditStart(p)}
-                                                />
-                                            </Tooltip>
-                                        </>
-                                    )}
-                                </span>
-                            ))}
+                                        </Tooltip>
+                                    </>
+                                )}
+                            </span>
+                        </PortRow>
+                    )}
+                    {config?.mcp && (
+                        <PortRow style={{ marginTop: 4 }}>
+                            stateful mode:{" "}
+                            <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                                <Dropdown
+                                    trigger={["click"]}
+                                    menu={{
+                                        items: [
+                                            { key: "stateful", label: "stateful" },
+                                            { key: "stateless", label: "stateless" },
+                                        ],
+                                        selectedKeys: [statefulMode ?? "stateful"],
+                                        onClick: ({ key }) => handleStatefulModeChange(key as "stateful" | "stateless"),
+                                    }}
+                                >
+                                    <span style={{ display: "inline-flex", alignItems: "center", gap: 4, cursor: "pointer" }}>
+                                        <PillTag color={statefulMode === "stateless" ? "default" : "green"}>
+                                            {statefulMode ?? "stateful"}
+                                        </PillTag>
+                                        <EditIconButton
+                                            type="text"
+                                            size="small"
+                                            icon={<Edit2 size={15} />}
+                                        />
+                                    </span>
+                                </Dropdown>
+                            </span>
                         </PortRow>
                     )}
                 </div>
@@ -369,7 +359,6 @@ export function MCPOverviewPage() {
                             <ServerCard key={i}>
                                 <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
                                     <ServerName>{t.name}</ServerName>
-                                    <PillTag color={getPortColor(t.port, ports)}>:{t.port}</PillTag>
                                     <Dropdown
                                       menu={{
                                         items: [
@@ -393,13 +382,10 @@ export function MCPOverviewPage() {
                                 </div>
                                 <BadgeRow>
                                     <PillTag color={TYPE_COLORS[t.type]}>{t.type}</PillTag>
-                                    <PillTag color={t.statefulMode === "stateful" ? "green" : "default"}>
-                                        {t.statefulMode ?? "stateless"}
-                                    </PillTag>
                                 </BadgeRow>
                                 {t.endpoint && <ServerMeta>Server Endpoint: <b>{t.endpoint}</b></ServerMeta>}
                                 <CardActions>
-                                    <Button 
+                                    <Button
                                         size="small"
                                         onClick={() => navigate(`/mcp-playground?label=${t.name}`)}
                                     >

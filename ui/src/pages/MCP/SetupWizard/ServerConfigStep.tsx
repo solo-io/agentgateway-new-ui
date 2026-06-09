@@ -8,9 +8,6 @@ import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { mutate } from "swr";
 import { fetchConfig, updateConfig } from "../../../api/config";
-import { findBindByPort } from "../../../api/helpers";
-import type { LocalBind } from "../../../api/types";
-import type { LocalRouteBackend } from "../../../config";
 import { useMCPWizard } from "./MCPWizardContext";
 
 const StepTitle = styled.h2`
@@ -73,8 +70,6 @@ const FieldFormDescription = styled.div`
   margin: 0 0 var(--spacing-xs) 0;
 `;
 
-const LISTENER_NAME = "mcp-listener";
-const ROUTE_NAME = "mcp-route";
 const DEFAULT_NAME = "server-everything";
 const DEFAULT_ARGS = "-y @modelcontextprotocol/server-everything";
 // const DEFAULT_HOST = "localhost";  // streamableHttp only
@@ -125,47 +120,26 @@ export function ServerConfigStep() {
         try {
             const { name, args } = values;
 
-            const mcpBackend: LocalRouteBackend = {
-                mcp: {
-                    targets: [{
-                        name,
-                        stdio: {
-                            cmd: "npx",
-                            args: [args],
-                        },
-                        // streamableHttp only:
-                        // mcp: { host, port, path },
-                    }],
+            const config = await fetchConfig();
+            if (!config.mcp) {
+                config.mcp = {
+                    port: data.port!,
+                    targets: [],
                     statefulMode: "stateful",
-                },
-            };
-
-            const listener = {
-                name: LISTENER_NAME,
-                protocol: "HTTP" as const,
-                routes: [{
-                    name: ROUTE_NAME,
-                    backends: [mcpBackend],
                     policies: {
                         cors: {
                             allowOrigins: ["*"],
                             allowMethods: ["GET", "POST", "OPTIONS", "DELETE"],
-                            allowHeaders: ["*"],
+                            allowHeaders: ["Content-Type", "Authorization", "Mcp-Session-Id", "Mcp-Protocol-Version"],
+                            exposeHeaders: ["Mcp-Session-Id"],
                         },
                     },
-                }],
-            };
-
-            const config = await fetchConfig();
-            let bind = findBindByPort(config.binds || [], data.port!);
-            if (!bind) {
-                const newBind: LocalBind = { port: data.port!, listeners: [listener] };
-                if (!config.binds) config.binds = [];
-                config.binds.push(newBind);
-            } else {
-                if (!bind.listeners) bind.listeners = [];
-                bind.listeners.push(listener);
+                };
             }
+            config.mcp.targets = [
+                ...(config.mcp.targets ?? []),
+                { name, stdio: { cmd: "npx", args: [args] } },
+            ];
             await updateConfig(config);
             await mutate("/config");
 
@@ -222,15 +196,7 @@ export function ServerConfigStep() {
                             validator: async (_, value) => {
                                 if (!value) return;
                                 const config = await fetchConfig();
-                                const taken = config.binds?.some((b: any) =>
-                                    b.listeners?.some((l: any) =>
-                                        l.routes?.some((r: any) =>
-                                            r.backends?.some((bk: any) =>
-                                                bk.mcp?.targets?.some((t: any) => t.name === value)
-                                            )
-                                        )
-                                    )
-                                );
+                                const taken = config.mcp?.targets?.some((t: any) => t.name === value);
                                 if (taken) return Promise.reject("Server alias is already in use");
                             },
                         },
