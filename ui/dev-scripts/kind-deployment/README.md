@@ -61,14 +61,14 @@ When complete, the script prints a `kubectl port-forward` command for the
 data plane pod. Run that in a separate terminal:
 
 ```sh
-kubectl -n agentgateway-test port-forward pod/<GW_POD> 15000 8080 8721 8722
+kubectl -n agentgateway-test port-forward pod/<GW_POD> 15000 8080 8621 8622
 ```
 
 Port roles:
 - `15000` — admin / `/config_dump` (consumed by the dev UI)
 - `8080` — httpbin listener
-- `8721` — AI listener (LLM Playground sends `POST /v1/chat/completions` here)
-- `8722` — MCP listener (MCP Playground connects here)
+- `8621` — AI listener (LLM Playground sends `POST /v1/chat/completions` here)
+- `8622` — MCP listener (MCP Playground connects here)
 
 Then start the dev UI:
 

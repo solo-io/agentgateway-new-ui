@@ -119,13 +119,13 @@ spec:
           from: Same
     - name: http-ai
       protocol: HTTP
-      port: 8721
+      port: 8621
       allowedRoutes:
         namespaces:
           from: Same
     - name: http-mcp
       protocol: HTTP
-      port: 8722
+      port: 8622
       allowedRoutes:
         namespaces:
           from: Same
