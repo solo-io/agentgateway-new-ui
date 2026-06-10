@@ -123,6 +123,12 @@ const PillTag = styled(Tag)`
   }
 `;
 
+const PageSubtitle = styled.p`
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+`;
+
 function OverflowPill({ text, color }: { text: string; color: string }) {
   const ref = useRef<HTMLElement>(null);
   const [overflows, setOverflows] = useState(false);
@@ -219,6 +225,9 @@ export function LLMOverviewPage() {
 
     return (
         <PageRoot>
+            <PageSubtitle>
+              View your configured LLM models and their settings.
+            </PageSubtitle>
             <ModelsSection>
                 {models.length === 0 && (
                   <div style={{ textAlign: "center", padding: 60 }}>

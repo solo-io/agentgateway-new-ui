@@ -41,7 +41,8 @@ const SectionCard = styled(Card)`
 const Container = styled.div`
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-lg);
+  padding: var(--spacing-xl);
+  gap: var(--spacing-xl);
 `;
 
 const PageTitle = styled.h1`
@@ -186,7 +187,6 @@ export function MCPPlaygroundPage() {
 
   return (
     <Container>
-      <PageTitle>MCP Playground</PageTitle>
       <PageSubtitle>Test MCP server tool calls interactively</PageSubtitle>
       
       {/* Connection Section */}

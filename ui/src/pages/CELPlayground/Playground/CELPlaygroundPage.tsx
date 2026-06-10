@@ -37,10 +37,6 @@ export const CELPlaygroundPage = () => {
 
   return (
     <Container>
-      <div>
-        <h1>CEL Playground</h1>
-      </div>
-
       <StyledAlert
         message="Common Expression Language (CEL)"
         description="Test CEL expressions used for policy evaluation, routing decisions, and request validation. CEL provides a simple, fast, and safe way to evaluate expressions."

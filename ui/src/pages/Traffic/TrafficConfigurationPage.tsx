@@ -273,7 +273,6 @@ export function TrafficConfigurationPage() {
       <MetricsHeader>
         <PageHeader>
           <div>
-            <PageTitle>Traffic Configuration</PageTitle>
             <Description>
               View and edit the full agentgateway configuration.
             </Description>

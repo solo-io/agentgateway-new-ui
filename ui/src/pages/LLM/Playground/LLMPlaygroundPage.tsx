@@ -8,7 +8,8 @@ import { usePlayground } from "./usePlayground";
 const Container = styled.div`
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-lg);
+  padding: var(--spacing-xl);
+  gap: var(--spacing-xl);
 `;
 
 const PageTitle = styled.h1`
@@ -72,7 +73,6 @@ export function LLMPlaygroundPage() {
   return (
     <Container>
       <div>
-        <PageTitle>LLM Playground</PageTitle>
         <PageSubtitle>
           Send chat completions requests to your configured LLM models
         </PageSubtitle>
