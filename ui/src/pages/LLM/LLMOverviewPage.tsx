@@ -231,7 +231,7 @@ export function LLMOverviewPage() {
                                     </>
                                 ) : (
                                     <>
-                                        <PortValue>{port}</PortValue>
+                                        <PortValue><PillTag color="blue">{port}</PillTag></PortValue>
                                         <Tooltip title="Edit">
                                             <EditIconButton
                                                 type="text"
