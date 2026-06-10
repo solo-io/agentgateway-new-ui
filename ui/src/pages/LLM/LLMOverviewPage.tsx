@@ -1,6 +1,6 @@
 import { DeleteOutlined } from "@ant-design/icons";
 import styled from "@emotion/styled";
-import { App, Button, Dropdown, InputNumber, Tag, Tooltip } from "antd";
+import { App, Button, Dropdown, Empty, InputNumber, Tag, Tooltip } from "antd";
 import { Check, Edit2, EllipsisVertical, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
@@ -8,8 +8,9 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useConfig } from "../../api";
 import { fetchConfig, updateConfig } from "../../api/config";
 import { deleteLLM, removeLLMModelByIndex } from "../../api/crud";
-import { useLLMConfig } from "../../api/hooks";
+import { useLLMConfig, useXdsMode } from "../../api/hooks";
 import { PROVIDER_COLORS } from "./Playground/constants";
+import { extractModels } from "./Playground/extractModels";
 
 const PageRoot = styled.div`
   display: flex;
@@ -19,7 +20,6 @@ const PageRoot = styled.div`
   padding: var(--spacing-xl);
   gap: var(--spacing-xl);
 `;
-
 
 const PageTitle = styled.h1`
   margin: 0;
@@ -124,6 +124,7 @@ export function LLMOverviewPage() {
     const { data: llmConfig, isLoading, error } = useLLMConfig();
     const navigate = useNavigate();
     const location = useLocation();
+    const { xdsMode } = useXdsMode();
 
     const [isEditingPort, setIsEditingPort] = useState(false);
     const [editPortValue, setEditPortValue] = useState<number | null>(null);
@@ -183,7 +184,7 @@ export function LLMOverviewPage() {
     };
 
     useEffect(() => {
-        const skipRedirect = (location.state as { skipWizardRedirect?: boolean } | null)?.skipWizardRedirect;
+        const skipRedirect = (location.state as { skipWizardRedirect?: boolean } | null)?.skipWizardRedirect || xdsMode;
         if (!isLoading && !error && models.length === 0 && !skipRedirect) {
             navigate("/llm-setup-wizard", { replace: true });
         }
@@ -243,72 +244,83 @@ export function LLMOverviewPage() {
                         </PortRow>
                     )}
                 </div>
-                <Button
-                    type="primary"
-                    onClick={() => navigate("/llm-setup-wizard")}
-                >
-                    Add Model
-                </Button>
+                {!xdsMode && (
+                  <Button
+                      type="primary"
+                      onClick={() => navigate("/llm-setup-wizard")}
+                  >
+                      Add Model
+                  </Button>
+                )}
             </PageHeader>
 
             <ModelsSection>
-                <SectionTitle>Models</SectionTitle>
-                <ModelGridScroll>
-                    <ModelGrid>
-                        {models.map((m, i) => (
-                            <ModelCard key={i}>
-                                <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
-                                    <ModelName>{m.name}</ModelName>
-                                    <Dropdown
-                                      menu={{
-                                        items: [
-                                          {
-                                            key: "delete",
-                                            label: "Delete",
-                                            icon: <DeleteOutlined />,
-                                            onClick: () => modal.confirm({
-                                              title: "Delete Model?",
-                                              content: <span>Are you sure you want to delete <b>{m.name}</b>?</span>,
-                                              okText: "Delete",
-                                              okButtonProps: { danger: true },
-                                              onOk: () => handleDeleteModel(i),
-                                            }),
-                                          },
-                                        ],
-                                      }}
-                                      trigger={["click"]}
-                                    >
-                                      <EllipsisVertical size={15} style={{ cursor: "pointer" }} />
-                                    </Dropdown>
-                                </div>
-                                <ModelMeta>
-                                  <PillTag color={PROVIDER_COLORS[m.provider]}>
-                                    {m.provider}
-                                  </PillTag>
-                                  {" "}
-                                  <PillTag color="gold">{m.model}</PillTag>
-                                </ModelMeta>
-                                {m.baseUrl && (
-                                    <ModelMeta>LLM Host: <b>{m.baseUrl}</b></ModelMeta>
-                                )}
-                                <CardActions>
-                                    <Button
-                                        size="small"
-                                        onClick={() => navigate(`/llm-playground?modelName=${encodeURIComponent(m.name)}`)}
-                                    >
-                                        Open Playground
-                                    </Button>
-                                    <Button
-                                        size="small"
-                                        onClick={() => navigate("/traffic-configuration/editor")}
-                                    >
-                                        Raw Editor
-                                    </Button>
-                                </CardActions>
-                            </ModelCard>
-                        ))}
-                    </ModelGrid>
-                </ModelGridScroll>
+                {models.length === 0 && (
+                  <div style={{ textAlign: "center", padding: 60 }}>
+                    <Empty description="No models configured. Add an LLM configuration to get started." />
+                  </div>
+                )}
+                {models.length > 0 && (
+                  <>
+                    <SectionTitle>Models</SectionTitle>
+                    <ModelGridScroll>
+                        <ModelGrid>
+                            {models.map((m, i) => (
+                                <ModelCard key={i}>
+                                    <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
+                                        <ModelName>{m.name}</ModelName>
+                                        <Dropdown
+                                          menu={{
+                                            items: [
+                                              {
+                                                key: "delete",
+                                                label: "Delete",
+                                                icon: <DeleteOutlined />,
+                                                onClick: () => modal.confirm({
+                                                  title: "Delete Model?",
+                                                  content: <span>Are you sure you want to delete <b>{m.name}</b>?</span>,
+                                                  okText: "Delete",
+                                                  okButtonProps: { danger: true },
+                                                  onOk: () => handleDeleteModel(i),
+                                                }),
+                                              },
+                                            ],
+                                          }}
+                                          trigger={["click"]}
+                                        >
+                                          <EllipsisVertical size={15} style={{ cursor: "pointer" }} />
+                                        </Dropdown>
+                                    </div>
+                                    <ModelMeta>
+                                      <PillTag color={PROVIDER_COLORS[m.provider]}>
+                                        {m.provider}
+                                      </PillTag>
+                                      {" "}
+                                      <PillTag color="gold">{m.model}</PillTag>
+                                    </ModelMeta>
+                                    {m.baseUrl && (
+                                        <ModelMeta>LLM Host: <b>{m.baseUrl}</b></ModelMeta>
+                                    )}
+                                    <CardActions>
+                                        <Button
+                                            size="small"
+                                            onClick={() => navigate(`/llm-playground?modelName=${encodeURIComponent(m.name)}`)}
+                                        >
+                                            Open Playground
+                                        </Button>
+                                        <Button
+                                            size="small"
+                                            onClick={() => navigate("/traffic-configuration/editor")}
+                                        >
+                                            Raw Editor
+                                        </Button>
+                                    </CardActions>
+                                </ModelCard>
+                            ))}
+                        </ModelGrid>
+                    </ModelGridScroll>
+                  </>
+                )}
             </ModelsSection>
         </PageRoot>
     );

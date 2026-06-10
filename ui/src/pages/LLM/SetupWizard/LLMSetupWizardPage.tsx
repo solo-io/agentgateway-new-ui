@@ -1,5 +1,8 @@
 import styled from "@emotion/styled";
 import { Card, ConfigProvider, Steps } from "antd";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useXdsMode } from "../../../api";
 import { InstallStep } from "./InstallStep";
 import { LLMWizardProvider, useLLMWizard } from "./LLMWizardContext";
 import { ModelConfigStep } from "./ModelConfigStep";
@@ -75,6 +78,13 @@ function LLMSetupWizardInner() {
 }
 
 export function LLMSetupWizardPage() { 
+    const navigate = useNavigate();
+    const { xdsMode } = useXdsMode();
+    useEffect(() => { 
+        if (xdsMode) { 
+            navigate("/dashboard", { replace: true });
+        }
+    }, []);
     return (
         <LLMWizardProvider>
             <LLMSetupWizardInner />

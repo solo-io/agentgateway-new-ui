@@ -1,10 +1,10 @@
 import styled from "@emotion/styled";
-import { App, Button, Dropdown, InputNumber, Tag, Tooltip } from "antd";
+import { App, Button, Dropdown, Empty, InputNumber, Tag, Tooltip } from "antd";
 import { Check, Edit2, EllipsisVertical, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useConfig } from "../../api";
+import { useConfig, useXdsMode } from "../../api";
 import { fetchConfig, updateConfig } from "../../api/config";
 
 const PageRoot = styled.div`
@@ -182,6 +182,7 @@ export function MCPOverviewPage() {
     const [editPortValue, setEditPortValue] = useState<number | null>(null);
     const [isSavingPort, setIsSavingPort] = useState(false);
     const [isSavingStatefulMode, setIsSavingStatefulMode] = useState(false);
+    const { xdsMode } = useXdsMode();
 
     const mcpPort = config?.mcp?.port ?? null;
     const rawTargets = (config?.mcp?.targets ?? []) as Record<string, unknown>[];
@@ -252,7 +253,7 @@ export function MCPOverviewPage() {
     };
 
     useEffect(() => {
-        const skipRedirect = (location.state as { skipWizardRedirect?: boolean } | null)?.skipWizardRedirect;
+        const skipRedirect = (location.state as { skipWizardRedirect?: boolean } | null)?.skipWizardRedirect || xdsMode;
         if (!configLoading && !hasMCPTargets && !skipRedirect) {
             navigate("/mcp-setup-wizard", { replace: true });
         }
@@ -343,65 +344,76 @@ export function MCPOverviewPage() {
                         </PortRow>
                     )}
                 </div>
-                <Button
-                    type="primary"
-                    onClick={() => navigate("/mcp-setup-wizard")}
-                >
-                    Add MCP Server
-                </Button>
+                {!xdsMode && (
+                    <Button
+                        type="primary"
+                        onClick={() => navigate("/mcp-setup-wizard")}
+                    >
+                        Add MCP Server
+                    </Button>
+                )}
             </PageHeader>
 
             <ServersSection>
-                <SectionTitle>MCP Servers</SectionTitle>
-                <ServerGridScroll>
-                    <ServerGrid>
-                        {targets.map((t, i) => (
-                            <ServerCard key={i}>
-                                <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
-                                    <ServerName>{t.name}</ServerName>
-                                    <Dropdown
-                                      menu={{
-                                        items: [
-                                          {
-                                            key: "delete",
-                                            label: <span style={{ color: "#ff4d4f" }}>Delete</span>,
-                                            onClick: () => modal.confirm({
-                                              title: "Delete MCP Server",
-                                              content: `Are you sure you want to delete "${t.name}"?`,
-                                              okText: "Delete",
-                                              okButtonProps: { danger: true },
-                                              onOk: () => handleDeleteServer(t),
-                                            }),
-                                          },
-                                        ],
-                                      }}
-                                      trigger={["click"]}
-                                    >
-                                      <EllipsisVertical size={15} style={{ cursor: "pointer" }} />
-                                    </Dropdown>
-                                </div>
-                                <BadgeRow>
-                                    <PillTag color={TYPE_COLORS[t.type]}>{t.type}</PillTag>
-                                </BadgeRow>
-                                {t.endpoint && <ServerMeta>Server Endpoint: <b>{t.endpoint}</b></ServerMeta>}
-                                <CardActions>
-                                    <Button
-                                        size="small"
-                                        onClick={() => navigate(`/mcp-playground?label=${t.name}`)}
-                                    >
-                                        Open Playground
-                                    </Button>
-                                    <Button
-                                        size="small"
-                                        onClick={() => navigate("/traffic-configuration/editor")}
-                                    >
-                                        Raw Editor
-                                    </Button>
-                                </CardActions>
-                            </ServerCard>
-                        ))}
-                    </ServerGrid>
-                </ServerGridScroll>
+                {targets.length === 0 && (
+                    <div style={{ textAlign: "center", padding: 60 }}>
+                        <Empty description="No MCP servers configured. Add an MCP server to get started." />
+                    </div>
+                )}
+                {targets.length > 0 && (
+                    <>
+                        <SectionTitle>MCP Servers</SectionTitle>
+                        <ServerGridScroll>
+                            <ServerGrid>
+                                {targets.map((t, i) => (
+                                    <ServerCard key={i}>
+                                        <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
+                                            <ServerName>{t.name}</ServerName>
+                                            <Dropdown
+                                            menu={{
+                                                items: [
+                                                {
+                                                    key: "delete",
+                                                    label: <span style={{ color: "#ff4d4f" }}>Delete</span>,
+                                                    onClick: () => modal.confirm({
+                                                    title: "Delete MCP Server",
+                                                    content: `Are you sure you want to delete "${t.name}"?`,
+                                                    okText: "Delete",
+                                                    okButtonProps: { danger: true },
+                                                    onOk: () => handleDeleteServer(t),
+                                                    }),
+                                                },
+                                                ],
+                                            }}
+                                            trigger={["click"]}
+                                            >
+                                            <EllipsisVertical size={15} style={{ cursor: "pointer" }} />
+                                            </Dropdown>
+                                        </div>
+                                        <BadgeRow>
+                                            <PillTag color={TYPE_COLORS[t.type]}>{t.type}</PillTag>
+                                        </BadgeRow>
+                                        {t.endpoint && <ServerMeta>Server Endpoint: <b>{t.endpoint}</b></ServerMeta>}
+                                        <CardActions>
+                                            <Button
+                                                size="small"
+                                                onClick={() => navigate(`/mcp-playground?label=${t.name}`)}
+                                            >
+                                                Open Playground
+                                            </Button>
+                                            <Button
+                                                size="small"
+                                                onClick={() => navigate("/traffic-configuration/editor")}
+                                            >
+                                                Raw Editor
+                                            </Button>
+                                        </CardActions>
+                                    </ServerCard>
+                                ))}
+                            </ServerGrid>
+                        </ServerGridScroll>
+                    </>
+                )}
             </ServersSection>
         </PageRoot>
     );

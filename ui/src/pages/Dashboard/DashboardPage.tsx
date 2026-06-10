@@ -10,7 +10,7 @@ import {
   Workflow
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useConfig, useLLMConfig, useMCPConfig } from "../../api";
+import { useConfig, useLLMConfig, useMCPConfig, useXdsMode } from "../../api";
 import { AgentgatewayLogo } from "../../components/AgentgatewayLogo";
 import { StyledAlert } from "../../components/StyledAlert";
 import { useTrafficHierarchy } from "../../components/TrafficHierarchy";
@@ -25,12 +25,6 @@ const PageTitle = styled.h1`
   margin: 0 0 4px;
   font-size: 24px;
   font-weight: 600;
-`;
-
-const PageSubtitle = styled.p`
-  margin: 0;
-  color: var(--color-text-secondary);
-  font-size: 14px;
 `;
 
 const SectionCard = styled(Card)`
@@ -96,6 +90,8 @@ export const DashboardPage = () => {
   const hierarchy = useTrafficHierarchy();
   const { data: llm } = useLLMConfig();
   const { data: mcp } = useMCPConfig();
+  const { xdsMode } = useXdsMode();
+
 
   const isLoading = configLoading || hierarchy.isLoading;
 
@@ -227,6 +223,7 @@ export const DashboardPage = () => {
   ];
 
   const ctaDescription = "Connect an LLM model and MCP targets to get started with agentgateway."
+  const ctaDescriptionXdsMode = "Configuration is managed by a remote control plane. Edits are disabled.";
 
   return (
     <Container>
@@ -236,22 +233,24 @@ export const DashboardPage = () => {
         <div style={{ width: 40, height: 40 }}>
           <AgentgatewayLogo />
         </div>
-        <div>
+          <div>
           <div style={{ fontSize: 20, fontWeight: 600, marginBottom: 6 }}>
-            Get started with agentgateway
+            {xdsMode ? "agentgateway: xDS mode is enabled" : "Get started with agentgateway"}
           </div>
           <div style={{ fontSize: 13, color: "var(--color-text-secondary)", maxWidth: 420 }}>
-            {ctaDescription}
+            {xdsMode ? ctaDescriptionXdsMode : ctaDescription}
           </div>
         </div>
-        <div style={{ display: 'flex', gap: 8}}>  
-          <Button type="primary" size="large" onClick={() => navigate("/llm-setup-wizard")}>
-            Open LLM Setup Wizard →
-          </Button>
-          <Button type="primary" size="large" onClick={() => navigate("/mcp-setup-wizard")}>
-            Open MCP Setup Wizard →
-          </Button>
-        </div>
+        {!xdsMode && (
+          <div style={{ display: 'flex', gap: 8}}>  
+            <Button type="primary" size="large" onClick={() => navigate("/llm-setup-wizard")}>
+              Open LLM Setup Wizard →
+            </Button>
+            <Button type="primary" size="large" onClick={() => navigate("/mcp-setup-wizard")}>
+              Open MCP Setup Wizard →
+            </Button>
+          </div>
+        )}
       </CTAHeader>
 
       {/* Quick stats bar */}

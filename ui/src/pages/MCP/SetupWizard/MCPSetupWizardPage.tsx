@@ -1,6 +1,9 @@
 import styled from "@emotion/styled";
 import { Card, ConfigProvider, Steps } from "antd";
 // import { InstallStep } from "./InstallStep";  // streamableHttp only
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useXdsMode } from "../../../api";
 import { MCPWizardProvider, useMCPWizard } from "./MCPWizardContext";
 import { SelectServerStep } from "./SelectServerStep";
 import { ServerConfigStep } from "./ServerConfigStep";
@@ -74,6 +77,13 @@ function MCPSetupWizardInner() {
 }
 
 export function MCPSetupWizardPage() {
+    const navigate = useNavigate();
+    const { xdsMode } = useXdsMode();
+    useEffect(() => { 
+        if (xdsMode) { 
+            navigate("/dashboard", { replace: true });
+        }
+    }, []);
     return (
         <MCPWizardProvider>
             <MCPSetupWizardInner />
