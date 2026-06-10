@@ -1,7 +1,7 @@
 import styled from "@emotion/styled";
 import { App, Button, Dropdown, Empty, InputNumber, Tag, Tooltip } from "antd";
 import { Check, Edit2, EllipsisVertical, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useConfig, useXdsMode } from "../../api";
@@ -14,26 +14,6 @@ const PageRoot = styled.div`
   overflow-y: auto;
   padding: var(--spacing-xl);
   gap: var(--spacing-xl);
-`;
-
-const PageTitle = styled.h1`
-  margin: 0;
-  font-size: 24px;
-  font-weight: 600;
-  color: var(--color-text-base);
-`;
-
-const PortRow = styled.div`
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  font-size: 14px;
-  color: var(--color-text-secondary);
-`;
-
-const PortValue = styled.span`
-  font-weight: 600;
-  color: var(--color-text-base);
 `;
 
 const SectionTitle = styled.h2`
@@ -86,12 +66,7 @@ const CardActions = styled.div`
   display: flex;
   gap: var(--spacing-sm);
   margin-top: auto;
-`;
-
-const PageHeader = styled.div`
-  display: flex;
   justify-content: space-between;
-  align-items: center;
 `;
 
 const EditIconButton = styled(Button)`
@@ -112,11 +87,33 @@ const PillTag = styled(Tag)`
   }
 `;
 
-const BadgeRow = styled.div`
+const MetaRow = styled.div`
   display: flex;
-  gap: var(--spacing-sm);
-  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
 `;
+
+const MetaLabel = styled.span`
+  font-size: 13px;
+  color: var(--color-text-secondary);
+`;
+
+function OverflowPill({ text, color }: { text: string; color: string }) {
+  const ref = useRef<HTMLElement>(null);
+  const [overflows, setOverflows] = useState(false);
+
+  useEffect(() => {
+    if (ref.current) setOverflows(ref.current.scrollWidth > ref.current.clientWidth);
+  }, [text]);
+
+  const pill = (
+    <PillTag color={color} ref={ref} style={{ maxWidth: 160, display: 'inline-block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+      {text}
+    </PillTag>
+  );
+
+  return overflows ? <Tooltip title={text}>{pill}</Tooltip> : pill;
+}
 
 const TYPE_COLORS: Record<string, string> = {
     stdio: "volcano",
@@ -285,99 +282,6 @@ export function MCPOverviewPage() {
 
     return (
         <PageRoot>
-            <PageHeader>
-                <div>
-                    <PageTitle>MCP Configuration</PageTitle>
-                    {mcpPort !== null && (
-                        <PortRow>
-                            agentgateway exposed port:{" "}
-                            <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
-                                {editingPort ? (
-                                    <>
-                                        <InputNumber
-                                            size="small"
-                                            min={1}
-                                            max={65535}
-                                            precision={0}
-                                            value={editPortValue}
-                                            onChange={(v) => setEditPortValue(v)}
-                                            style={{ width: 90 }}
-                                            autoFocus
-                                            onPressEnter={handlePortEditSave}
-                                        />
-                                        <Button
-                                            type="text"
-                                            size="small"
-                                            icon={<Check size={13} color="var(--color-success)" strokeWidth={4} />}
-                                            loading={isSavingPort}
-                                            onClick={handlePortEditSave}
-                                        />
-                                        <Button
-                                            type="text"
-                                            size="small"
-                                            icon={<X size={13} color="var(--color-error)" strokeWidth={4} />}
-                                            onClick={handlePortEditCancel}
-                                            disabled={isSavingPort}
-                                        />
-                                    </>
-                                ) : (
-                                    <>
-                                        <PortValue>
-                                            <PillTag color="blue">{mcpPort}</PillTag>
-                                        </PortValue>
-                                        <Tooltip title="Edit">
-                                            <EditIconButton
-                                                type="text"
-                                                size="small"
-                                                icon={<Edit2 size={15} />}
-                                                onClick={handlePortEditStart}
-                                            />
-                                        </Tooltip>
-                                    </>
-                                )}
-                            </span>
-                        </PortRow>
-                    )}
-                    {config?.mcp && (
-                        <PortRow style={{ marginTop: 4 }}>
-                            stateful mode:{" "}
-                            <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
-                                <Dropdown
-                                    trigger={["click"]}
-                                    menu={{
-                                        items: [
-                                            { key: "stateful", label: "stateful" },
-                                            { key: "stateless", label: "stateless" },
-                                        ],
-                                        selectedKeys: [statefulMode ?? "stateful"],
-                                        onClick: ({ key }) => handleStatefulModeChange(key as "stateful" | "stateless"),
-                                    }}
-                                >
-                                    <span style={{ display: "inline-flex", alignItems: "center", gap: 4, cursor: "pointer" }}>
-                                        <PillTag color={statefulMode === "stateless" ? "purple" : "green"}>
-                                            {statefulMode ?? "stateful"}
-                                        </PillTag>
-                                        <EditIconButton
-                                            type="text"
-                                            size="small"
-                                            icon={<Edit2 size={15} />}
-                                        />
-                                    </span>
-                                </Dropdown>
-                            </span>
-                        </PortRow>
-                    )}
-                </div>
-                {!xdsMode && (
-                    <Button
-                        type="primary"
-                        onClick={() => navigate("/mcp-setup-wizard")}
-                    >
-                        Add MCP Server
-                    </Button>
-                )}
-            </PageHeader>
-
             <ServersSection>
                 {targets.length === 0 && (
                     <div style={{ textAlign: "center", padding: 60 }}>
@@ -386,7 +290,94 @@ export function MCPOverviewPage() {
                 )}
                 {targets.length > 0 && (
                     <>
-                        <SectionTitle>MCP Servers</SectionTitle>
+                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <SectionTitle>MCP Servers</SectionTitle>
+                            {!xdsMode && (
+                                <Button
+                                    type="primary"
+                                    onClick={() => navigate("/mcp-setup-wizard")}
+                                >
+                                    Add MCP Server
+                                </Button>
+                            )}
+                        </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'auto auto', gap: '4px 12px', width: 'fit-content', alignItems: 'center', fontSize: 14, color: 'var(--color-text-secondary)' }}>
+                            {mcpPort !== null && (
+                                <>
+                                    <span>agentgateway exposed port:</span>
+                                    <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                                        {editingPort ? (
+                                            <>
+                                                <InputNumber
+                                                    size="small"
+                                                    min={1}
+                                                    max={65535}
+                                                    precision={0}
+                                                    value={editPortValue}
+                                                    onChange={(v) => setEditPortValue(v)}
+                                                    style={{ width: 90 }}
+                                                    autoFocus
+                                                    onPressEnter={handlePortEditSave}
+                                                />
+                                                <Button
+                                                    type="text"
+                                                    size="small"
+                                                    icon={<Check size={13} color="var(--color-success)" strokeWidth={4} />}
+                                                    loading={isSavingPort}
+                                                    onClick={handlePortEditSave}
+                                                />
+                                                <Button
+                                                    type="text"
+                                                    size="small"
+                                                    icon={<X size={13} color="var(--color-error)" strokeWidth={4} />}
+                                                    onClick={handlePortEditCancel}
+                                                    disabled={isSavingPort}
+                                                />
+                                            </>
+                                        ) : (
+                                            <>
+                                                <PillTag color="blue" style={{ minWidth: 75, textAlign: 'center', display: 'inline-block' }}>{mcpPort}</PillTag>
+                                                <Tooltip title="Edit">
+                                                    <EditIconButton
+                                                        type="text"
+                                                        size="small"
+                                                        icon={<Edit2 size={15} />}
+                                                        onClick={handlePortEditStart}
+                                                    />
+                                                </Tooltip>
+                                            </>
+                                        )}
+                                    </span>
+                                </>
+                            )}
+                            {config?.mcp && (
+                                <>
+                                    <span>stateful mode:</span>
+                                    <Dropdown
+                                        trigger={["click"]}
+                                        menu={{
+                                            items: [
+                                                { key: "stateful", label: "stateful" },
+                                                { key: "stateless", label: "stateless" },
+                                            ],
+                                            selectedKeys: [statefulMode ?? "stateful"],
+                                            onClick: ({ key }) => handleStatefulModeChange(key as "stateful" | "stateless"),
+                                        }}
+                                    >
+                                        <span style={{ display: "inline-flex", alignItems: "center", gap: 4, cursor: "pointer" }}>
+                                            <PillTag color={statefulMode === "stateless" ? "purple" : "green"} style={{ minWidth: 75, textAlign: 'center', display: 'inline-block' }}>
+                                                {statefulMode ?? "stateful"}
+                                            </PillTag>
+                                            <EditIconButton
+                                                type="text"
+                                                size="small"
+                                                icon={<Edit2 size={15} />}
+                                            />
+                                        </span>
+                                    </Dropdown>
+                                </>
+                            )}
+                        </div>
                         <ServerGridScroll>
                             <ServerGrid>
                                 {targets.map((t, i) => (
@@ -416,11 +407,24 @@ export function MCPOverviewPage() {
                                                 </Dropdown>
                                             )}
                                         </div>
-                                        <BadgeRow>
+                                        <ServerMeta style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                                          <MetaRow>
+                                            <MetaLabel>Type</MetaLabel>
                                             <PillTag color={TYPE_COLORS[t.type]}>{t.type}</PillTag>
-                                        </BadgeRow>
-                                        {t.endpoint && <ServerMeta>Server Endpoint: <b>{t.endpoint}</b></ServerMeta>}
-                                        {t.port !== undefined && <ServerMeta>Port: <b>{t.port}</b></ServerMeta>}
+                                          </MetaRow>
+                                          {t.endpoint && (
+                                            <MetaRow>
+                                              <MetaLabel>Endpoint</MetaLabel>
+                                              <OverflowPill text={t.endpoint} color="purple" />
+                                            </MetaRow>
+                                          )}
+                                          {t.port !== undefined && (
+                                            <MetaRow>
+                                              <MetaLabel>Port</MetaLabel>
+                                              <PillTag color="blue">{t.port}</PillTag>
+                                            </MetaRow>
+                                          )}
+                                        </ServerMeta>
                                         <CardActions>
                                             <Button
                                                 size="small"

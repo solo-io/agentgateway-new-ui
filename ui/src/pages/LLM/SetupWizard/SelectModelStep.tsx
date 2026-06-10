@@ -77,7 +77,7 @@ export function SelectModelStep() {
         if (!selected) return;
 
         if (selected === "manual") { 
-            navigate("/traffic-configuration/editor");
+            navigate("/traffic-configuration");
             return;
         }
         

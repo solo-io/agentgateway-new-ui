@@ -2,7 +2,7 @@ import { DeleteOutlined } from "@ant-design/icons";
 import styled from "@emotion/styled";
 import { App, Button, Dropdown, Empty, InputNumber, Tag, Tooltip } from "antd";
 import { Check, Edit2, EllipsisVertical, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useConfig } from "../../api";
@@ -20,13 +20,6 @@ const PageRoot = styled.div`
   overflow-y: auto;
   padding: var(--spacing-xl);
   gap: var(--spacing-xl);
-`;
-
-const PageTitle = styled.h1`
-  margin: 0;
-  font-size: 24px;
-  font-weight: 600;
-  color: var(--color-text-base);
 `;
 
 const PortRow = styled.div`
@@ -88,15 +81,27 @@ const ModelMeta = styled.div`
   color: var(--color-text-secondary);
 `;
 
+const MetaRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+const MetaLabel = styled.span`
+  font-size: 13px;
+  color: var(--color-text-secondary);
+`;
+
 const CardActions = styled.div`
   display: flex;
   gap: var(--spacing-sm);
+  justify-content: space-between;
   margin-top: auto;
 `;
 
 const PageHeader = styled.div`
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
 `;
 
@@ -118,6 +123,23 @@ const PillTag = styled(Tag)`
   }
 `;
 
+function OverflowPill({ text, color }: { text: string; color: string }) {
+  const ref = useRef<HTMLElement>(null);
+  const [overflows, setOverflows] = useState(false);
+
+  useEffect(() => {
+    if (ref.current) setOverflows(ref.current.scrollWidth > ref.current.clientWidth);
+  }, [text]);
+
+  const pill = (
+    <PillTag color={color} ref={ref} style={{ maxWidth: 160, display: 'inline-block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+      {text}
+    </PillTag>
+  );
+
+  return overflows ? <Tooltip title={text}>{pill}</Tooltip> : pill;
+}
+
 // Main Component
 export function LLMOverviewPage() {
     const { modal } = App.useApp();
@@ -137,8 +159,11 @@ export function LLMOverviewPage() {
               label: m.name ?? "unnamed",
               defaultModel: m.params?.model ?? "",
               provider: m.provider ?? "unknown",
-              baseUrl: `http://localhost:${(llmConfig as any)?.port ?? 3000}`,
+              baseUrl: m.params?.baseUrl,
           }));
+
+    console.log(`llmConfig:`, llmConfig);
+    console.log(`models: `, models);
 
     const port: number | null = (llmConfig as any)?.port ?? null;
 
@@ -194,68 +219,6 @@ export function LLMOverviewPage() {
 
     return (
         <PageRoot>
-            <PageHeader>
-                <div>
-                    <PageTitle>LLM Configuration</PageTitle>
-                    {port !== null && (
-                        <PortRow>
-                            agentgateway exposed port:{" "}
-                            <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
-                                {isEditingPort ? (
-                                    <>
-                                        <InputNumber
-                                            size="small"
-                                            min={1}
-                                            max={65535}
-                                            precision={0}
-                                            value={editPortValue}
-                                            onChange={(v) => setEditPortValue(v)}
-                                            style={{ width: 90 }}
-                                            autoFocus
-                                            onPressEnter={handlePortEditSave}
-                                        />
-                                        <Button
-                                            type="text"
-                                            size="small"
-                                            icon={<Check size={13} color="var(--color-success)" strokeWidth={4} />}
-                                            loading={isSavingPort}
-                                            onClick={handlePortEditSave}
-                                        />
-                                        <Button
-                                            type="text"
-                                            size="small"
-                                            icon={<X size={13} color="var(--color-error)" strokeWidth={4} />}
-                                            onClick={handlePortEditCancel}
-                                            disabled={isSavingPort}
-                                        />
-                                    </>
-                                ) : (
-                                    <>
-                                        <PortValue><PillTag color="blue">{port}</PillTag></PortValue>
-                                        <Tooltip title="Edit">
-                                            <EditIconButton
-                                                type="text"
-                                                size="small"
-                                                icon={<Edit2 size={15} />}
-                                                onClick={handlePortEditStart}
-                                            />
-                                        </Tooltip>
-                                    </>
-                                )}
-                            </span>
-                        </PortRow>
-                    )}
-                </div>
-                {!xdsMode && (
-                  <Button
-                      type="primary"
-                      onClick={() => navigate("/llm-setup-wizard")}
-                  >
-                      Add Model
-                  </Button>
-                )}
-            </PageHeader>
-
             <ModelsSection>
                 {models.length === 0 && (
                   <div style={{ textAlign: "center", padding: 60 }}>
@@ -264,7 +227,67 @@ export function LLMOverviewPage() {
                 )}
                 {models.length > 0 && (
                   <>
-                    <SectionTitle>Models</SectionTitle>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}> 
+                      <SectionTitle>Models</SectionTitle>
+                      {!xdsMode && (
+                        <Button
+                            type="primary"
+                            onClick={() => navigate("/llm-setup-wizard")}
+                        >
+                            Add Model
+                        </Button>
+                      )}
+                    </div>
+                    <div>
+                      {port !== null && (
+                          <PortRow>
+                              agentgateway exposed port:{" "}
+                              <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                                  {isEditingPort? (
+                                      <>
+                                          <InputNumber
+                                              size="small"
+                                              min={1}
+                                              max={65535}
+                                              precision={0}
+                                              value={editPortValue}
+                                              onChange={(v) => setEditPortValue(v)}
+                                              style={{ width: 90 }}
+                                              autoFocus
+                                              onPressEnter={handlePortEditSave}
+                                          />
+                                          <Button
+                                              type="text"
+                                              size="small"
+                                              icon={<Check size={13} color="var(--color-success)" strokeWidth={4} />}
+                                              loading={isSavingPort}
+                                              onClick={handlePortEditSave}
+                                          />
+                                          <Button
+                                              type="text"
+                                              size="small"
+                                              icon={<X size={13} color="var(--color-error)" strokeWidth={4} />}
+                                              onClick={handlePortEditCancel}
+                                              disabled={isSavingPort}
+                                          />
+                                      </>
+                                  ) : (
+                                      <>
+                                          <PortValue><PillTag color="blue">{port}</PillTag></PortValue>
+                                          <Tooltip title="Edit">
+                                              <EditIconButton
+                                                  type="text"
+                                                  size="small"
+                                                  icon={<Edit2 size={15} />}
+                                                  onClick={handlePortEditStart}
+                                              />
+                                          </Tooltip>
+                                      </>
+                                  )}
+                              </span>
+                          </PortRow>
+                      )}
+                    </div>
                     <ModelGridScroll>
                         <ModelGrid>
                             {models.map((m, i) => (
@@ -295,14 +318,20 @@ export function LLMOverviewPage() {
                                           </Dropdown>
                                         )}
                                     </div>
-                                    <ModelMeta>
-                                      <PillTag color={PROVIDER_COLORS[m.provider]}>
-                                        {m.provider}
-                                      </PillTag>
-                                      {" "}
-                                      <PillTag color="gold">{m.defaultModel}</PillTag>
+                                    <ModelMeta style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                                      <MetaRow>
+                                        <MetaLabel>Provider</MetaLabel>
+                                        <PillTag color={PROVIDER_COLORS[m.provider]}>{m.provider}</PillTag>
+                                      </MetaRow>
+                                      <MetaRow>
+                                        <MetaLabel>Model</MetaLabel>
+                                        <PillTag color="gold">{m.defaultModel}</PillTag>
+                                      </MetaRow>
+                                      <MetaRow>
+                                        <MetaLabel>Host</MetaLabel>
+                                        <OverflowPill text={m.baseUrl} color="purple" />
+                                      </MetaRow>
                                     </ModelMeta>
-                                    <ModelMeta>Host: <b>{m.baseUrl}</b></ModelMeta>
                                     <CardActions>
                                         <Button
                                             size="small"
