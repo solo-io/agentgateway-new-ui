@@ -131,6 +131,7 @@ interface MCPTargetInfo {
     type: "stdio" | "sse" | "mcp" | "openapi" | "unknown";
     endpoint: string;
     statefulMode: "stateful" | "stateless" | undefined;
+    port?: number;
 }
 
 function deriveTypeAndEndpoint(target: Record<string, unknown>): {
@@ -173,6 +174,27 @@ function extractMCPTargets(rawTargets: Record<string, unknown>[], statefulMode: 
     });
 }
 
+function extractMCPTargetsFromBinds(config: any): MCPTargetInfo[] {
+    const targets: MCPTargetInfo[] = [];
+    for (const bind of config?.binds ?? []) {
+        for (const listener of bind.listeners ?? []) {
+            for (const route of listener.routes ?? []) {
+                const mcpBackend = (route.backends ?? []).find((b: any) => b.mcp);
+                if (!mcpBackend) continue;
+                const rawTargets: Record<string, unknown>[] = mcpBackend.mcp?.targets ?? [];
+                const targetName = rawTargets[0]?.name
+                    ? String(rawTargets[0].name)
+                    : route.name ?? `Port ${bind.port}`;
+                const { type, endpoint } = rawTargets[0]
+                    ? deriveTypeAndEndpoint(rawTargets[0])
+                    : { type: "unknown" as const, endpoint: "" };
+                targets.push({ name: targetName, type, endpoint, statefulMode: undefined, port: bind.port });
+            }
+        }
+    }
+    return targets;
+}
+
 export function MCPOverviewPage() {
     const { modal } = App.useApp();
     const { data: config, isLoading: configLoading, mutate } = useConfig();
@@ -187,7 +209,9 @@ export function MCPOverviewPage() {
     const mcpPort = config?.mcp?.port ?? null;
     const rawTargets = (config?.mcp?.targets ?? []) as Record<string, unknown>[];
     const statefulMode = config?.mcp?.statefulMode as MCPTargetInfo["statefulMode"];
-    const targets = extractMCPTargets(rawTargets, statefulMode);
+    const targets = xdsMode
+        ? extractMCPTargetsFromBinds(config)
+        : extractMCPTargets(rawTargets, statefulMode);
     const hasMCPTargets = targets.length > 0;
 
     const handlePortEditStart = () => {
@@ -369,31 +393,34 @@ export function MCPOverviewPage() {
                                     <ServerCard key={i}>
                                         <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
                                             <ServerName>{t.name}</ServerName>
-                                            <Dropdown
-                                            menu={{
-                                                items: [
-                                                {
-                                                    key: "delete",
-                                                    label: <span style={{ color: "#ff4d4f" }}>Delete</span>,
-                                                    onClick: () => modal.confirm({
-                                                    title: "Delete MCP Server",
-                                                    content: `Are you sure you want to delete "${t.name}"?`,
-                                                    okText: "Delete",
-                                                    okButtonProps: { danger: true },
-                                                    onOk: () => handleDeleteServer(t),
-                                                    }),
-                                                },
-                                                ],
-                                            }}
-                                            trigger={["click"]}
-                                            >
-                                            <EllipsisVertical size={15} style={{ cursor: "pointer" }} />
-                                            </Dropdown>
+                                            {!xdsMode && (
+                                                <Dropdown
+                                                    menu={{
+                                                        items: [
+                                                            {
+                                                                key: "delete",
+                                                                label: <span style={{ color: "#ff4d4f" }}>Delete</span>,
+                                                                onClick: () => modal.confirm({
+                                                                    title: "Delete MCP Server",
+                                                                    content: `Are you sure you want to delete "${t.name}"?`,
+                                                                    okText: "Delete",
+                                                                    okButtonProps: { danger: true },
+                                                                    onOk: () => handleDeleteServer(t),
+                                                                }),
+                                                            },
+                                                        ],
+                                                    }}
+                                                    trigger={["click"]}
+                                                >
+                                                    <EllipsisVertical size={15} style={{ cursor: "pointer" }} />
+                                                </Dropdown>
+                                            )}
                                         </div>
                                         <BadgeRow>
                                             <PillTag color={TYPE_COLORS[t.type]}>{t.type}</PillTag>
                                         </BadgeRow>
                                         {t.endpoint && <ServerMeta>Server Endpoint: <b>{t.endpoint}</b></ServerMeta>}
+                                        {t.port !== undefined && <ServerMeta>Port: <b>{t.port}</b></ServerMeta>}
                                         <CardActions>
                                             <Button
                                                 size="small"

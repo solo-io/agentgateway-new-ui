@@ -11,6 +11,7 @@ import { deleteLLM, removeLLMModelByIndex } from "../../api/crud";
 import { useLLMConfig, useXdsMode } from "../../api/hooks";
 import { PROVIDER_COLORS } from "./Playground/constants";
 import { extractModels } from "./Playground/extractModels";
+import type { PlaygroundModel } from "./Playground/types";
 
 const PageRoot = styled.div`
   display: flex;
@@ -120,7 +121,7 @@ const PillTag = styled(Tag)`
 // Main Component
 export function LLMOverviewPage() {
     const { modal } = App.useApp();
-    const { mutate } = useConfig();
+    const { data: fullConfig, mutate } = useConfig();
     const { data: llmConfig, isLoading, error } = useLLMConfig();
     const navigate = useNavigate();
     const location = useLocation();
@@ -130,13 +131,14 @@ export function LLMOverviewPage() {
     const [editPortValue, setEditPortValue] = useState<number | null>(null);
     const [isSavingPort, setIsSavingPort] = useState(false);
 
-    const models: Array<{ name: string; provider: string; model: string; baseUrl: string | null }> =
-        ((llmConfig as any)?.models ?? []).map((m: any) => ({
-            name: m.name ?? "unnamed",
-            provider: m.provider ?? "unknown",
-            model: m.params?.model ?? "",
-            baseUrl: m.params?.baseUrl ?? null,
-        }));
+    const models: PlaygroundModel[] = xdsMode
+        ? extractModels(fullConfig)
+        : ((llmConfig as any)?.models ?? []).map((m: any) => ({
+              label: m.name ?? "unnamed",
+              defaultModel: m.params?.model ?? "",
+              provider: m.provider ?? "unknown",
+              baseUrl: `http://localhost:${(llmConfig as any)?.port ?? 3000}`,
+          }));
 
     const port: number | null = (llmConfig as any)?.port ?? null;
 
@@ -268,43 +270,43 @@ export function LLMOverviewPage() {
                             {models.map((m, i) => (
                                 <ModelCard key={i}>
                                     <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
-                                        <ModelName>{m.name}</ModelName>
-                                        <Dropdown
-                                          menu={{
-                                            items: [
-                                              {
-                                                key: "delete",
-                                                label: "Delete",
-                                                icon: <DeleteOutlined />,
-                                                onClick: () => modal.confirm({
-                                                  title: "Delete Model?",
-                                                  content: <span>Are you sure you want to delete <b>{m.name}</b>?</span>,
-                                                  okText: "Delete",
-                                                  okButtonProps: { danger: true },
-                                                  onOk: () => handleDeleteModel(i),
-                                                }),
-                                              },
-                                            ],
-                                          }}
-                                          trigger={["click"]}
-                                        >
-                                          <EllipsisVertical size={15} style={{ cursor: "pointer" }} />
-                                        </Dropdown>
+                                        <ModelName>{m.label}</ModelName>
+                                        {!xdsMode && (
+                                          <Dropdown
+                                            menu={{
+                                              items: [
+                                                {
+                                                  key: "delete",
+                                                  label: "Delete",
+                                                  icon: <DeleteOutlined />,
+                                                  onClick: () => modal.confirm({
+                                                    title: "Delete Model?",
+                                                    content: <span>Are you sure you want to delete <b>{m.label}</b>?</span>,
+                                                    okText: "Delete",
+                                                    okButtonProps: { danger: true },
+                                                    onOk: () => handleDeleteModel(i),
+                                                  }),
+                                                },
+                                              ],
+                                            }}
+                                            trigger={["click"]}
+                                          >
+                                            <EllipsisVertical size={15} style={{ cursor: "pointer" }} />
+                                          </Dropdown>
+                                        )}
                                     </div>
                                     <ModelMeta>
                                       <PillTag color={PROVIDER_COLORS[m.provider]}>
                                         {m.provider}
                                       </PillTag>
                                       {" "}
-                                      <PillTag color="gold">{m.model}</PillTag>
+                                      <PillTag color="gold">{m.defaultModel}</PillTag>
                                     </ModelMeta>
-                                    {m.baseUrl && (
-                                        <ModelMeta>LLM Host: <b>{m.baseUrl}</b></ModelMeta>
-                                    )}
+                                    <ModelMeta>Host: <b>{m.baseUrl}</b></ModelMeta>
                                     <CardActions>
                                         <Button
                                             size="small"
-                                            onClick={() => navigate(`/llm-playground?modelName=${encodeURIComponent(m.name)}`)}
+                                            onClick={() => navigate(`/llm-playground?modelName=${encodeURIComponent(m.label)}`)}
                                         >
                                             Open Playground
                                         </Button>
