@@ -1,79 +1,24 @@
 import styled from "@emotion/styled";
-import { Button, Form, Input, Spin, Tooltip, Typography } from "antd";
-import { Check, CheckCircle, Cog, Copy } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { Button, Form, Spin, Typography } from "antd";
+import { CheckCircle, Cog } from "lucide-react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { mutate } from "swr";
 import { fetchConfig, updateConfig } from "../../../api/config";
+import {
+  Actions,
+  CopyableCommand,
+  FieldFormDescription,
+  FieldFormItem,
+  FieldFormTitle,
+  StepTitle,
+  StyledInput,
+} from "../../../components/wizard/WizardPrimitives";
+import { DEFAULT_LLM_PORT } from "../../../components/wizard/PortStep";
 import { useLLMWizard } from "./LLMWizardContext";
-import { DEFAULT_LLM_PORT } from "./PortStep";
 
 const { Link } = Typography;
-
-const StepTitle = styled.h2`
-  font-size: 20px;
-  font-weight: 600;
-  color: var(--color-text-base);
-  margin: 0 0 var(--spacing-sm) 0;
-`;
-
-const FieldFormItem = styled(Form.Item)`
-  .ant-form-item-label > label {
-    align-items: baseline;
-  }
-`;
-
-const FieldFormTitle = styled.div`
-  font-weight: 600;
-`
-
-const FieldFormDescription = styled.div`
-  color: var(--color-text-tertiary);
-  font-size: 12px;
-  font-style: italic;
-  margin: 0 0 var(--spacing-xs) 0;
-`;
-
-const StyledInput = styled(Input)`
-  width: 100%;
-  border: 1px solid #d9d9d9 !important;
-`;
-
-const TerminalBlock = styled.code`
-  display: inline-block;
-  background: #8b8b8b;
-  color: #ffffff;
-  border-radius: var(--border-radius-sm);
-  padding: 4px 10px;
-  font-family: monospace;
-  font-size: 13px;
-  border: none;
-`;
-
-const CommandWrapper = styled.div`
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  margin-top: var(--spacing-xs);
-`;
-
-const CopyButton = styled.button`
-  flex-shrink: 0;
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: #888;
-  padding: 2px 4px;
-  border-radius: var(--border-radius-sm);
-  display: flex;
-  align-items: center;
-
-  &:hover {
-    color: #d4d4d4;
-    background: rgba(0, 0, 0, 0.06);
-  }
-`;
 
 const CommandStepList = styled.div`
   display: flex;
@@ -125,36 +70,9 @@ const SuccessText = styled.span`
   font-weight: 500;
 `;
 
-const Actions = styled.div`
-  display: flex;
-  justify-content: space-between;
-  margin-top: var(--spacing-xl);
-`;
-
 const DEFAULT_MODEL_ALIAS = "my-ollama-smallthinker";
 const DEFAULT_HOST = "localhost:11434";
 const DEFAULT_MODEL = "smallthinker";
-
-function CopyableCommand({ children }: { children: string }) {
-  const [copied, setCopied] = useState(false);
-
-  const handleCopy = useCallback(() => {
-    navigator.clipboard.writeText(children);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  }, [children]);
-
-  return (
-    <CommandWrapper>
-      <TerminalBlock>{children}</TerminalBlock>
-      <Tooltip title={copied ? "Copied!" : "Copy"}>
-        <CopyButton onClick={handleCopy}>
-          {copied ? <Check size={14} color="#52c41a" /> : <Copy size={14} />}
-        </CopyButton>
-      </Tooltip>
-    </CommandWrapper>
-  );
-}
 
 export function ModelConfigStep() {
   const { data, updateModelFields, setWalkthroughVerified, previousStep } = useLLMWizard();
@@ -170,7 +88,6 @@ export function ModelConfigStep() {
   useEffect(() => {
     form.validateFields(["name"]).then(() => setNameError(false)).catch(() => setNameError(true));
   }, [form]);
-
 
   const handleVerify = async () => {
     setIsVerifying(true);
@@ -301,7 +218,11 @@ export function ModelConfigStep() {
             <div>
               <FieldFormTitle>Model Name</FieldFormTitle>
               <FieldFormDescription>
-              Browse the <Link href="https://ollama.com/search" target="_blank" rel="noopener noreferrer">Ollama registry</Link> - copy & paste a model name below, then run the following commands:
+                Browse the{" "}
+                <Link href="https://ollama.com/search" target="_blank" rel="noopener noreferrer">
+                  Ollama registry
+                </Link>{" "}
+                - copy &amp; paste a model name below, then run the following commands:
               </FieldFormDescription>
             </div>
           }
@@ -346,7 +267,6 @@ export function ModelConfigStep() {
             </SuccessText>
           )}
         </VerifyRow>
-
       </Form>
 
       <Actions>

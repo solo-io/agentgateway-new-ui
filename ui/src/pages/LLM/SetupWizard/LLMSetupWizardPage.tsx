@@ -1,93 +1,45 @@
-import styled from "@emotion/styled";
-import { Card, ConfigProvider, Steps } from "antd";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useXdsMode } from "../../../api";
+import { WizardShell } from "../../../components/wizard/WizardShell";
 import { InstallStep } from "./InstallStep";
 import { LLMWizardProvider, useLLMWizard } from "./LLMWizardContext";
 import { ModelConfigStep } from "./ModelConfigStep";
 import { SelectModelStep } from "./SelectModelStep";
 
-const PageRoot = styled.div`
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-`;
-
-const PageHeader = styled.div`
-    padding: var(--spacing-lg) var(--spacing-xl);
-    border-bottom: 1px solid var(--color-border);
-    border: 1px solid var(--color-border-secondary);
-    background: linear-gradient(to right, var(--color-bg-hover) 0%, var(--color-bg-container) 100%);
-`;
-
-const PageTitle = styled.h1`
-    margin: 0 0 var(--spacing-md) 0;
-    font-size: 24px;
-    font-weight: 600;
-    color: var(--color-text-base);
-    border-left: 3px solid #6941c6;
-    padding-left: var(--spacing-sm);
-`;
-
-const StepBody = styled.div`
-    flex: 1;
-    overflow-y: auto;
-    display: flex;
-    justify-content: center;
-    padding: var(--spacing-xl);  
-`;
-
-
 const STEP_LABELS = [
-    { title: "Model Type" },
-    { title: "Install" },
-    { title: "Configure" },
+  { title: "Model Type" },
+  { title: "Install" },
+  { title: "Configure" },
 ];
 
 function LLMSetupWizardInner() {
-    const { currentStep, stepIndex } = useLLMWizard();
+  const { currentStep, stepIndex } = useLLMWizard();
 
-    const stepComponent = {
-        selectModel: <SelectModelStep />,
-        install: <InstallStep />,
-        modelConfig: <ModelConfigStep />,
-    }[currentStep];
+  const stepComponent = {
+    selectModel: <SelectModelStep />,
+    install: <InstallStep />,
+    modelConfig: <ModelConfigStep />,
+  }[currentStep];
 
-    return (
-        <PageRoot>
-            <PageHeader>
-                <PageTitle>LLM Setup Wizard</PageTitle>
-            </PageHeader>
-            <StepBody>
-                <Card style={{ width: "100%", maxWidth: 640, "--color-border-secondary": "rgba(0, 0, 0, 0.3)", boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.3)" } as React.CSSProperties}>
-                    <ConfigProvider theme={{ token: { colorPrimary: "#6941c6" } }}>
-                        <Steps
-                            current={stepIndex}
-                            items={STEP_LABELS}
-                            labelPlacement="vertical"
-                            size="small"
-                            style={{ marginBottom: "var(--spacing-xl)" }}
-                        />
-                    </ConfigProvider>
-                    {stepComponent}
-                </Card>
-            </StepBody>
-        </PageRoot>
-    );
+  return (
+    <WizardShell title="LLM Setup Wizard" stepLabels={STEP_LABELS} stepIndex={stepIndex}>
+      {stepComponent}
+    </WizardShell>
+  );
 }
 
-export function LLMSetupWizardPage() { 
-    const navigate = useNavigate();
-    const { xdsMode } = useXdsMode();
-    useEffect(() => { 
-        if (xdsMode) { 
-            navigate("/dashboard", { replace: true });
-        }
-    }, []);
-    return (
-        <LLMWizardProvider>
-            <LLMSetupWizardInner />
-        </LLMWizardProvider>
-    );
+export function LLMSetupWizardPage() {
+  const navigate = useNavigate();
+  const { xdsMode } = useXdsMode();
+  useEffect(() => {
+    if (xdsMode) {
+      navigate("/dashboard", { replace: true });
+    }
+  }, []);
+  return (
+    <LLMWizardProvider>
+      <LLMSetupWizardInner />
+    </LLMWizardProvider>
+  );
 }
