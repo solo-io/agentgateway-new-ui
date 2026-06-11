@@ -38,7 +38,7 @@ export function SelectServerStep() {
   const handleNext = () => {
     if (!selected) return;
     if (selected === "manual") {
-      navigate("/traffic-configuration/editor");
+      navigate("/traffic-configuration");
       return;
     }
     nextStep();
