@@ -383,7 +383,7 @@ export function LLMOverviewPage() {
                     <ModelGridScroll>
                         <ModelGrid>
                             {models.map((m, i) => (
-                                <ModelCard key={i}>
+                                <ModelCard key={i} data-testid={`llm-model-card-${i}`}>
                                     <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
                                         <ModelName>{m.label}</ModelName>
                                         {!xdsMode && (
@@ -428,12 +428,14 @@ export function LLMOverviewPage() {
                                         <Button
                                             size="small"
                                             onClick={() => navigate(`/llm-playground?modelName=${encodeURIComponent(xdsMode ? m.defaultModel : m.label)}`)}
+                                            data-testid={`llm-model-card-${i}-open-playground-button`}
                                         >
                                             Open Playground
                                         </Button>
                                         <Button
                                             size="small"
                                             onClick={() => navigate("/traffic-configuration/editor")}
+                                            data-testid={`llm-model-card-${i}-raw-editor-button`}
                                         >
                                             Raw Editor
                                         </Button>

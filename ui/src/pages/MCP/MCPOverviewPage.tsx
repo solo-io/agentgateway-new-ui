@@ -427,7 +427,7 @@ export function MCPOverviewPage() {
                         <ServerGridScroll>
                             <ServerGrid>
                                 {targets.map((t: MCPDisplayTarget, i: number) => (
-                                    <ServerCard key={i}>
+                                    <ServerCard key={i} data-testid={`mcp-server-target-card-${i}`}>
                                         <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
                                             <ServerName>{t.name}</ServerName>
                                             {!xdsMode && (
@@ -469,12 +469,14 @@ export function MCPOverviewPage() {
                                             <Button
                                                 size="small"
                                                 onClick={() => navigate(`/mcp-playground?label=${t.name}`)}
+                                                data-testid={`mcp-server-target-card-${i}-open-playground-button`}
                                             >
                                                 Open Playground
                                             </Button>
                                             <Button
                                                 size="small"
                                                 onClick={() => navigate("/traffic-configuration/editor")}
+                                                data-testid={`mcp-server-target-card-${i}-raw-editor-button`}
                                             >
                                                 Raw Editor
                                             </Button>

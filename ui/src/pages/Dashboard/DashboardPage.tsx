@@ -229,7 +229,7 @@ export const DashboardPage = () => {
     <Container>
       
       {/* Call to action header */}
-      <CTAHeader>
+      <CTAHeader data-testid="xds-call-to-action-card">
         <div style={{ width: 40, height: 40 }}>
           <AgentgatewayLogo />
         </div>
