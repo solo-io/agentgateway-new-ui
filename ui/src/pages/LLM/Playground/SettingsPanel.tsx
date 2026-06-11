@@ -60,10 +60,10 @@ export function SettingsPanel({
 }: SettingsPanelProps) {
   useEffect(() => {
     if (!providedModelName || selectedLabel !== null) return;
-const match = models.find((m) => m.defaultModel === providedModelName);
+    const match = models.find((m) => m.label === providedModelName || m.defaultModel === providedModelName);
     if (match) {
       onSelectLabel(match.label);
-      onChangeModelOverride(providedModelName);
+      onChangeModelOverride(match.defaultModel ?? providedModelName);
     }
   }, [providedModelName, models, selectedLabel, onSelectLabel, onChangeModelOverride]);
 
