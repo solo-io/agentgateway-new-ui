@@ -8,8 +8,8 @@ import { usePlayground } from "./usePlayground";
 const Container = styled.div`
   display: flex;
   flex-direction: column;
-  padding: var(--spacing-xl);
-  gap: var(--spacing-xl);
+  padding: var(--spacing-lg);
+  gap: var(--spacing-lg);
 `;
 
 const PageTitle = styled.h1`

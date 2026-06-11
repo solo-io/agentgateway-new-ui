@@ -6,14 +6,15 @@ import toast from "react-hot-toast";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useConfig, useXdsMode } from "../../api";
 import { fetchConfig, updateConfig } from "../../api/config";
+import { deleteMCP, removeBind, removeMCPTargetByIndex, removeRouteBackendByIndex } from "../../api/crud";
 
 const PageRoot = styled.div`
   display: flex;
   flex-direction: column;
   height: calc(100vh - 64px);
   overflow-y: auto;
-  padding: var(--spacing-xl);
-  gap: var(--spacing-xl);
+  padding: var(--spacing-lg);
+  gap: var(--spacing-lg);
 `;
 
 const SectionTitle = styled.h2`
@@ -33,6 +34,7 @@ const ServersSection = styled.div`
 const ServerGridScroll = styled.div`
   max-height: calc(100vh - 260px);
   overflow-y: auto;
+  margin-top: var(--spacing-lg);
 `;
 
 const ServerGrid = styled.div`
@@ -137,6 +139,21 @@ interface MCPTargetInfo {
     port?: number;
 }
 
+type TopLevelMCPTarget = MCPTargetInfo & {
+    source: "topLevel";
+    targetIndex: number;
+};
+
+type PortBindMCPTarget = MCPTargetInfo & {
+    source: "portBind";
+    bindPort: number;
+    listenerIndex: number;
+    routeIndex: number;
+    backendIndex: number;
+};
+
+type MCPDisplayTarget = TopLevelMCPTarget | PortBindMCPTarget;
+
 function deriveTypeAndEndpoint(target: Record<string, unknown>): {
     type: MCPTargetInfo["type"];
     endpoint: string;
@@ -165,36 +182,53 @@ function deriveTypeAndEndpoint(target: Record<string, unknown>): {
     return { type: "unknown", endpoint: "" };
 }
 
-function extractMCPTargets(rawTargets: Record<string, unknown>[], statefulMode: MCPTargetInfo["statefulMode"]): MCPTargetInfo[] {
-    return rawTargets.map((t) => {
+function buildMCPDisplayTargets(config: any): MCPDisplayTarget[] {
+    const targets: MCPDisplayTarget[] = [];
+
+    const rawTargets = (config?.mcp?.targets ?? []) as Record<string, unknown>[];
+    const statefulMode = config?.mcp?.statefulMode as MCPTargetInfo["statefulMode"];
+    rawTargets.forEach((t, targetIndex) => {
         const { type, endpoint } = deriveTypeAndEndpoint(t);
-        return {
+        targets.push({
             name: String(t.name ?? "unnamed"),
             type,
             endpoint,
             statefulMode,
-        };
+            source: "topLevel",
+            targetIndex,
+        });
     });
-}
 
-function extractMCPTargetsFromBinds(config: any): MCPTargetInfo[] {
-    const targets: MCPTargetInfo[] = [];
-    for (const bind of config?.binds ?? []) {
-        for (const listener of bind.listeners ?? []) {
-            for (const route of listener.routes ?? []) {
-                const mcpBackend = (route.backends ?? []).find((b: any) => b.mcp);
-                if (!mcpBackend) continue;
-                const rawTargets: Record<string, unknown>[] = mcpBackend.mcp?.targets ?? [];
-                const targetName = rawTargets[0]?.name
-                    ? String(rawTargets[0].name)
-                    : route.name ?? `Port ${bind.port}`;
-                const { type, endpoint } = rawTargets[0]
-                    ? deriveTypeAndEndpoint(rawTargets[0])
-                    : { type: "unknown" as const, endpoint: "" };
-                targets.push({ name: targetName, type, endpoint, statefulMode: undefined, port: bind.port });
-            }
-        }
-    }
+    (config?.binds ?? []).forEach((bind: any, _bi: number) => {
+        const bindPort = bind.port;
+        (bind.listeners ?? []).forEach((listener: any, listenerIndex: number) => {
+            (listener.routes ?? []).forEach((route: any, routeIndex: number) => {
+                (route.backends ?? []).forEach((backend: any, backendIndex: number) => {
+                    if (!backend.mcp) return;
+                    const bindRawTargets: Record<string, unknown>[] = backend.mcp?.targets ?? [];
+                    const targetName = bindRawTargets[0]?.name
+                        ? String(bindRawTargets[0].name)
+                        : route.name ?? `Port ${bindPort}`;
+                    const { type, endpoint } = bindRawTargets[0]
+                        ? deriveTypeAndEndpoint(bindRawTargets[0])
+                        : { type: "unknown" as const, endpoint: "" };
+                    targets.push({
+                        name: targetName,
+                        type,
+                        endpoint,
+                        statefulMode: undefined,
+                        port: bindPort,
+                        source: "portBind",
+                        bindPort,
+                        listenerIndex,
+                        routeIndex,
+                        backendIndex,
+                    });
+                });
+            });
+        });
+    });
+
     return targets;
 }
 
@@ -210,11 +244,8 @@ export function MCPOverviewPage() {
     const { xdsMode } = useXdsMode();
 
     const mcpPort = config?.mcp?.port ?? null;
-    const rawTargets = (config?.mcp?.targets ?? []) as Record<string, unknown>[];
     const statefulMode = config?.mcp?.statefulMode as MCPTargetInfo["statefulMode"];
-    const targets = xdsMode
-        ? extractMCPTargetsFromBinds(config)
-        : extractMCPTargets(rawTargets, statefulMode);
+    const targets: MCPDisplayTarget[] = buildMCPDisplayTargets(config);
     const hasMCPTargets = targets.length > 0;
 
     const handlePortEditStart = () => {
@@ -258,20 +289,26 @@ export function MCPOverviewPage() {
         }
     };
 
-    const handleDeleteServer = async (t: MCPTargetInfo) => {
+    const handleDeleteServer = async (t: MCPDisplayTarget) => {
+        const isLastTarget = targets.length === 1;
         try {
-            const cfg = await fetchConfig();
-            if (cfg.mcp) {
-                const remaining = (cfg.mcp.targets ?? []).filter((tgt: any) => tgt.name !== t.name);
-                if (remaining.length === 0) {
-                    cfg.mcp = null;
+            if (t.source === "topLevel") {
+                const topLevelCount = targets.filter(tgt => tgt.source === "topLevel").length;
+                if (topLevelCount === 1) {
+                    await deleteMCP();
                 } else {
-                    cfg.mcp.targets = remaining;
+                    await removeMCPTargetByIndex(t.targetIndex);
+                }
+            } else {
+                const mcpBackendsInBind = targets.filter(tgt => tgt.source === "portBind" && tgt.bindPort === t.bindPort).length;
+                if (mcpBackendsInBind === 1) {
+                    await removeBind(t.bindPort);
+                } else {
+                    await removeRouteBackendByIndex(t.bindPort, t.listenerIndex, t.routeIndex, t.backendIndex);
                 }
             }
-            await updateConfig(cfg);
             await mutate();
-            if (targets.length === 1) {
+            if (isLastTarget) {
                 navigate("/mcp-setup-wizard", { replace: true });
             }
         } catch (err: any) {
@@ -389,7 +426,7 @@ export function MCPOverviewPage() {
                         </div>
                         <ServerGridScroll>
                             <ServerGrid>
-                                {targets.map((t, i) => (
+                                {targets.map((t: MCPDisplayTarget, i: number) => (
                                     <ServerCard key={i}>
                                         <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
                                             <ServerName>{t.name}</ServerName>
@@ -425,12 +462,6 @@ export function MCPOverviewPage() {
                                             <MetaRow>
                                               <MetaLabel>Endpoint</MetaLabel>
                                               <OverflowPill text={t.endpoint} color="purple" />
-                                            </MetaRow>
-                                          )}
-                                          {t.port !== undefined && (
-                                            <MetaRow>
-                                              <MetaLabel>Port</MetaLabel>
-                                              <PillTag color="blue">{t.port}</PillTag>
                                             </MetaRow>
                                           )}
                                         </ServerMeta>

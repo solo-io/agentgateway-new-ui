@@ -2991,7 +2991,7 @@ export function HierarchyTree({ hierarchy, filter, title, onRegisterAddHandlers 
   ];
 
   const hasAddableItems = addMenuItems.some(
-    (item) => item && "disabled" in item && !item.disabled
+    (item) => item && (item as any).type !== "divider" && !(item as any).disabled
   );
 
   // Determine if filtered tree has any content

@@ -7,19 +7,99 @@ import toast from "react-hot-toast";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useConfig } from "../../api";
 import { fetchConfig, updateConfig } from "../../api/config";
-import { deleteLLM, removeLLMModelByIndex } from "../../api/crud";
-import { useLLMConfig, useXdsMode } from "../../api/hooks";
+import { deleteLLM, removeBind, removeLLMModelByIndex, removeRouteBackendByIndex, removeTCPRouteBackendByIndex } from "../../api/crud";
+import { useXdsMode } from "../../api/hooks";
 import { PROVIDER_COLORS } from "./Playground/constants";
-import { extractModels } from "./Playground/extractModels";
 import type { PlaygroundModel } from "./Playground/types";
+
+type TopLevelLLMModel = PlaygroundModel & {
+    source: "topLevel";
+    modelIndex: number;
+};
+
+type PortBindLLMModel = PlaygroundModel & {
+    source: "portBind";
+    bindPort: number;
+    listenerIndex: number;
+    routeIndex: number;
+    isTcpRoute: boolean;
+    backendIndex: number;
+};
+
+type LLMDisplayModel = TopLevelLLMModel | PortBindLLMModel;
+
+function buildLLMDisplayModels(config: any): LLMDisplayModel[] {
+    const models: LLMDisplayModel[] = [];
+
+    if (config?.llm?.models) {
+        const llmPort = config.llm.port ?? 3000;
+        const baseUrl = `http://localhost:${llmPort}`;
+        (config.llm.models as any[]).forEach((m, modelIndex) => {
+            models.push({
+                label: m.name ?? "unnamed",
+                defaultModel: m.params?.model ?? "",
+                provider: m.provider ?? "unknown",
+                baseUrl,
+                source: "topLevel",
+                modelIndex,
+            });
+        });
+    }
+
+    if (config?.binds) {
+        const seen = new Set<string>();
+        (config.binds as any[]).forEach((bind, _bi) => {
+            const bindPort = bind.port;
+            (bind.listeners ?? []).forEach((listener: any, listenerIndex: number) => {
+                [
+                    { routes: listener.routes ?? [], isTcpRoute: false },
+                    { routes: listener.tcpRoutes ?? [], isTcpRoute: true },
+                ].forEach(({ routes, isTcpRoute }) => {
+                    (routes as any[]).forEach((route, routeIndex) => {
+                        (route.backends ?? []).forEach((backend: any, backendIndex: number) => {
+                            const ai = backend.ai;
+                            if (!ai) return;
+                            const providers = ai.groups
+                                ? ai.groups.flatMap((g: any) => g.providers ?? [])
+                                : [ai];
+                            for (const p of providers) {
+                                const providerEntry = p.provider ?? p;
+                                for (const [providerName, providerConfig] of Object.entries(providerEntry as any)) {
+                                    const model = (providerConfig as any)?.model;
+                                    const label = ai.name ?? model;
+                                    if (!label || seen.has(label)) continue;
+                                    seen.add(label);
+                                    models.push({
+                                        label,
+                                        defaultModel: model,
+                                        provider: providerName,
+                                        baseUrl: `http://localhost:${bindPort}`,
+                                        source: "portBind",
+                                        bindPort,
+                                        listenerIndex,
+                                        routeIndex,
+                                        isTcpRoute,
+                                        backendIndex,
+                                    });
+                                }
+                            }
+                        });
+                    });
+                });
+            });
+        });
+    }
+
+    return models;
+}
 
 const PageRoot = styled.div`
   display: flex;
   flex-direction: column;
   height: calc(100vh - 64px);
   overflow-y: auto;
-  padding: var(--spacing-xl);
-  gap: var(--spacing-xl);
+  padding: var(--spacing-lg);
+  gap: var(--spacing-lg);
 `;
 
 const PortRow = styled.div`
@@ -52,6 +132,7 @@ const ModelsSection = styled.div`
 const ModelGridScroll = styled.div`
   max-height: calc(100vh - 260px);
   overflow-y: auto;
+  margin-top: var(--spacing-lg);
 `;
 
 const ModelGrid = styled.div`
@@ -149,8 +230,7 @@ function OverflowPill({ text, color }: { text: string; color: string }) {
 // Main Component
 export function LLMOverviewPage() {
     const { modal } = App.useApp();
-    const { data: fullConfig, mutate } = useConfig();
-    const { data: llmConfig, isLoading, error } = useLLMConfig();
+    const { data: fullConfig, mutate, isLoading, error } = useConfig();
     const navigate = useNavigate();
     const location = useLocation();
     const { xdsMode } = useXdsMode();
@@ -159,19 +239,9 @@ export function LLMOverviewPage() {
     const [editPortValue, setEditPortValue] = useState<number | null>(null);
     const [isSavingPort, setIsSavingPort] = useState(false);
 
-    const models: PlaygroundModel[] = xdsMode
-        ? extractModels(fullConfig)
-        : ((llmConfig as any)?.models ?? []).map((m: any) => ({
-              label: m.name ?? "unnamed",
-              defaultModel: m.params?.model ?? "",
-              provider: m.provider ?? "unknown",
-              baseUrl: m.params?.baseUrl,
-          }));
+    const models: LLMDisplayModel[] = buildLLMDisplayModels(fullConfig);
 
-    console.log(`llmConfig:`, llmConfig);
-    console.log(`models: `, models);
-
-    const port: number | null = (llmConfig as any)?.port ?? null;
+    const port: number | null = (fullConfig as any)?.llm?.port ?? null;
 
     const handlePortEditStart = () => {
         setIsEditingPort(true);
@@ -200,15 +270,28 @@ export function LLMOverviewPage() {
         }
     };
 
-    const handleDeleteModel = async (index: number) => {
+    const handleDeleteModel = async (model: LLMDisplayModel) => {
+        const isLastModel = models.length === 1;
         try {
-            if (models.length === 1) {
-                await deleteLLM();
+            if (model.source === "topLevel") {
+                const topLevelCount = models.filter(m => m.source === "topLevel").length;
+                if (topLevelCount === 1) {
+                    await deleteLLM();
+                } else {
+                    await removeLLMModelByIndex(model.modelIndex);
+                }
             } else {
-                await removeLLMModelByIndex(index);
+                const aiBackendsInBind = models.filter(m => m.source === "portBind" && m.bindPort === model.bindPort).length;
+                if (aiBackendsInBind === 1) {
+                    await removeBind(model.bindPort);
+                } else if (model.isTcpRoute) {
+                    await removeTCPRouteBackendByIndex(model.bindPort, model.listenerIndex, model.routeIndex, model.backendIndex);
+                } else {
+                    await removeRouteBackendByIndex(model.bindPort, model.listenerIndex, model.routeIndex, model.backendIndex);
+                }
             }
             await mutate();
-            if (models.length === 1) {
+            if (isLastModel) {
                 navigate("/llm-setup-wizard", { replace: true });
             }
         } catch (err: any) {
@@ -316,7 +399,7 @@ export function LLMOverviewPage() {
                                                     content: <span>Are you sure you want to delete <b>{m.label}</b>?</span>,
                                                     okText: "Delete",
                                                     okButtonProps: { danger: true },
-                                                    onOk: () => handleDeleteModel(i),
+                                                    onOk: () => handleDeleteModel(m),
                                                   }),
                                                 },
                                               ],
